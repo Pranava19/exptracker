@@ -1,5 +1,5 @@
 import React from 'react';
-import { NavLink, useNavigate } from 'react-router-dom';
+import { NavLink, useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
 
@@ -37,15 +37,22 @@ const Navbar = () => {
       {/* Desktop sidebar */}
       <aside className="hidden md:flex flex-col fixed top-0 left-0 h-screen z-30 w-52 dark:bg-[#161B27] bg-white border-r border-gray-100 dark:border-[#252D3D]">
         <div className="flex items-center justify-between px-4 py-4 border-b border-gray-100 dark:border-[#252D3D]">
-          <span style={{ fontFamily: "'Playfair Display', serif", fontWeight: 800, fontSize: 17, letterSpacing: '-0.3px' }}
-            className="text-gray-900 dark:text-gray-100">
+          <Link to="/dashboard" style={{ fontFamily: "'Playfair Display', serif", fontWeight: 800, fontSize: 17, letterSpacing: '-0.3px' }}
+            className="text-gray-900 dark:text-gray-100 hover:opacity-80 transition-opacity">
             Exp<span className="text-blue-500">Tracker</span>
-          </span>
-          <button onClick={toggle}
-            className="text-gray-400 dark:text-gray-600 hover:text-gray-600 dark:hover:text-gray-400 transition-colors p-1 rounded"
-            aria-label="Toggle dark mode">
-            <i className={`ti ${dark ? 'ti-sun' : 'ti-moon'}`} style={{ fontSize: 15 }} aria-hidden="true" />
-          </button>
+          </Link>
+          <div className="flex items-center gap-1">
+            <button onClick={toggle}
+              className="text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 transition-colors p-1 rounded"
+              aria-label="Toggle dark mode">
+              <i className={`ti ${dark ? 'ti-sun' : 'ti-moon'}`} style={{ fontSize: 15 }} aria-hidden="true" />
+            </button>
+            <NavLink to="/profile"
+              className="w-7 h-7 rounded-full bg-blue-500 flex items-center justify-center text-white text-xs font-bold hover:opacity-80 transition-opacity"
+              aria-label="Profile">
+              {user?.name?.charAt(0).toUpperCase()}
+            </NavLink>
+          </div>
         </div>
 
         <div className="flex-1 overflow-y-auto py-2 px-2">
@@ -72,15 +79,6 @@ const Navbar = () => {
         </div>
 
         <div className="p-2 border-t border-gray-100 dark:border-[#252D3D]">
-          <div className="flex items-center gap-2.5 px-3 py-2.5 rounded-lg mb-1 bg-gray-50 dark:bg-[#1E2A3B]">
-            <div className="w-7 h-7 rounded-full bg-blue-500 flex items-center justify-center text-white text-xs font-bold flex-shrink-0">
-              {user?.name?.charAt(0).toUpperCase()}
-            </div>
-            <div className="min-w-0 flex-1">
-              <p className="text-xs font-semibold text-gray-800 dark:text-gray-200 truncate">{user?.name}</p>
-              <p className="text-[10px] text-gray-400 dark:text-[#475569] truncate">{user?.email}</p>
-            </div>
-          </div>
           <button onClick={handleLogout}
             className="flex items-center gap-2 w-full px-3 py-2 rounded-lg text-[12px] font-medium text-gray-400 dark:text-[#475569] hover:text-gray-700 dark:hover:text-gray-300 hover:bg-gray-50 dark:hover:bg-[#1E2A3B] transition-colors">
             <i className="ti ti-logout" style={{ fontSize: 14 }} aria-hidden="true" />
@@ -88,6 +86,28 @@ const Navbar = () => {
           </button>
         </div>
       </aside>
+
+      {/* Mobile top bar */}
+      <div className="md:hidden fixed top-0 left-0 right-0 z-30 bg-white dark:bg-[#161B27] border-b border-gray-100 dark:border-[#252D3D]">
+        <div className="flex items-center justify-between px-4 h-[50px]">
+          <Link to="/dashboard" style={{ fontFamily: "'Playfair Display', serif", fontWeight: 800, fontSize: 16 }}
+            className="text-gray-900 dark:text-gray-100">
+            Exp<span className="text-blue-500">Tracker</span>
+          </Link>
+          <div className="flex items-center gap-2">
+            <button onClick={toggle}
+              className="text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 transition-colors p-1"
+              aria-label="Toggle dark mode">
+              <i className={`ti ${dark ? 'ti-sun' : 'ti-moon'}`} style={{ fontSize: 18 }} aria-hidden="true" />
+            </button>
+            <NavLink to="/profile"
+              className="w-7 h-7 rounded-full bg-blue-500 flex items-center justify-center text-white text-xs font-bold hover:opacity-80 transition-opacity"
+              aria-label="Profile">
+              {user?.name?.charAt(0).toUpperCase()}
+            </NavLink>
+          </div>
+        </div>
+      </div>
 
       {/* Mobile bottom nav */}
       <div className="md:hidden fixed bottom-0 left-0 right-0 z-30 bg-white dark:bg-[#161B27] border-t border-gray-100 dark:border-[#252D3D]">
@@ -103,11 +123,6 @@ const Navbar = () => {
               <span style={{ fontSize: 10, fontWeight: 500 }}>{l}</span>
             </NavLink>
           ))}
-          <button onClick={toggle}
-            className="flex flex-col items-center flex-1 py-2.5 gap-0.5 text-gray-400 dark:text-[#475569]">
-            <i className={`ti ${dark ? 'ti-sun' : 'ti-moon'}`} style={{ fontSize: 20 }} aria-hidden="true" />
-            <span style={{ fontSize: 10, fontWeight: 500 }}>Theme</span>
-          </button>
         </div>
       </div>
     </>

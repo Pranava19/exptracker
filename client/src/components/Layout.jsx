@@ -22,6 +22,8 @@ const Layout = ({ children }) => {
     <div className={`min-h-screen ${dark ? 'dark' : ''}`}>
       <div className="min-h-screen bg-gray-50 dark:bg-[#0D1117]">
         <Navbar />
+
+        {/* Desktop */}
         <div className="hidden md:block md:ml-52">
           <div className="sticky top-0 z-20 flex items-center justify-between px-6 h-[50px] bg-white dark:bg-[#161B27] border-b border-gray-100 dark:border-[#252D3D]">
             <h1 className="text-[14px] font-semibold text-gray-900 dark:text-gray-100 tracking-tight">{title}</h1>
@@ -29,14 +31,9 @@ const Layout = ({ children }) => {
           </div>
           <div className="p-6">{children}</div>
         </div>
-        <div className="md:hidden pb-20">
-          <div className="sticky top-0 z-20 flex items-center justify-between px-4 h-[50px] bg-white dark:bg-[#161B27] border-b border-gray-100 dark:border-[#252D3D]">
-            <span style={{ fontFamily: "'Playfair Display', serif", fontWeight: 800, fontSize: 16 }}
-              className="text-gray-900 dark:text-gray-100">
-              Exp<span className="text-blue-500">Tracker</span>
-            </span>
-            <span className="text-[12px] text-gray-400 dark:text-[#475569] font-medium">{title}</span>
-          </div>
+
+        {/* Mobile */}
+        <div className="md:hidden pt-[50px] pb-20">
           <div className="p-4">{children}</div>
         </div>
       </div>
