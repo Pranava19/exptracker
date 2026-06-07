@@ -40,7 +40,7 @@ const formatGroupLabel = (dateStr) => {
 
 const extractPayee = (desc) => {
   if (!desc) return '—';
-  const m = desc.match(/UPI\/(?:DR|CR)\/\d+\/([^\/]+)\//);
+  const m = desc.match(/UPI\/(?:DR|CR)\/\d+\/([^/]+)\//);
   if (m) return m[1].trim();
   return '—';
 };

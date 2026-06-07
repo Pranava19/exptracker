@@ -94,7 +94,7 @@ const DashboardHome = () => {
     .filter(tx => tx.type === 'expense')
     .forEach(tx => {
       const name = tx.payee || (() => {
-        const m = (tx.description || '').match(/UPI\/(?:DR|CR)\/\d+\/([^\/]+)\//);
+        const m = (tx.description || '').match(/UPI\/(?:DR|CR)\/\d+\/([^/]+)\//);
         return m ? m[1].trim() : (tx.description || 'Unknown');
       })();
       if (!payeeMap[name]) payeeMap[name] = 0;
