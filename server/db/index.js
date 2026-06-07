@@ -1,10 +1,11 @@
 const { Pool } = require('pg');
 require('dotenv').config();
 
-console.log('DB URL:', process.env.DATABASE_URL); // debug line
-
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
+  ssl: process.env.DATABASE_URL?.includes('neon.tech')
+    ? { rejectUnauthorized: false }
+    : false,
 });
 
 pool.connect()
