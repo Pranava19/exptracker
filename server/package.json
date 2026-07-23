@@ -1,14 +1,21 @@
 {
   "name": "server",
   "version": "1.0.0",
-  "description": "",
+  "description": "Express REST API backend for ExpTracker expense management and statement parsing application",
   "main": "index.js",
   "scripts": {
     "start": "node index.js",
     "dev": "nodemon index.js"
   },
-  "keywords": [],
-  "author": "",
+  "keywords": [
+    "expense-tracker",
+    "statement-parser",
+    "express",
+    "postgresql",
+    "pdf-parser",
+    "excel-parser"
+  ],
+  "author": "Pranav A",
   "license": "ISC",
   "type": "commonjs",
   "dependencies": {
