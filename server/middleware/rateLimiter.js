@@ -16,4 +16,12 @@ const importLimiter = rateLimit({
   legacyHeaders: false,
 });
 
-module.exports = { authLimiter, importLimiter };
+const transactionLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 200, // generous limit for CRUD operations
+  message: { message: 'Too many requests, please slow down.' },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+module.exports = { authLimiter, importLimiter, transactionLimiter };

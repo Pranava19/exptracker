@@ -88,16 +88,6 @@ const Analysis = () => {
     };
   });
 
-  const topCategories = categoryExpense.slice(0, 5).map(c => c.name);
-  const monthlyCategoryData = MONTHS.map((m, i) => {
-    const monthTxs = yearTxs.filter(tx => new Date(tx.date).getMonth() === i && tx.type === 'expense');
-    const entry = { month: m };
-    topCategories.forEach(cat => {
-      entry[cat] = monthTxs.filter(tx => tx.category === cat).reduce((s, tx) => s + Number(tx.amount), 0);
-    });
-    return entry;
-  });
-
   const totalIncome  = yearTxs.filter(tx => tx.type === 'income').reduce((s, tx) => s + Number(tx.amount), 0);
   const totalExpense = yearTxs.filter(tx => tx.type === 'expense').reduce((s, tx) => s + Number(tx.amount), 0);
   const savings = totalIncome - totalExpense;
