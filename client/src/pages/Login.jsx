@@ -2,12 +2,7 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import axios from '../api/axios';
-
-const inputCls = {
-  width: '100%', border: '1px solid #E5E7EB', borderRadius: 8,
-  padding: '10px 12px', fontSize: 14, color: '#1C1F26',
-  outline: 'none', background: '#fff', transition: 'border-color 0.15s',
-};
+import { Lock, Mail, Loader2 } from 'lucide-react';
 
 const Login = () => {
   const { login } = useAuth();
@@ -21,7 +16,7 @@ const Login = () => {
     setError(''); setLoading(true);
     try {
       const res = await axios.post('/auth/login', form);
-      login(res.data.token, res.data.user);
+      login(res.data.user);
       navigate('/dashboard');
     } catch (err) {
       setError(err.response?.data?.message || 'Login failed');
@@ -31,43 +26,63 @@ const Login = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center" style={{ background: '#F4F5F7' }}>
-      <div style={{ width: '100%', maxWidth: 400 }}>
+    <div className="min-h-screen bg-ink-50 dark:bg-ink-900 flex items-center justify-center p-4">
+      <div className="w-full max-w-sm">
         <div className="text-center mb-8">
-          <span style={{ fontFamily: "'Playfair Display', serif", fontWeight: 800, fontSize: 26, color: '#1C1F26', letterSpacing: '-0.5px' }}>
-            Exp<span style={{ color: '#4F8EF7' }}>Tracker</span>
-          </span>
-          <p style={{ fontSize: 13, color: '#9CA3AF', marginTop: 6 }}>Sign in to your account</p>
+          <Link to="/dashboard" className="inline-flex items-center gap-2 font-bold text-2xl text-ink-900 dark:text-ink-50">
+            <span className="w-3 h-3 rounded-full bg-accent inline-block" />
+            <span>Exp<span className="text-accent">Tracker</span></span>
+          </Link>
+          <p className="text-xs text-ink-700 dark:text-ink-200 opacity-60 mt-1">Sign in to manage your finances</p>
         </div>
 
-        <div className="rounded-xl p-7" style={{ background: '#fff', border: '1px solid #E8EAED' }}>
+        <div className="bg-white dark:bg-ink-900 border border-ink-100 dark:border-[#2C2C28] rounded-card p-6 shadow-sm">
           {error && (
-            <div className="mb-4 px-3 py-2.5 rounded-lg" style={{ background: '#FEF2F2', border: '1px solid #FECACA' }}>
-              <p style={{ fontSize: 13, color: '#DC2626' }}>{error}</p>
+            <div className="mb-4 p-3 rounded-md bg-negative/10 border border-negative/20 text-negative text-xs">
+              {error}
             </div>
           )}
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label style={{ fontSize: 12, fontWeight: 600, color: '#374151', display: 'block', marginBottom: 6 }}>Email</label>
-              <input type="email" value={form.email} onChange={e => setForm({ ...form, email: e.target.value })} required style={inputCls} placeholder="you@example.com" />
+              <label className="text-xs font-medium text-ink-900 dark:text-ink-50 block mb-1.5 flex items-center gap-1.5">
+                <Mail size={14} strokeWidth={1.5} className="text-ink-700 dark:text-ink-200" />
+                <span>Email Address</span>
+              </label>
+              <input
+                type="email"
+                value={form.email}
+                onChange={e => setForm({ ...form, email: e.target.value })}
+                required
+                className="w-full rounded-md px-3 py-2 text-xs border border-ink-100 dark:border-[#2C2C28] bg-white dark:bg-[#252522] text-ink-900 dark:text-ink-50 focus:outline-none focus:border-accent"
+                placeholder="you@example.com"
+              />
             </div>
             <div>
-              <label style={{ fontSize: 12, fontWeight: 600, color: '#374151', display: 'block', marginBottom: 6 }}>Password</label>
-              <input type="password" value={form.password} onChange={e => setForm({ ...form, password: e.target.value })} required style={inputCls} placeholder="••••••••" />
+              <label className="text-xs font-medium text-ink-900 dark:text-ink-50 block mb-1.5 flex items-center gap-1.5">
+                <Lock size={14} strokeWidth={1.5} className="text-ink-700 dark:text-ink-200" />
+                <span>Password</span>
+              </label>
+              <input
+                type="password"
+                value={form.password}
+                onChange={e => setForm({ ...form, password: e.target.value })}
+                required
+                className="w-full rounded-md px-3 py-2 text-xs border border-ink-100 dark:border-[#2C2C28] bg-white dark:bg-[#252522] text-ink-900 dark:text-ink-50 focus:outline-none focus:border-accent"
+                placeholder="••••••••"
+              />
             </div>
             <button
               type="submit"
               disabled={loading}
-              className="w-full flex items-center justify-center gap-2"
-              style={{ background: '#1C1F26', color: '#fff', border: 'none', borderRadius: 8, padding: '11px 16px', fontSize: 14, fontWeight: 600, cursor: loading ? 'not-allowed' : 'pointer', opacity: loading ? 0.6 : 1, marginTop: 8 }}
+              className="w-full bg-accent hover:bg-accent-dark text-white rounded-md py-2.5 text-xs font-semibold disabled:opacity-50 flex items-center justify-center gap-2 transition-colors mt-2"
             >
-              {loading && <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />}
-              {loading ? 'Signing in...' : 'Sign in'}
+              {loading ? <Loader2 size={16} className="animate-spin" /> : null}
+              <span>{loading ? 'Signing in...' : 'Sign in'}</span>
             </button>
           </form>
-          <p style={{ fontSize: 13, textAlign: 'center', marginTop: 20, color: '#9CA3AF' }}>
-            No account?{' '}
-            <Link to="/register" style={{ color: '#4F8EF7', fontWeight: 600, textDecoration: 'none' }}>Create one</Link>
+          <p className="text-xs text-center mt-5 text-ink-700 dark:text-ink-200 opacity-70">
+            Don't have an account?{' '}
+            <Link to="/register" className="text-accent font-semibold hover:underline">Create one</Link>
           </p>
         </div>
       </div>

@@ -5,7 +5,24 @@ const path = require('path');
 const pool = require('../db/index');
 const auth = require('../middleware/authMiddleware');
 
-const upload = multer({ storage: multer.memoryStorage() });
+const upload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 10 * 1024 * 1024 }, // 10MB limit
+  fileFilter: (req, file, cb) => {
+    const ext = path.extname(file.originalname).toLowerCase();
+    const allowedMime = [
+      'application/pdf',
+      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      'application/vnd.ms-excel',
+      'application/octet-stream',
+    ];
+    if (allowedMime.includes(file.mimetype) || ['.pdf', '.xlsx', '.xls'].includes(ext)) {
+      cb(null, true);
+    } else {
+      cb(new Error('Invalid file type. Only PDF and Excel files (.xlsx, .xls) are allowed.'));
+    }
+  },
+});
 
 function autoCategory(desc) {
   const d = desc.toUpperCase();
@@ -161,8 +178,19 @@ async function extractPDFText(buffer, password) {
   return text;
 }
 
-router.post('/', auth, upload.single('file'), async (req, res) => {
+router.post('/', auth, (req, res, next) => {
+  upload.single('file')(req, res, (err) => {
+    if (err) {
+      return res.status(400).json({ message: err.message || 'File upload error' });
+    }
+    next();
+  });
+}, async (req, res) => {
   try {
+    if (!req.file) {
+      return res.status(400).json({ message: 'No file uploaded' });
+    }
+
     const { password } = req.body;
     const buffer = req.file.buffer;
     const ext = path.extname(req.file.originalname).toLowerCase();
@@ -200,7 +228,7 @@ router.post('/', auth, upload.single('file'), async (req, res) => {
 
     res.json({ count: inserted, skipped });
   } catch (err) {
-    console.error('Import error:', err);
+    console.error('Import error:', err.message || 'Import failed');
     if (err.name === 'PasswordException') {
       return res.status(400).json({ message: 'PDF is password protected. Enter the correct password.' });
     }

@@ -1,5 +1,22 @@
 import React from 'react';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+
+const CustomTooltip = ({ active, payload, label }) => {
+  if (active && payload && payload.length) {
+    return (
+      <div className="bg-ink-900 text-ink-50 p-3 rounded-card border border-ink-700 shadow-lg text-xs font-mono">
+        <p className="font-sans font-semibold mb-1 opacity-80">{label}</p>
+        {payload.map((entry, index) => (
+          <p key={`item-${index}`} style={{ color: entry.color }} className="font-semibold flex items-center justify-between gap-4">
+            <span>{entry.name}:</span>
+            <span>₹{Number(entry.value).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
+          </p>
+        ))}
+      </div>
+    );
+  }
+  return null;
+};
 
 const MonthlyChart = ({ transactions }) => {
   const monthlyData = {};
@@ -13,18 +30,17 @@ const MonthlyChart = ({ transactions }) => {
 
   const data = Object.values(monthlyData).sort((a, b) => a.month.localeCompare(b.month));
 
-  if (data.length === 0) return <p className="text-gray-500 text-sm">No data for chart.</p>;
+  if (data.length === 0) return <p className="text-ink-700 dark:text-ink-200 text-xs font-mono opacity-60">No transaction data available</p>;
 
   return (
-    <ResponsiveContainer width="100%" height={250}>
-      <BarChart data={data}>
-        <CartesianGrid strokeDasharray="3 3" />
-        <XAxis dataKey="month" tick={{ fontSize: 12 }} />
-        <YAxis tick={{ fontSize: 12 }} />
-        <Tooltip formatter={(val) => `₹${val.toFixed(2)}`} />
-        <Legend />
-        <Bar dataKey="income" fill="#22c55e" name="Income" />
-        <Bar dataKey="expense" fill="#ef4444" name="Expense" />
+    <ResponsiveContainer width="100%" height={260}>
+      <BarChart data={data} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+        <CartesianGrid strokeDasharray="0" stroke="#EDECE8" vertical={false} />
+        <XAxis dataKey="month" tick={{ fontSize: 11, fontFamily: 'IBM Plex Mono' }} stroke="#888" />
+        <YAxis tick={{ fontSize: 11, fontFamily: 'IBM Plex Mono' }} stroke="#888" />
+        <Tooltip content={<CustomTooltip />} />
+        <Bar dataKey="income" fill="#3F6B4F" name="Income" radius={[2, 2, 0, 0]} />
+        <Bar dataKey="expense" fill="#B5473B" name="Expense" radius={[2, 2, 0, 0]} />
       </BarChart>
     </ResponsiveContainer>
   );

@@ -4,25 +4,16 @@ import axios from '../api/axios';
 import MonthlyChart from '../components/MonthlyChart';
 import CategoryChart from '../components/CategoryChart';
 import Layout from '../components/Layout';
-import { SkeletonCard, SkeletonChart } from '../components/Skeleton';
-
-const StatCard = ({ label, value, icon, iconBgLight, iconColorLight, sub, subGreen, loading }) => {
-  if (loading) return <SkeletonCard />;
-  return (
-    <div className="rounded-xl p-4 bg-white dark:bg-[#161B27] border border-gray-100 dark:border-[#252D3D]">
-      <div className="flex items-start justify-between mb-3">
-        <span className="text-[10px] font-semibold uppercase tracking-[0.6px] text-gray-400 dark:text-[#475569]">{label}</span>
-        <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: iconBgLight }}>
-          <i className={`ti ${icon}`} style={{ fontSize: 15, color: iconColorLight }} aria-hidden="true" />
-        </div>
-      </div>
-      <p className="text-[22px] font-bold tracking-tight text-gray-900 dark:text-gray-100" style={{ letterSpacing: '-0.6px' }}>
-        ₹{Number(value || 0).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-      </p>
-      {sub && <p className={`text-[11px] mt-1 ${subGreen ? 'text-emerald-500' : 'text-gray-400 dark:text-[#475569]'}`}>{sub}</p>}
-    </div>
-  );
-};
+import { SkeletonChart } from '../components/Skeleton';
+import {
+  Wallet,
+  TrendingUp,
+  TrendingDown,
+  Calendar,
+  ArrowUpRight,
+  Download,
+  ChevronRight
+} from 'lucide-react';
 
 const groupByDate = (txs) => {
   const groups = {};
@@ -43,8 +34,8 @@ const formatGroupLabel = (dateStr) => {
   return d.toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'long' });
 };
 
-const fmt = (n) => '₹' + Number(n).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-const fmtShort = (n) => '₹' + Number(n).toLocaleString('en-IN', { maximumFractionDigits: 0 });
+const fmt = (n) => '₹' + Number(n || 0).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+const fmtShort = (n) => '₹' + Number(n || 0).toLocaleString('en-IN', { maximumFractionDigits: 0 });
 
 const DashboardHome = () => {
   const [transactions, setTransactions] = useState([]);
@@ -67,7 +58,6 @@ const DashboardHome = () => {
     fetch();
   }, []);
 
-  // ── This month stats ──────────────────────────────────────────────────────
   const now = new Date();
   const thisMonth = now.getMonth();
   const thisYear = now.getFullYear();
@@ -78,17 +68,13 @@ const DashboardHome = () => {
   });
 
   const monthExpenses = monthTxs.filter(tx => tx.type === 'expense');
-
-  // Biggest single transaction this month
   const biggestTx = monthExpenses.reduce((max, tx) =>
     Number(tx.amount) > Number(max?.amount || 0) ? tx : max, null);
 
-  // Daily average spend this month
   const daysElapsed = now.getDate();
   const totalMonthSpend = monthExpenses.reduce((s, tx) => s + Number(tx.amount), 0);
   const dailyAvg = daysElapsed > 0 ? totalMonthSpend / daysElapsed : 0;
 
-  // Top 5 payees by total spend (all time, expenses only)
   const payeeMap = {};
   transactions
     .filter(tx => tx.type === 'expense')
@@ -107,7 +93,6 @@ const DashboardHome = () => {
 
   const maxPayeeAmount = top5Payees[0]?.[1] || 1;
 
-  // ── PDF Export ────────────────────────────────────────────────────────────
   const handleExportPDF = async () => {
     setExporting(true);
     try {
@@ -126,7 +111,7 @@ const DashboardHome = () => {
             <td>${(tx.payee || tx.description || '').slice(0, 40)}</td>
             <td>${tx.category}</td>
             <td>${tx.mode || 'Other'}</td>
-            <td style="color:${tx.type === 'income' ? '#059669' : '#DC2626'}; font-weight:600; text-align:right;">
+            <td style="color:${tx.type === 'income' ? '#2F7A4F' : '#B5473B'}; font-weight:600; text-align:right;">
               ${tx.type === 'income' ? '+' : '−'}${fmt(tx.amount)}
             </td>
           </tr>
@@ -140,24 +125,23 @@ const DashboardHome = () => {
           <title>Statement ${monthStr}</title>
           <style>
             * { margin: 0; padding: 0; box-sizing: border-box; }
-            body { font-family: 'Segoe UI', Arial, sans-serif; font-size: 12px; color: #1e293b; padding: 32px; }
-            .header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 28px; border-bottom: 2px solid #e2e8f0; padding-bottom: 16px; }
-            .brand { font-size: 22px; font-weight: 800; letter-spacing: -0.5px; }
-            .brand span { color: #3b82f6; }
-            .period { font-size: 11px; color: #64748b; margin-top: 3px; }
+            body { font-family: 'Instrument Sans', 'Segoe UI', sans-serif; font-size: 12px; color: #1C1C1A; padding: 32px; background: #FFF; }
+            .header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 28px; border-bottom: 2px solid #EDECE8; padding-bottom: 16px; }
+            .brand { font-size: 22px; font-weight: 800; }
+            .brand span { color: #3F6B4F; }
+            .period { font-size: 11px; color: #6E6E6B; margin-top: 3px; }
             .summary { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 24px; }
-            .summary-card { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px 16px; }
-            .summary-card .label { font-size: 10px; text-transform: uppercase; letter-spacing: 0.5px; color: #94a3b8; margin-bottom: 4px; }
-            .summary-card .val { font-size: 18px; font-weight: 700; }
-            .income  { color: #059669; }
-            .expense { color: #dc2626; }
-            .savings { color: #3b82f6; }
-            h2 { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: #64748b; margin-bottom: 10px; }
+            .summary-card { background: #F7F7F5; border: 1px solid #EDECE8; border-radius: 6px; padding: 12px 16px; }
+            .summary-card .label { font-size: 10px; text-transform: uppercase; font-family: monospace; color: #6E6E6B; margin-bottom: 4px; }
+            .summary-card .val { font-size: 18px; font-weight: 700; font-family: monospace; }
+            .income  { color: #2F7A4F; }
+            .expense { color: #B5473B; }
+            .savings { color: #3F6B4F; }
+            h2 { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: #6E6E6B; margin-bottom: 10px; font-family: monospace; }
             table { width: 100%; border-collapse: collapse; }
-            th { text-align: left; font-size: 10px; text-transform: uppercase; letter-spacing: 0.5px; color: #94a3b8; padding: 8px 10px; border-bottom: 1px solid #e2e8f0; }
-            td { padding: 8px 10px; border-bottom: 1px solid #f1f5f9; font-size: 11px; }
-            tr:last-child td { border-bottom: none; }
-            .footer { margin-top: 24px; font-size: 10px; color: #94a3b8; text-align: center; }
+            th { text-align: left; font-size: 10px; text-transform: uppercase; font-family: monospace; color: #6E6E6B; padding: 8px 10px; border-bottom: 1px solid #EDECE8; }
+            td { padding: 8px 10px; border-bottom: 1px solid #F7F7F5; font-size: 11px; }
+            .footer { margin-top: 24px; font-size: 10px; color: #6E6E6B; text-align: center; font-family: monospace; }
           </style>
         </head>
         <body>
@@ -166,7 +150,7 @@ const DashboardHome = () => {
               <div class="brand">Exp<span>Tracker</span></div>
               <div class="period">Monthly Statement — ${monthName}</div>
             </div>
-            <div style="text-align:right; font-size:11px; color:#64748b;">
+            <div style="text-align:right; font-size:11px; color:#6E6E6B;">
               Generated: ${new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' })}
             </div>
           </div>
@@ -220,125 +204,160 @@ const DashboardHome = () => {
 
   return (
     <Layout>
-      {/* Stat cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-5">
-        <StatCard label="Balance"  value={summary.balance}       icon="ti-wallet"       iconBgLight="#EFF6FF" iconColorLight="#3B82F6" sub="Current balance"  loading={loading} />
-        <StatCard label="Income"   value={summary.total_income}  icon="ti-trending-up"  iconBgLight="#ECFDF5" iconColorLight="#059669" sub="+12% this month"  subGreen loading={loading} />
-        <StatCard label="Expenses" value={summary.total_expense} icon="ti-trending-down" iconBgLight="#FEF2F2" iconColorLight="#DC2626" sub="Total debited"    loading={loading} />
+      {/* Asymmetric Hero Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+        {/* Big Balance Hero Card */}
+        <div className="md:col-span-2 p-8 bg-ink-900 text-ink-50 rounded-card flex flex-col justify-between border border-ink-700 shadow-sm relative overflow-hidden">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-2">
+              <Wallet size={18} strokeWidth={1.5} className="text-accent-light" />
+              <span className="text-xs font-mono font-medium uppercase tracking-wider text-ink-200 opacity-80">Total Net Balance</span>
+            </div>
+            <span className="text-[11px] font-mono px-2 py-0.5 rounded bg-ink-700/60 text-ink-100">Live Account</span>
+          </div>
+
+          <div className="my-3">
+            {loading ? (
+              <div className="h-12 w-64 bg-ink-700 animate-pulse rounded" />
+            ) : (
+              <p className="font-mono text-4xl sm:text-5xl font-semibold tracking-tight text-white">
+                {fmt(summary.balance)}
+              </p>
+            )}
+            <p className="text-xs font-sans text-ink-200 opacity-70 mt-2">Overall account liquidity & cumulative balance</p>
+          </div>
+
+          <div className="pt-4 border-t border-ink-700/60 flex items-center justify-between text-xs">
+            <span className="text-ink-200 opacity-70">Month-to-date activity</span>
+            <button
+              onClick={handleExportPDF}
+              disabled={exporting || monthTxs.length === 0}
+              className="flex items-center gap-1.5 px-3 py-1 rounded-md text-xs font-semibold bg-accent hover:bg-accent-dark text-white transition-colors disabled:opacity-50"
+            >
+              <Download size={14} strokeWidth={1.5} />
+              <span>{exporting ? 'Exporting...' : 'Export Statement'}</span>
+            </button>
+          </div>
+        </div>
+
+        {/* Right Stack Cards: Income & Expense */}
+        <div className="flex flex-col gap-4">
+          <div className="flex-1 p-5 bg-white dark:bg-ink-900 border border-ink-100 dark:border-[#2C2C28] rounded-card flex flex-col justify-between">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-xs font-mono font-medium uppercase tracking-wider text-ink-700 dark:text-ink-200 opacity-70">Total Income</span>
+              <div className="p-2 rounded bg-positive/10 text-positive">
+                <TrendingUp size={16} strokeWidth={1.5} />
+              </div>
+            </div>
+            <p className="font-mono text-2xl font-semibold text-positive">
+              {loading ? '...' : fmt(summary.total_income)}
+            </p>
+            <p className="text-[11px] text-ink-700 dark:text-ink-200 opacity-60 mt-1">Total credited funds</p>
+          </div>
+
+          <div className="flex-1 p-5 bg-white dark:bg-ink-900 border border-ink-100 dark:border-[#2C2C28] rounded-card flex flex-col justify-between">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-xs font-mono font-medium uppercase tracking-wider text-ink-700 dark:text-ink-200 opacity-70">Total Expenses</span>
+              <div className="p-2 rounded bg-negative/10 text-negative">
+                <TrendingDown size={16} strokeWidth={1.5} />
+              </div>
+            </div>
+            <p className="font-mono text-2xl font-semibold text-negative">
+              {loading ? '...' : fmt(summary.total_expense)}
+            </p>
+            <p className="text-[11px] text-ink-700 dark:text-ink-200 opacity-60 mt-1">Total debited funds</p>
+          </div>
+        </div>
       </div>
 
-      {/* This month insight cards */}
+      {/* Insight row cards */}
       {!loading && (
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-5">
-          {/* Daily average */}
-          <div className="rounded-xl p-4 bg-white dark:bg-[#161B27] border border-gray-100 dark:border-[#252D3D]">
-            <div className="flex items-start justify-between mb-2">
-              <span className="text-[10px] font-semibold uppercase tracking-[0.6px] text-gray-400 dark:text-[#475569]">Daily Avg Spend</span>
-              <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: '#FFF7ED' }}>
-                <i className="ti ti-calendar-stats" style={{ fontSize: 15, color: '#F97316' }} aria-hidden="true" />
-              </div>
-            </div>
-            <p className="text-[20px] font-bold text-gray-900 dark:text-gray-100 tabular-nums" style={{ letterSpacing: '-0.5px' }}>
-              {fmtShort(dailyAvg)}
-            </p>
-            <p className="text-[11px] text-gray-400 dark:text-[#475569] mt-1">per day · {now.toLocaleString('default', { month: 'short' })}</p>
-          </div>
-
-          {/* Biggest transaction */}
-          <div className="rounded-xl p-4 bg-white dark:bg-[#161B27] border border-gray-100 dark:border-[#252D3D]">
-            <div className="flex items-start justify-between mb-2">
-              <span className="text-[10px] font-semibold uppercase tracking-[0.6px] text-gray-400 dark:text-[#475569]">Biggest Expense</span>
-              <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: '#FFF1F2' }}>
-                <i className="ti ti-arrow-big-up" style={{ fontSize: 15, color: '#F43F5E' }} aria-hidden="true" />
-              </div>
-            </div>
-            {biggestTx ? (
-              <>
-                <p className="text-[20px] font-bold text-red-500 dark:text-red-400 tabular-nums" style={{ letterSpacing: '-0.5px' }}>
-                  {fmt(biggestTx.amount)}
-                </p>
-                <p className="text-[11px] text-gray-400 dark:text-[#475569] mt-1 truncate">
-                  {(biggestTx.payee || biggestTx.description || '').slice(0, 28)} · {biggestTx.date.slice(0, 10)}
-                </p>
-              </>
-            ) : (
-              <p className="text-[13px] text-gray-400 dark:text-[#475569] mt-2">No expenses this month</p>
-            )}
-          </div>
-
-          {/* Export PDF */}
-          <div className="rounded-xl p-4 bg-white dark:bg-[#161B27] border border-gray-100 dark:border-[#252D3D] flex flex-col justify-between">
-            <div className="flex items-start justify-between mb-2">
-              <span className="text-[10px] font-semibold uppercase tracking-[0.6px] text-gray-400 dark:text-[#475569]">Monthly Statement</span>
-              <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: '#F0FDF4' }}>
-                <i className="ti ti-file-type-pdf" style={{ fontSize: 15, color: '#22C55E' }} aria-hidden="true" />
-              </div>
-            </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
+          <div className="p-5 bg-white dark:bg-ink-900 border border-ink-100 dark:border-[#2C2C28] rounded-card flex items-center justify-between">
             <div>
-              <p className="text-[12px] text-gray-500 dark:text-[#64748B] mb-3">
-                {now.toLocaleString('default', { month: 'long', year: 'numeric' })} · {monthTxs.length} transactions
-              </p>
-              <button
-                onClick={handleExportPDF}
-                disabled={exporting || monthTxs.length === 0}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[12px] font-semibold bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white transition-colors"
-              >
-                {exporting
-                  ? <span className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                  : <i className="ti ti-download" style={{ fontSize: 13 }} aria-hidden="true" />
-                }
-                Export PDF
-              </button>
+              <span className="text-xs font-mono uppercase tracking-wider text-ink-700 dark:text-ink-200 opacity-70">Daily Average Spend</span>
+              <p className="font-mono text-xl font-semibold text-ink-900 dark:text-ink-50 mt-1">{fmtShort(dailyAvg)}</p>
+              <p className="text-[11px] text-ink-700 dark:text-ink-200 opacity-60 mt-0.5">per day in {now.toLocaleString('default', { month: 'long' })}</p>
+            </div>
+            <div className="p-3 rounded bg-accent/10 text-accent">
+              <Calendar size={20} strokeWidth={1.5} />
+            </div>
+          </div>
+
+          <div className="p-5 bg-white dark:bg-ink-900 border border-ink-100 dark:border-[#2C2C28] rounded-card flex items-center justify-between">
+            <div className="min-w-0 flex-1 mr-3">
+              <span className="text-xs font-mono uppercase tracking-wider text-ink-700 dark:text-ink-200 opacity-70">Biggest Expense ({now.toLocaleString('default', { month: 'short' })})</span>
+              {biggestTx ? (
+                <>
+                  <p className="font-mono text-xl font-semibold text-negative mt-1">{fmt(biggestTx.amount)}</p>
+                  <p className="text-[11px] text-ink-700 dark:text-ink-200 opacity-70 truncate mt-0.5">
+                    {(biggestTx.payee || biggestTx.description || '').slice(0, 28)} · {biggestTx.date.slice(0, 10)}
+                  </p>
+                </>
+              ) : (
+                <p className="text-xs text-ink-700 dark:text-ink-200 opacity-60 mt-2">No expense recorded this month</p>
+              )}
+            </div>
+            <div className="p-3 rounded bg-negative/10 text-negative flex-shrink-0">
+              <ArrowUpRight size={20} strokeWidth={1.5} />
             </div>
           </div>
         </div>
       )}
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-        {/* Recent transactions — 2 cols */}
-        <div className="lg:col-span-2 space-y-4">
-          <div className="rounded-xl overflow-hidden bg-white dark:bg-[#161B27] border border-gray-100 dark:border-[#252D3D]">
-            <div className="flex items-center justify-between px-5 py-3.5 border-b border-gray-50 dark:border-[#1E2A3B]">
-              <p className="text-[13px] font-semibold text-gray-900 dark:text-gray-100">Recent transactions</p>
-              <Link to="/transactions" className="text-[12px] font-medium text-blue-500 hover:text-blue-600">View all</Link>
+      {/* Main Content Grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Recent Transactions list (2 cols) */}
+        <div className="lg:col-span-2 space-y-6">
+          <div className="bg-white dark:bg-ink-900 border border-ink-100 dark:border-[#2C2C28] rounded-card overflow-hidden">
+            <div className="flex items-center justify-between px-5 py-4 border-b border-ink-100 dark:border-[#2C2C28]">
+              <h2 className="text-sm font-semibold text-ink-900 dark:text-ink-50">Recent Transactions</h2>
+              <Link to="/transactions" className="text-xs font-medium text-accent hover:text-accent-dark flex items-center gap-1">
+                <span>View all</span>
+                <ChevronRight size={14} strokeWidth={1.5} />
+              </Link>
             </div>
+
             {loading ? (
-              <div className="p-5 space-y-3">
+              <div className="p-5 space-y-4">
                 {[...Array(4)].map((_, i) => (
                   <div key={i} className="animate-pulse flex justify-between">
-                    <div className="space-y-1.5">
-                      <div className="h-3 bg-gray-100 dark:bg-[#1E2A3B] rounded w-36" />
-                      <div className="h-2.5 bg-gray-100 dark:bg-[#1E2A3B] rounded w-24" />
+                    <div className="space-y-1">
+                      <div className="h-3 bg-ink-100 dark:bg-ink-700 rounded w-36" />
+                      <div className="h-2.5 bg-ink-100 dark:bg-ink-700 rounded w-24" />
                     </div>
-                    <div className="h-3 bg-gray-100 dark:bg-[#1E2A3B] rounded w-16" />
+                    <div className="h-3 bg-ink-100 dark:bg-ink-700 rounded w-16" />
                   </div>
                 ))}
               </div>
             ) : Object.keys(grouped).length === 0 ? (
-              <div className="flex items-center justify-center h-40">
-                <p className="text-[13px] text-gray-400 dark:text-[#475569]">No transactions yet</p>
+              <div className="p-12 text-center">
+                <p className="text-xs font-mono text-ink-700 dark:text-ink-200 opacity-60">No transactions recorded yet</p>
               </div>
             ) : (
               Object.entries(grouped)
                 .sort(([a], [b]) => b.localeCompare(a))
                 .map(([date, txs]) => (
                   <div key={date}>
-                    <div className="px-5 py-2 bg-gray-50 dark:bg-[#0D1117] border-y border-gray-50 dark:border-[#1A2235]">
-                      <p className="text-[10px] font-semibold uppercase tracking-[0.7px] text-gray-400 dark:text-[#334155]">
+                    <div className="px-5 py-2 bg-ink-50 dark:bg-[#252522] border-y border-ink-100 dark:border-[#2C2C28]">
+                      <p className="text-[10px] font-mono font-semibold uppercase tracking-wider text-ink-700 dark:text-ink-200 opacity-75">
                         {formatGroupLabel(date)}
                       </p>
                     </div>
                     {txs.map(tx => (
-                      <div key={tx.id} className="flex items-center justify-between px-5 py-3 border-b border-gray-50 dark:border-[#1A2235] last:border-0 hover:bg-gray-50 dark:hover:bg-[#1A2235] transition-colors">
+                      <div
+                        key={tx.id}
+                        className="flex items-center justify-between px-5 py-3.5 border-b border-ink-100 dark:border-[#2C2C28] last:border-0 hover:bg-ink-50/50 dark:hover:bg-[#252522]/50 transition-colors"
+                      >
                         <div className="min-w-0 flex-1 mr-4">
-                          <p className="text-[13px] font-medium text-gray-800 dark:text-[#CBD5E1] truncate">{tx.payee || tx.description || tx.category}</p>
-                          <p className="text-[11px] text-gray-400 dark:text-[#475569] mt-0.5">{tx.category} · {tx.mode || 'Other'}</p>
+                          <p className="text-sm font-medium text-ink-900 dark:text-ink-50 truncate">{tx.payee || tx.description || tx.category}</p>
+                          <p className="text-xs text-ink-700 dark:text-ink-200 opacity-65 mt-0.5">{tx.category} · {tx.mode || 'Other'}</p>
                         </div>
                         <div className="flex items-center gap-3">
-                          <span className={`text-[10px] font-semibold px-2 py-0.5 rounded ${tx.type === 'income' ? 'bg-emerald-50 dark:bg-[#064E3B] text-emerald-700 dark:text-emerald-300' : 'bg-red-50 dark:bg-[#450A0A] text-red-600 dark:text-red-300'}`}>
+                          <span className={`text-[10px] font-mono font-semibold px-2 py-0.5 rounded-sharp ${tx.type === 'income' ? 'bg-positive/10 text-positive' : 'bg-negative/10 text-negative'}`}>
                             {tx.type}
                           </span>
-                          <p className={`text-[13px] font-bold tabular-nums ${tx.type === 'income' ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400'}`}>
+                          <p className={`font-mono text-sm font-semibold ${tx.type === 'income' ? 'text-positive' : 'text-negative'}`}>
                             {tx.type === 'income' ? '+' : '−'}₹{Number(tx.amount).toLocaleString('en-IN', { minimumFractionDigits: 2 })}
                           </p>
                         </div>
@@ -349,26 +368,26 @@ const DashboardHome = () => {
             )}
           </div>
 
-          {/* Top 5 payees */}
+          {/* Top Payees Card */}
           {!loading && top5Payees.length > 0 && (
-            <div className="rounded-xl bg-white dark:bg-[#161B27] border border-gray-100 dark:border-[#252D3D]">
-              <div className="flex items-center justify-between px-5 py-3.5 border-b border-gray-50 dark:border-[#1E2A3B]">
-                <p className="text-[13px] font-semibold text-gray-900 dark:text-gray-100">Top payees by spend</p>
-                <span className="text-[11px] text-gray-400 dark:text-[#475569]">All time</span>
+            <div className="bg-white dark:bg-ink-900 border border-ink-100 dark:border-[#2C2C28] rounded-card p-5">
+              <div className="flex items-center justify-between pb-3 border-b border-ink-100 dark:border-[#2C2C28] mb-4">
+                <h3 className="text-sm font-semibold text-ink-900 dark:text-ink-50">Top Payees by Spend</h3>
+                <span className="text-xs font-mono text-ink-700 dark:text-ink-200 opacity-60">All time</span>
               </div>
-              <div className="p-5 space-y-3">
+              <div className="space-y-3">
                 {top5Payees.map(([name, amount], i) => (
                   <div key={name}>
-                    <div className="flex items-center justify-between mb-1">
+                    <div className="flex items-center justify-between mb-1.5">
                       <div className="flex items-center gap-2 min-w-0 flex-1 mr-3">
-                        <span className="text-[10px] font-bold text-gray-400 dark:text-[#475569] w-4 flex-shrink-0">{i + 1}</span>
-                        <p className="text-[12px] font-medium text-gray-700 dark:text-[#CBD5E1] truncate">{name}</p>
+                        <span className="font-mono text-xs text-ink-700 dark:text-ink-200 opacity-60 w-4">{i + 1}</span>
+                        <p className="text-xs font-medium text-ink-900 dark:text-ink-50 truncate">{name}</p>
                       </div>
-                      <p className="text-[12px] font-bold tabular-nums text-red-500 dark:text-red-400 flex-shrink-0">{fmtShort(amount)}</p>
+                      <p className="font-mono text-xs font-semibold text-negative">{fmtShort(amount)}</p>
                     </div>
-                    <div className="ml-6 h-1.5 rounded-full bg-gray-100 dark:bg-[#1E2A3B] overflow-hidden">
+                    <div className="ml-6 h-1.5 rounded-full bg-ink-100 dark:bg-ink-700 overflow-hidden">
                       <div
-                        className="h-full rounded-full bg-blue-500 dark:bg-blue-400 transition-all"
+                        className="h-full rounded-full bg-accent transition-all"
                         style={{ width: `${(amount / maxPayeeAmount) * 100}%` }}
                       />
                     </div>
@@ -379,23 +398,20 @@ const DashboardHome = () => {
           )}
         </div>
 
-        {/* Charts — 1 col */}
-        <div className="space-y-4">
-          <div className="rounded-xl overflow-hidden bg-white dark:bg-[#161B27] border border-gray-100 dark:border-[#252D3D]">
-            <div className="px-5 py-3.5 border-b border-gray-50 dark:border-[#1E2A3B]">
-              <p className="text-[13px] font-semibold text-gray-900 dark:text-gray-100">Monthly overview</p>
+        {/* Charts Column (1 col) */}
+        <div className="space-y-6">
+          <div className="bg-white dark:bg-ink-900 border border-ink-100 dark:border-[#2C2C28] rounded-card overflow-hidden p-4">
+            <div className="pb-3 border-b border-ink-100 dark:border-[#2C2C28] mb-3">
+              <h3 className="text-sm font-semibold text-ink-900 dark:text-ink-50">Monthly Overview</h3>
             </div>
-            <div className="p-4">
-              {loading ? <SkeletonChart /> : <MonthlyChart transactions={transactions} />}
-            </div>
+            {loading ? <SkeletonChart /> : <MonthlyChart transactions={transactions} />}
           </div>
-          <div className="rounded-xl overflow-hidden bg-white dark:bg-[#161B27] border border-gray-100 dark:border-[#252D3D]">
-            <div className="px-5 py-3.5 border-b border-gray-50 dark:border-[#1E2A3B]">
-              <p className="text-[13px] font-semibold text-gray-900 dark:text-gray-100">Expenses by category</p>
+
+          <div className="bg-white dark:bg-ink-900 border border-ink-100 dark:border-[#2C2C28] rounded-card overflow-hidden p-4">
+            <div className="pb-3 border-b border-ink-100 dark:border-[#2C2C28] mb-3">
+              <h3 className="text-sm font-semibold text-ink-900 dark:text-ink-50">Expenses by Category</h3>
             </div>
-            <div className="p-4">
-              {loading ? <SkeletonChart /> : <CategoryChart transactions={transactions} />}
-            </div>
+            {loading ? <SkeletonChart /> : <CategoryChart transactions={transactions} />}
           </div>
         </div>
       </div>

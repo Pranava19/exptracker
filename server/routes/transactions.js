@@ -1,9 +1,22 @@
 const express = require('express');
 const router = express.Router();
+const { body, validationResult } = require('express-validator');
 const pool = require('../db/index');
 const auth = require('../middleware/authMiddleware');
 
-router.post('/', auth, async (req, res) => {
+const validateTransaction = [
+  body('amount').isFloat({ gt: 0 }).withMessage('Amount must be greater than 0'),
+  body('type').isIn(['income', 'expense']).withMessage('Type must be income or expense'),
+  body('category').trim().isLength({ min: 1, max: 100 }).withMessage('Category is required'),
+  body('date').isISO8601().withMessage('Valid date is required'),
+];
+
+router.post('/', auth, validateTransaction, async (req, res) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(400).json({ message: errors.array()[0].msg, errors: errors.array() });
+  }
+
   const { type, category, amount, description, date, mode } = req.body;
   const user_id = req.user.id;
   try {
@@ -78,7 +91,12 @@ router.get('/', auth, async (req, res) => {
   }
 });
 
-router.put('/:id', auth, async (req, res) => {
+router.put('/:id', auth, validateTransaction, async (req, res) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(400).json({ message: errors.array()[0].msg, errors: errors.array() });
+  }
+
   const { id } = req.params;
   const { type, category, amount, description, date, mode } = req.body;
   const user_id = req.user.id;

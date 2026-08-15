@@ -1,17 +1,32 @@
 import React from 'react';
-import {
-  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer
-} from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
 const CATEGORY_COLORS = {
-  Food: '#4F8EF7',
-  Transport: '#059669',
-  Shopping: '#F59E0B',
-  Entertainment: '#8B5CF6',
-  Health: '#EC4899',
-  Salary: '#14B8A6',
-  Freelance: '#F97316',
-  Other: '#9CA3AF',
+  Food: '#3F6B4F',
+  Transport: '#5C8A6E',
+  Shopping: '#8C6D46',
+  Entertainment: '#6B4F7D',
+  Health: '#B5473B',
+  Salary: '#2F7A4F',
+  Freelance: '#2C4D38',
+  Other: '#6E6E6B',
+};
+
+const CustomTooltip = ({ active, payload, label }) => {
+  if (active && payload && payload.length) {
+    return (
+      <div className="bg-ink-900 text-ink-50 p-3 rounded-card border border-ink-700 shadow-lg text-xs font-mono">
+        <p className="font-sans font-semibold mb-1 opacity-80">{label}</p>
+        {payload.filter(p => p.value > 0).map((entry, index) => (
+          <p key={`item-${index}`} style={{ color: entry.color }} className="font-semibold flex items-center justify-between gap-4">
+            <span>{entry.name}:</span>
+            <span>₹{Number(entry.value).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
+          </p>
+        ))}
+      </div>
+    );
+  }
+  return null;
 };
 
 const CategoryChart = ({ transactions }) => {
@@ -45,38 +60,25 @@ const CategoryChart = ({ transactions }) => {
   if (data.length === 0) {
     return (
       <div className="flex items-center justify-center h-40">
-        <p style={{ fontSize: 13, color: '#9CA3AF' }}>No expense data yet</p>
+        <p className="text-xs font-mono text-ink-700 dark:text-ink-200 opacity-60">No expense data available</p>
       </div>
     );
   }
 
   return (
     <ResponsiveContainer width="100%" height={260}>
-      <BarChart data={data} barCategoryGap="25%" barGap={2}>
-        <CartesianGrid strokeDasharray="3 3" stroke="#F3F4F6" vertical={false} />
-        <XAxis
-          dataKey="month"
-          tick={{ fontSize: 11, fill: '#9CA3AF' }}
-          axisLine={false}
-          tickLine={false}
-        />
-        <YAxis
-          tick={{ fontSize: 11, fill: '#9CA3AF' }}
-          axisLine={false}
-          tickLine={false}
-          tickFormatter={v => `₹${v >= 1000 ? (v / 1000).toFixed(0) + 'k' : v}`}
-        />
-        <Tooltip
-          formatter={(val, name) => [`₹${Number(val).toLocaleString('en-IN')}`, name]}
-          contentStyle={{ fontSize: 12, borderRadius: 8, border: '1px solid #E8EAED' }}
-        />
-        <Legend iconType="circle" iconSize={7} wrapperStyle={{ fontSize: 11, paddingTop: 8 }} />
+      <BarChart data={data} barCategoryGap="20%" margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+        <CartesianGrid strokeDasharray="0" stroke="#EDECE8" vertical={false} />
+        <XAxis dataKey="month" tick={{ fontSize: 11, fontFamily: 'IBM Plex Mono' }} stroke="#888" />
+        <YAxis tick={{ fontSize: 11, fontFamily: 'IBM Plex Mono' }} stroke="#888" tickFormatter={v => `₹${v >= 1000 ? (v / 1000).toFixed(0) + 'k' : v}`} />
+        <Tooltip content={<CustomTooltip />} />
         {allCategories.map(cat => (
           <Bar
             key={cat}
             dataKey={cat}
-            fill={CATEGORY_COLORS[cat] || '#9CA3AF'}
-            radius={[3, 3, 0, 0]}
+            fill={CATEGORY_COLORS[cat] || '#6E6E6B'}
+            radius={[2, 2, 0, 0]}
+            stackId="a"
           />
         ))}
       </BarChart>
