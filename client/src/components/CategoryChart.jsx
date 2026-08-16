@@ -2,13 +2,13 @@ import React from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
 const CATEGORY_COLORS = {
-  Food: '#3F6B4F',
-  Transport: '#5C8A6E',
+  Food: '#2A5C8A',
+  Transport: '#4A7BA8',
   Shopping: '#8C6D46',
   Entertainment: '#6B4F7D',
   Health: '#B5473B',
   Salary: '#2F7A4F',
-  Freelance: '#2C4D38',
+  Freelance: '#1A3F63',
   Other: '#6E6E6B',
 };
 

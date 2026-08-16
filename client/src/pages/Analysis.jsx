@@ -9,13 +9,13 @@ import {
 const CATEGORIES = ['Food', 'Transport', 'Shopping', 'Entertainment', 'Health', 'Salary', 'Freelance', 'Other'];
 
 const CATEGORY_COLORS = {
-  Food:          '#3F6B4F',
-  Transport:     '#5C8A6E',
+  Food:          '#2A5C8A',
+  Transport:     '#4A7BA8',
   Shopping:      '#8C6D46',
   Entertainment: '#6B4F7D',
   Health:        '#B5473B',
   Salary:        '#2F7A4F',
-  Freelance:     '#2C4D38',
+  Freelance:     '#1A3F63',
   Other:         '#6E6E6B',
 };
 
@@ -142,7 +142,7 @@ const Analysis = () => {
             <XAxis dataKey="month" tick={{ fontSize: 11, fontFamily: 'IBM Plex Mono' }} stroke="#888" />
             <YAxis tick={{ fontSize: 11, fontFamily: 'IBM Plex Mono' }} stroke="#888" tickFormatter={v => '₹' + (v >= 1000 ? (v/1000).toFixed(0)+'k' : v)} />
             <Tooltip content={<CustomTooltip />} />
-            <Bar dataKey="income"  name="Income"  fill="#3F6B4F" radius={[2,2,0,0]} />
+            <Bar dataKey="income"  name="Income"  fill="#2F7A4F" radius={[2,2,0,0]} />
             <Bar dataKey="expense" name="Expense" fill="#B5473B" radius={[2,2,0,0]} />
           </BarChart>
         </ResponsiveContainer>
@@ -157,7 +157,7 @@ const Analysis = () => {
             <YAxis tick={{ fontSize: 11, fontFamily: 'IBM Plex Mono' }} stroke="#888" tickFormatter={v => '₹' + (v >= 1000 ? (v/1000).toFixed(0)+'k' : v)} />
             <Tooltip content={<CustomTooltip />} />
             <Line type="monotone" dataKey="expense" name="Expense" stroke="#B5473B" strokeWidth={2} dot={{ r: 3, fill: '#B5473B' }} activeDot={{ r: 5 }} />
-            <Line type="monotone" dataKey="income"  name="Income"  stroke="#3F6B4F" strokeWidth={2} dot={{ r: 3, fill: '#3F6B4F' }} activeDot={{ r: 5 }} />
+            <Line type="monotone" dataKey="income"  name="Income"  stroke="#2F7A4F" strokeWidth={2} dot={{ r: 3, fill: '#2F7A4F' }} activeDot={{ r: 5 }} />
           </LineChart>
         </ResponsiveContainer>
       </Card>

@@ -15,7 +15,7 @@ const PrivateRoute = ({ children }) => {
   if (loading) {
     return (
       <div className="min-h-screen bg-[#F7F7F5] dark:bg-[#1C1C1A] flex items-center justify-center">
-        <div className="w-6 h-6 border-2 border-[#3F6B4F] border-t-transparent rounded-full animate-spin" />
+        <div className="w-6 h-6 border-2 border-accent border-t-transparent rounded-full animate-spin" />
       </div>
     );
   }

@@ -128,7 +128,7 @@ const DashboardHome = () => {
             body { font-family: 'Instrument Sans', 'Segoe UI', sans-serif; font-size: 12px; color: #1C1C1A; padding: 32px; background: #FFF; }
             .header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 28px; border-bottom: 2px solid #EDECE8; padding-bottom: 16px; }
             .brand { font-size: 22px; font-weight: 800; }
-            .brand span { color: #3F6B4F; }
+            .brand span { color: #2A5C8A; }
             .period { font-size: 11px; color: #6E6E6B; margin-top: 3px; }
             .summary { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 24px; }
             .summary-card { background: #F7F7F5; border: 1px solid #EDECE8; border-radius: 6px; padding: 12px 16px; }
@@ -136,7 +136,7 @@ const DashboardHome = () => {
             .summary-card .val { font-size: 18px; font-weight: 700; font-family: monospace; }
             .income  { color: #2F7A4F; }
             .expense { color: #B5473B; }
-            .savings { color: #3F6B4F; }
+            .savings { color: #2A5C8A; }
             h2 { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: #6E6E6B; margin-bottom: 10px; font-family: monospace; }
             table { width: 100%; border-collapse: collapse; }
             th { text-align: left; font-size: 10px; text-transform: uppercase; font-family: monospace; color: #6E6E6B; padding: 8px 10px; border-bottom: 1px solid #EDECE8; }

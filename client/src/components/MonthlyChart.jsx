@@ -39,7 +39,7 @@ const MonthlyChart = ({ transactions }) => {
         <XAxis dataKey="month" tick={{ fontSize: 11, fontFamily: 'IBM Plex Mono' }} stroke="#888" />
         <YAxis tick={{ fontSize: 11, fontFamily: 'IBM Plex Mono' }} stroke="#888" />
         <Tooltip content={<CustomTooltip />} />
-        <Bar dataKey="income" fill="#3F6B4F" name="Income" radius={[2, 2, 0, 0]} />
+        <Bar dataKey="income" fill="#2F7A4F" name="Income" radius={[2, 2, 0, 0]} />
         <Bar dataKey="expense" fill="#B5473B" name="Expense" radius={[2, 2, 0, 0]} />
       </BarChart>
     </ResponsiveContainer>

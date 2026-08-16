@@ -10,9 +10,9 @@ module.exports = {
       },
       colors: {
         accent: {
-          DEFAULT: '#3F6B4F', // deep forest green
-          light: '#5C8A6E',
-          dark: '#2C4D38',
+          DEFAULT: '#2A5C8A', // slate blue
+          light: '#4A7BA8',
+          dark: '#1A3F63',
         },
         ink: {
           50: '#F7F7F5',
@@ -21,8 +21,8 @@ module.exports = {
           700: '#42423E',
           900: '#1C1C1A',
         },
-        positive: '#2F7A4F',
-        negative: '#B5473B',
+        positive: '#2F7A4F', // keep green for income — functional
+        negative: '#B5473B', // keep red for expense
       },
       borderRadius: {
         sharp: '2px',
