@@ -20,12 +20,15 @@ app.use(cors({
 }));
 app.use(express.json());
 
-app.use('/api/auth/login', authLimiter);
-app.use('/api/auth/register', authLimiter);
-app.use('/api/auth/resend-verification', resendLimiter);
-app.use('/api/auth', authRoutes);
-app.use('/api/transactions', transactionLimiter, transactionRoutes);
-app.use('/api/import', importLimiter, importRoute);
+// Rate limiters
+app.use(['/api/auth/login', '/auth/login'], authLimiter);
+app.use(['/api/auth/register', '/auth/register'], authLimiter);
+app.use(['/api/auth/resend-verification', '/auth/resend-verification'], resendLimiter);
+
+// API Routes (supporting both /api/path and /path)
+app.use(['/api/auth', '/auth'], authRoutes);
+app.use(['/api/transactions', '/transactions'], transactionLimiter, transactionRoutes);
+app.use(['/api/import', '/import'], importLimiter, importRoute);
 
 app.get('/', (req, res) => {
   res.send('Expense Tracker API is running');
