@@ -111,7 +111,7 @@ const DashboardHome = () => {
             <td>${(tx.payee || tx.description || '').slice(0, 40)}</td>
             <td>${tx.category}</td>
             <td>${tx.mode || 'Other'}</td>
-            <td style="color:${tx.type === 'income' ? '#2F7A4F' : '#B5473B'}; font-weight:600; text-align:right;">
+            <td style="color:${tx.type === 'income' ? '#2563EB' : '#B5473B'}; font-weight:600; text-align:right;">
               ${tx.type === 'income' ? '+' : '−'}${fmt(tx.amount)}
             </td>
           </tr>
@@ -134,7 +134,7 @@ const DashboardHome = () => {
             .summary-card { background: #F7F7F5; border: 1px solid #EDECE8; border-radius: 6px; padding: 12px 16px; }
             .summary-card .label { font-size: 10px; text-transform: uppercase; font-family: monospace; color: #6E6E6B; margin-bottom: 4px; }
             .summary-card .val { font-size: 18px; font-weight: 700; font-family: monospace; }
-            .income  { color: #2F7A4F; }
+            .income  { color: #2563EB; }
             .expense { color: #B5473B; }
             .savings { color: #2A5C8A; }
             h2 { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: #6E6E6B; margin-bottom: 10px; font-family: monospace; }

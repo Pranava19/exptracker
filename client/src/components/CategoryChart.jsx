@@ -7,7 +7,7 @@ const CATEGORY_COLORS = {
   Shopping: '#8C6D46',
   Entertainment: '#6B4F7D',
   Health: '#B5473B',
-  Salary: '#2F7A4F',
+  Salary: '#2563EB',
   Freelance: '#1A3F63',
   Other: '#6E6E6B',
 };

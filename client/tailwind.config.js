@@ -10,19 +10,19 @@ module.exports = {
       },
       colors: {
         accent: {
-          DEFAULT: '#2A5C8A', // slate blue
-          light: '#4A7BA8',
-          dark: '#1A3F63',
+          DEFAULT: '#2563EB', // royal blue shade
+          light: '#3B82F6',
+          dark: '#1D4ED8',
         },
         ink: {
-          50: '#F7F7F5',
-          100: '#EDECE8',
-          200: '#D5D3CC',
-          700: '#42423E',
-          900: '#1C1C1A',
+          50: '#F8FAFC',
+          100: '#E2E8F0',
+          200: '#CBD5E1',
+          700: '#475569',
+          900: '#0F172A',
         },
-        positive: '#2F7A4F', // keep green for income — functional
-        negative: '#B5473B', // keep red for expense
+        positive: '#2563EB', // blue shade for income/positive
+        negative: '#DC2626', // red for expense
       },
       borderRadius: {
         sharp: '2px',
