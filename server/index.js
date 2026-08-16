@@ -8,6 +8,7 @@ const pool = require('./db/index');
 const authRoutes = require('./routes/auth');
 const transactionRoutes = require('./routes/transactions');
 const importRoute = require('./routes/import');
+const analysisRoutes = require('./routes/analysis');
 const { authLimiter, importLimiter, transactionLimiter, resendLimiter } = require('./middleware/rateLimiter');
 
 const app = express();
@@ -31,6 +32,7 @@ app.use(['/api/auth/resend-verification', '/auth/resend-verification'], resendLi
 app.use(['/api/auth', '/auth'], authRoutes);
 app.use(['/api/transactions', '/transactions'], transactionLimiter, transactionRoutes);
 app.use(['/api/import', '/import'], importLimiter, importRoute);
+app.use(['/api/analysis', '/analysis'], transactionLimiter, analysisRoutes);
 
 // Serverless root POST fallback for /import
 app.post(['/', '/api'], (req, res, next) => {
