@@ -272,7 +272,7 @@ async function extractPDFText(buffer, password) {
   return text;
 }
 
-router.post('/', auth, (req, res, next) => {
+router.post(['/', '/import', '/api/import'], auth, (req, res, next) => {
   upload.single('file')(req, res, (err) => {
     if (err) {
       return res.status(400).json({ message: err.message || 'File upload error' });

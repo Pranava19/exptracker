@@ -25,10 +25,15 @@ app.use(['/api/auth/login', '/auth/login'], authLimiter);
 app.use(['/api/auth/register', '/auth/register'], authLimiter);
 app.use(['/api/auth/resend-verification', '/auth/resend-verification'], resendLimiter);
 
-// API Routes (supporting both /api/path and /path)
+// API Routes
 app.use(['/api/auth', '/auth'], authRoutes);
 app.use(['/api/transactions', '/transactions'], transactionLimiter, transactionRoutes);
 app.use(['/api/import', '/import'], importLimiter, importRoute);
+
+// Serverless root POST fallback for /import
+app.post(['/', '/api'], (req, res, next) => {
+  return importRoute(req, res, next);
+});
 
 app.get(['/', '/api'], (req, res) => {
   res.send('Expense Tracker API is running');
