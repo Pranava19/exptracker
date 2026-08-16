@@ -24,4 +24,12 @@ const transactionLimiter = rateLimit({
   legacyHeaders: false,
 });
 
-module.exports = { authLimiter, importLimiter, transactionLimiter };
+const resendLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000, // 1 hour
+  max: 3, // Max 3 resend attempts per hour per IP
+  message: { message: 'Too many verification email requests. Please try again in an hour.' },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+module.exports = { authLimiter, importLimiter, transactionLimiter, resendLimiter };

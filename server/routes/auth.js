@@ -2,8 +2,10 @@ const express = require('express');
 const router = express.Router();
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const crypto = require('crypto');
 const pool = require('../db/index');
 const auth = require('../middleware/authMiddleware');
+const { sendVerificationEmail } = require('../utils/sendEmail');
 require('dotenv').config();
 
 const setTokenCookies = (res, user) => {
@@ -60,18 +62,30 @@ router.post('/register', async (req, res) => {
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
 
+    const token = crypto.randomBytes(32).toString('hex');
+    const expires = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
+
     const result = await pool.query(
-      'INSERT INTO users (name, email, password) VALUES ($1, $2, $3) RETURNING id, name, email',
-      [name, email, hashedPassword]
+      `INSERT INTO users (name, email, password, is_verified, verification_token, verification_token_expires) 
+       VALUES ($1, $2, $3, false, $4, $5) RETURNING id, name, email`,
+      [name, email, hashedPassword, token, expires]
     );
 
     const user = result.rows[0];
-    setTokenCookies(res, user);
 
-    res.status(201).json({ user: { id: user.id, name: user.name, email: user.email } });
+    try {
+      await sendVerificationEmail(email, token);
+    } catch (emailErr) {
+      console.error('Failed to send verification email:', emailErr.message);
+    }
+
+    res.status(201).json({
+      message: 'Registration successful! Please check your email to verify your account.',
+      email: user.email,
+    });
   } catch (err) {
     console.error(err.message);
-    res.status(500).json({ message: 'Server error' });
+    res.status(500).json({ message: 'Server error during registration' });
   }
 });
 
@@ -100,6 +114,14 @@ router.post('/login', async (req, res) => {
       return res.status(400).json({ message: 'Invalid email or password' });
     }
 
+    if (user.is_verified === false) {
+      return res.status(403).json({
+        message: 'Please verify your email before logging in',
+        unverified: true,
+        email: user.email,
+      });
+    }
+
     setTokenCookies(res, user);
 
     res.json({
@@ -108,6 +130,79 @@ router.post('/login', async (req, res) => {
   } catch (err) {
     console.error(err.message);
     res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// GET /api/auth/verify-email?token=...
+router.get('/verify-email', async (req, res) => {
+  const { token } = req.query;
+
+  if (!token) {
+    return res.status(400).json({ message: 'Verification token is required' });
+  }
+
+  try {
+    const result = await pool.query(
+      `SELECT * FROM users WHERE verification_token = $1 AND verification_token_expires > NOW()`,
+      [token]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(400).json({ message: 'Invalid or expired verification token' });
+    }
+
+    const user = result.rows[0];
+
+    await pool.query(
+      `UPDATE users SET is_verified = true, verification_token = NULL, verification_token_expires = NULL WHERE id = $1`,
+      [user.id]
+    );
+
+    res.json({ success: true, message: 'Email verified successfully! You can now log in.' });
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).json({ message: 'Server error during verification' });
+  }
+});
+
+// POST /api/auth/resend-verification
+router.post('/resend-verification', async (req, res) => {
+  const { email } = req.body;
+
+  if (!email) {
+    return res.status(400).json({ message: 'Email is required' });
+  }
+
+  try {
+    const result = await pool.query(
+      'SELECT * FROM users WHERE email = $1',
+      [email]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ message: 'User with this email does not exist' });
+    }
+
+    const user = result.rows[0];
+
+    if (user.is_verified) {
+      return res.status(400).json({ message: 'This account is already verified. Please log in.' });
+    }
+
+    const token = crypto.randomBytes(32).toString('hex');
+    const expires = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
+
+    await pool.query(
+      `UPDATE users SET verification_token = $1, verification_token_expires = $2 WHERE id = $3`,
+      [token, expires, user.id]
+    );
+
+    await sendVerificationEmail(email, token);
+
+    res.json({ message: 'Verification email sent! Please check your inbox.' });
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).json({ message: 'Failed to resend verification email' });
   }
 });
 
@@ -123,12 +218,12 @@ router.post('/refresh', async (req, res) => {
     const decoded = jwt.verify(refreshToken, refreshSecret);
 
     const result = await pool.query(
-      'SELECT id, name, email FROM users WHERE id = $1',
+      'SELECT id, name, email, is_verified FROM users WHERE id = $1',
       [decoded.id]
     );
 
-    if (result.rows.length === 0) {
-      return res.status(401).json({ message: 'User not found' });
+    if (result.rows.length === 0 || result.rows[0].is_verified === false) {
+      return res.status(401).json({ message: 'User not found or unverified' });
     }
 
     const user = result.rows[0];

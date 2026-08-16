@@ -4,6 +4,7 @@ import { AuthProvider, useAuth } from './context/AuthContext';
 import { ThemeProvider } from './context/ThemeContext';
 import Login from './pages/Login';
 import Register from './pages/Register';
+import VerifyEmail from './pages/VerifyEmail';
 import DashboardHome from './pages/DashboardHome';
 import Transactions from './pages/Transactions';
 import Import from './pages/Import';
@@ -30,6 +31,7 @@ function App() {
           <Routes>
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
+            <Route path="/verify-email" element={<VerifyEmail />} />
             <Route path="/dashboard" element={<PrivateRoute><DashboardHome /></PrivateRoute>} />
             <Route path="/transactions" element={<PrivateRoute><Transactions /></PrivateRoute>} />
             <Route path="/analysis" element={<PrivateRoute><Analysis /></PrivateRoute>} />

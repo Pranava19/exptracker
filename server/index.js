@@ -8,7 +8,7 @@ const pool = require('./db/index');
 const authRoutes = require('./routes/auth');
 const transactionRoutes = require('./routes/transactions');
 const importRoute = require('./routes/import');
-const { authLimiter, importLimiter, transactionLimiter } = require('./middleware/rateLimiter');
+const { authLimiter, importLimiter, transactionLimiter, resendLimiter } = require('./middleware/rateLimiter');
 
 const app = express();
 
@@ -22,6 +22,7 @@ app.use(express.json());
 
 app.use('/api/auth/login', authLimiter);
 app.use('/api/auth/register', authLimiter);
+app.use('/api/auth/resend-verification', resendLimiter);
 app.use('/api/auth', authRoutes);
 app.use('/api/transactions', transactionLimiter, transactionRoutes);
 app.use('/api/import', importLimiter, importRoute);
