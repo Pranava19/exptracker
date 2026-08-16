@@ -166,11 +166,16 @@ async function parseExcel(buffer, password) {
   for (let i = 0; i < Math.min(rows.length, 30); i++) {
     if (!rows[i] || !Array.isArray(rows[i])) continue;
     const row = rows[i].map(c => String(c || '').trim().toLowerCase());
-    if (row.some(c =>
-      c.includes('date') || c.includes('txn') || c.includes('narration') ||
-      c.includes('description') || c.includes('particulars') || c.includes('debit') ||
-      c.includes('credit') || c.includes('withdrawal') || c.includes('deposit') || c.includes('amount')
-    )) {
+    const hasDate = row.some(c => c === 'date' || c.includes('txn date') || c.includes('transaction date') || c.includes('value date'));
+    const hasAmountCol = row.some(c =>
+      c.includes('debit') || c.includes('credit') || c.includes('withdrawal') ||
+      c.includes('deposit') || c.includes('amount')
+    );
+    const hasDescCol = row.some(c =>
+      c.includes('narration') || c.includes('description') || c.includes('particulars') || c.includes('details')
+    );
+    // Require date column AND at least one of (amount-type column OR description column) in separate cells
+    if (hasDate && (hasAmountCol || hasDescCol)) {
       headerIdx = i;
       break;
     }
