@@ -1,7 +1,9 @@
 import axios from 'axios';
 
+const isProd = process.env.NODE_ENV === 'production';
+
 const instance = axios.create({
-  baseURL: process.env.REACT_APP_API_URL || 'http://localhost:5000/api',
+  baseURL: process.env.REACT_APP_API_URL || (isProd ? '/api' : 'http://localhost:5000/api'),
   withCredentials: true,
 });
 

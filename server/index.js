@@ -15,7 +15,7 @@ const app = express();
 app.use(helmet());
 app.use(cookieParser());
 app.use(cors({
-  origin: process.env.CLIENT_URL || 'http://localhost:3000',
+  origin: process.env.CLIENT_URL || true,
   credentials: true,
 }));
 app.use(express.json());
@@ -30,7 +30,7 @@ app.use(['/api/auth', '/auth'], authRoutes);
 app.use(['/api/transactions', '/transactions'], transactionLimiter, transactionRoutes);
 app.use(['/api/import', '/import'], importLimiter, importRoute);
 
-app.get('/', (req, res) => {
+app.get(['/', '/api'], (req, res) => {
   res.send('Expense Tracker API is running');
 });
 
@@ -48,5 +48,9 @@ app.use((err, req, res, next) => {
   });
 });
 
-const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+if (require.main === module) {
+  const PORT = process.env.PORT || 5000;
+  app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+}
+
+module.exports = app;
