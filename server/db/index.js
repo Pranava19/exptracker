@@ -16,6 +16,14 @@ pool.on('error', (err) => {
   // Do not crash the process — pg will create a new connection on the next query
 });
 
+process.on('uncaughtException', (err) => {
+  console.error('Uncaught exception (kept process alive):', err.message);
+});
+
+process.on('unhandledRejection', (reason) => {
+  console.error('Unhandled rejection (kept process alive):', reason);
+});
+
 pool.connect()
   .then((client) => {
     console.log('PostgreSQL connected');
