@@ -6,6 +6,9 @@ const pool = new Pool({
   ssl: process.env.DATABASE_URL?.includes('neon.tech')
     ? { rejectUnauthorized: false }
     : false,
+  connectionTimeoutMillis: 10000,
+  idleTimeoutMillis: 30000,
+  max: 10,
 });
 
 pool.on('error', (err) => {
@@ -14,7 +17,10 @@ pool.on('error', (err) => {
 });
 
 pool.connect()
-  .then(() => console.log('PostgreSQL connected'))
+  .then((client) => {
+    console.log('PostgreSQL connected');
+    client.release();
+  })
   .catch((err) => console.error('DB connection error:', err.message));
 
 module.exports = pool;
