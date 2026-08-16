@@ -29,8 +29,7 @@ const Register = () => {
     <div className="min-h-screen bg-ink-50 dark:bg-ink-900 flex items-center justify-center p-4">
       <div className="w-full max-w-sm">
         <div className="text-center mb-8">
-          <Link to="/dashboard" className="inline-flex items-center gap-2 font-bold text-2xl text-ink-900 dark:text-ink-50">
-            <span className="w-3 h-3 rounded-full bg-accent inline-block" />
+          <Link to="/dashboard" className="inline-flex items-center font-bold text-2xl text-ink-900 dark:text-ink-50">
             <span>Exp<span className="text-accent">Tracker</span></span>
           </Link>
           <p className="text-xs text-ink-700 dark:text-ink-200 opacity-60 mt-1">Create your personal account</p>

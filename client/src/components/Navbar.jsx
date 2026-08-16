@@ -51,8 +51,7 @@ const Navbar = () => {
       {/* Desktop sidebar */}
       <aside className="hidden md:flex flex-col fixed top-0 left-0 h-screen z-30 w-56 bg-white dark:bg-ink-900 border-r border-ink-100 dark:border-[#2C2C28]">
         <div className="flex items-center justify-between px-5 py-4 border-b border-ink-100 dark:border-[#2C2C28]">
-          <Link to="/dashboard" className="flex items-center gap-2 text-ink-900 dark:text-ink-50 font-bold text-lg tracking-tight hover:opacity-80 transition-opacity">
-            <span className="w-2.5 h-2.5 rounded-full bg-accent inline-block" />
+          <Link to="/dashboard" className="text-ink-900 dark:text-ink-50 font-bold text-lg tracking-tight hover:opacity-80 transition-opacity">
             <span>Exp<span className="text-accent font-semibold">Tracker</span></span>
           </Link>
           <div className="flex items-center gap-1">
@@ -115,8 +114,7 @@ const Navbar = () => {
       {/* Mobile top bar */}
       <div className="md:hidden fixed top-0 left-0 right-0 z-30 bg-white dark:bg-ink-900 border-b border-ink-100 dark:border-[#2C2C28]">
         <div className="flex items-center justify-between px-4 h-12">
-          <Link to="/dashboard" className="flex items-center gap-2 font-bold text-base text-ink-900 dark:text-ink-50">
-            <span className="w-2 h-2 rounded-full bg-accent inline-block" />
+          <Link to="/dashboard" className="font-bold text-base text-ink-900 dark:text-ink-50">
             <span>Exp<span className="text-accent">Tracker</span></span>
           </Link>
           <div className="flex items-center gap-2">
