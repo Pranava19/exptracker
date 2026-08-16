@@ -75,6 +75,12 @@ const Analysis = () => {
   useEffect(() => {
     axios.get('/transactions').then(res => {
       setTransactions(res.data);
+      if (res.data && res.data.length > 0) {
+        const txYears = [...new Set(res.data.map(tx => new Date(tx.date).getFullYear()))].sort((a, b) => b - a);
+        if (txYears.length > 0 && txYears[0]) {
+          setYear(txYears[0]);
+        }
+      }
     }).finally(() => setLoading(false));
   }, []);
 
