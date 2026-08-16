@@ -14,17 +14,29 @@
     color: #F7F7F5;
   }
 
-  h1, h2, h3, h4, h5, h6 {
-    user-select: none;
-    -webkit-user-select: none;
-    -moz-user-select: none;
-    -ms-user-select: none;
-    cursor: default;
+  /* Disable text selection and caret placement globally across all UI elements */
+  body, body * {
+    user-select: none !important;
+    -webkit-user-select: none !important;
+    -moz-user-select: none !important;
+    -ms-user-select: none !important;
+    caret-color: transparent !important;
   }
 
-  /* Suppress stray text insertion carets on non-text-entry elements */
-  *:not(input[type="text"]):not(input[type="password"]):not(input[type="number"]):not(input[type="email"]):not(input[type="search"]):not(input[type="date"]):not(textarea):not([contenteditable="true"]) {
-    caret-color: transparent !important;
+  /* Re-enable text selection and caret ONLY for actual editable input fields */
+  input[type="text"],
+  input[type="password"],
+  input[type="number"],
+  input[type="email"],
+  input[type="search"],
+  input[type="date"],
+  textarea,
+  [contenteditable="true"] {
+    user-select: text !important;
+    -webkit-user-select: text !important;
+    -moz-user-select: text !important;
+    -ms-user-select: text !important;
+    caret-color: auto !important;
   }
 }
 
