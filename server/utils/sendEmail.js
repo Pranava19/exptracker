@@ -1,37 +1,21 @@
-const nodemailer = require('nodemailer');
+const { Resend } = require('resend');
 require('dotenv').config();
 
-const createTransporter = () => {
-  // If specific SMTP host/port are specified (e.g. Resend, SendGrid, Mailgun, Postmark)
-  if (process.env.EMAIL_HOST) {
-    return nodemailer.createTransport({
-      host: process.env.EMAIL_HOST,
-      port: Number(process.env.EMAIL_PORT) || 587,
-      secure: Number(process.env.EMAIL_PORT) === 465,
-      auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS,
-      },
-    });
+const getResendClient = () => {
+  const apiKey = process.env.RESEND_API_KEY || process.env.EMAIL_PASS;
+  if (!apiKey) {
+    console.warn('RESEND_API_KEY is not set in environment variables');
   }
-
-  // Default to standard nodemailer service (e.g. 'gmail')
-  return nodemailer.createTransport({
-    service: process.env.EMAIL_SERVICE || 'gmail',
-    auth: {
-      user: process.env.EMAIL_USER,
-      pass: process.env.EMAIL_PASS,
-    },
-  });
+  return new Resend(apiKey);
 };
 
 const sendVerificationEmail = async (toEmail, token) => {
-  const transporter = createTransporter();
+  const resend = getResendClient();
   const clientUrl = process.env.CLIENT_URL || 'http://localhost:3000';
   const verifyLink = `${clientUrl}/verify-email?token=${token}`;
 
-  const mailOptions = {
-    from: process.env.EMAIL_FROM || '"ExpTracker" <no-reply@exptracker.com>',
+  return await resend.emails.send({
+    from: process.env.EMAIL_FROM || 'ExpTracker <onboarding@resend.dev>',
     to: toEmail,
     subject: 'Verify your ExpTracker Account',
     html: `
@@ -51,9 +35,7 @@ const sendVerificationEmail = async (toEmail, token) => {
         </div>
       </div>
     `,
-  };
-
-  return await transporter.sendMail(mailOptions);
+  });
 };
 
 module.exports = { sendVerificationEmail };
