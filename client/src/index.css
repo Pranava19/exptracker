@@ -21,6 +21,11 @@
     -ms-user-select: none;
     cursor: default;
   }
+
+  /* Suppress stray text insertion carets on non-text-entry elements */
+  *:not(input[type="text"]):not(input[type="password"]):not(input[type="number"]):not(input[type="email"]):not(input[type="search"]):not(input[type="date"]):not(textarea):not([contenteditable="true"]) {
+    caret-color: transparent !important;
+  }
 }
 
 /* Custom crisp scrollbar */
