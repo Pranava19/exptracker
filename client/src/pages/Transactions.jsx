@@ -42,17 +42,17 @@ const formatGroupLabel = (dateStr) => {
   const today = new Date(); today.setHours(0, 0, 0, 0);
   const yesterday = new Date(today); yesterday.setDate(yesterday.getDate() - 1);
   if (d.getTime() === today.getTime())
-    return `Today — ${d.toLocaleDateString('en-IN', { day: 'numeric', month: 'long' })}`;
+    return `Today, ${d.toLocaleDateString('en-IN', { day: 'numeric', month: 'long' })}`;
   if (d.getTime() === yesterday.getTime())
-    return `Yesterday — ${d.toLocaleDateString('en-IN', { day: 'numeric', month: 'long' })}`;
+    return `Yesterday, ${d.toLocaleDateString('en-IN', { day: 'numeric', month: 'long' })}`;
   return d.toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'long' });
 };
 
 const extractPayee = (desc) => {
-  if (!desc) return '—';
+  if (!desc) return '-';
   const m = desc.match(/UPI\/(?:DR|CR)\/\d+\/([^/]+)\//);
   if (m) return m[1].trim();
-  return '—';
+  return '-';
 };
 
 const TransactionCard = ({ tx, onEdit, onDelete, onInlineUpdate }) => {
@@ -61,7 +61,7 @@ const TransactionCard = ({ tx, onEdit, onDelete, onInlineUpdate }) => {
     <div className="bg-white dark:bg-ink-900 border border-ink-100 dark:border-[#2C2C28] rounded-card p-4 space-y-2">
       <div className="flex items-start justify-between">
         <div>
-          <p className="text-sm font-medium text-ink-900 dark:text-ink-50">{payee !== '—' ? payee : (tx.description || tx.category)}</p>
+          <p className="text-sm font-medium text-ink-900 dark:text-ink-50">{payee !== '-' ? payee : (tx.description || tx.category)}</p>
           <p className="text-xs text-ink-700 dark:text-ink-200 opacity-60 mt-0.5">{tx.description}</p>
         </div>
         <p className={`font-mono text-sm font-semibold ${tx.type === 'income' ? 'text-positive' : 'text-negative'}`}>
@@ -78,11 +78,11 @@ const TransactionCard = ({ tx, onEdit, onDelete, onInlineUpdate }) => {
         </div>
 
         <div className="flex items-center gap-2">
-          <button onClick={() => onEdit(tx)} className="text-xs font-medium text-accent hover:underline flex items-center gap-1">
+          <button onClick={() => onEdit(tx)} className="text-xs font-medium text-accent hover:underline flex items-center gap-1 cursor-pointer">
             <Edit2 size={12} strokeWidth={1.5} />
             <span>Edit</span>
           </button>
-          <button onClick={() => onDelete(tx.id)} className="text-xs font-medium text-negative hover:underline flex items-center gap-1">
+          <button onClick={() => onDelete(tx.id)} className="text-xs font-medium text-negative hover:underline flex items-center gap-1 cursor-pointer">
             <Trash2 size={12} strokeWidth={1.5} />
             <span>Delete</span>
           </button>
@@ -98,14 +98,14 @@ const TxRow = ({ tx, onEdit, onDelete, onInlineUpdate }) => {
     <tr className="border-b border-ink-100 dark:border-[#2C2C28] hover:bg-ink-50/50 dark:hover:bg-[#252522]/50 transition-colors group">
       <td className="py-3 pl-5 pr-4 text-xs font-mono text-ink-700 dark:text-ink-200 opacity-75 whitespace-nowrap">{tx.date.slice(0, 10)}</td>
       <td className="py-3 pr-4 text-xs text-ink-900 dark:text-ink-50 max-w-[260px]">
-        <span className="block truncate" title={tx.description}>{tx.description || '—'}</span>
+        <span className="block truncate" title={tx.description}>{tx.description || '-'}</span>
       </td>
       <td className="py-3 pr-4 text-xs font-medium text-ink-900 dark:text-ink-50 max-w-[120px] truncate">{payee}</td>
       <td className="py-3 pr-4">
         <select
           value={tx.category}
           onChange={e => onInlineUpdate(tx.id, 'category', e.target.value)}
-          className="text-xs font-sans border border-ink-100 dark:border-[#2C2C28] rounded-sharp px-2 py-1 bg-white dark:bg-[#252522] text-ink-900 dark:text-ink-50 focus:outline-none focus:border-accent"
+          className="text-xs font-sans border border-ink-100 dark:border-[#2C2C28] rounded-sharp px-2 py-1 bg-white dark:bg-[#252522] text-ink-900 dark:text-ink-50 focus:outline-none focus:border-accent cursor-pointer"
         >
           {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
         </select>
@@ -114,7 +114,7 @@ const TxRow = ({ tx, onEdit, onDelete, onInlineUpdate }) => {
         <select
           value={tx.mode || 'Other'}
           onChange={e => onInlineUpdate(tx.id, 'mode', e.target.value)}
-          className="text-xs font-sans border border-ink-100 dark:border-[#2C2C28] rounded-sharp px-2 py-1 bg-white dark:bg-[#252522] text-ink-900 dark:text-ink-50 focus:outline-none focus:border-accent"
+          className="text-xs font-sans border border-ink-100 dark:border-[#2C2C28] rounded-sharp px-2 py-1 bg-white dark:bg-[#252522] text-ink-900 dark:text-ink-50 focus:outline-none focus:border-accent cursor-pointer"
         >
           {MODES.map(m => <option key={m} value={m}>{m}</option>)}
         </select>
@@ -129,8 +129,8 @@ const TxRow = ({ tx, onEdit, onDelete, onInlineUpdate }) => {
       </td>
       <td className="py-3 pl-2 pr-5">
         <div className="flex gap-3 opacity-0 group-hover:opacity-100 transition-opacity justify-end">
-          <button onClick={() => onEdit(tx)} className="text-xs font-medium text-accent hover:underline">Edit</button>
-          <button onClick={() => onDelete(tx.id)} className="text-xs font-medium text-negative hover:underline">Delete</button>
+          <button onClick={() => onEdit(tx)} className="text-xs font-medium text-accent hover:underline cursor-pointer">Edit</button>
+          <button onClick={() => onDelete(tx.id)} className="text-xs font-medium text-negative hover:underline cursor-pointer">Delete</button>
         </div>
       </td>
     </tr>
@@ -278,7 +278,6 @@ const Transactions = () => {
     <Layout>
       {toast && <Toast message={toast.message} type={toast.type} onClose={hideToast} />}
 
-      {/* Year Summary */}
       <div className="grid grid-cols-3 gap-4 mb-6">
         <div className="bg-white dark:bg-ink-900 border border-ink-100 dark:border-[#2C2C28] rounded-card p-4">
           <p className="text-[10px] font-mono font-semibold uppercase tracking-wider text-ink-700 dark:text-ink-200 opacity-60 mb-1">{currentYear} Income</p>
@@ -308,14 +307,14 @@ const Transactions = () => {
         <div className="flex items-center gap-2">
           <button
             onClick={handleExport}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-semibold border border-ink-100 dark:border-[#2C2C28] text-ink-900 dark:text-ink-50 hover:bg-ink-50 dark:hover:bg-[#252522] transition-colors"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-semibold border border-ink-100 dark:border-[#2C2C28] text-ink-900 dark:text-ink-50 hover:bg-ink-50 dark:hover:bg-[#252522] transition-colors cursor-pointer"
           >
             <Download size={14} strokeWidth={1.5} />
             <span>Export</span>
           </button>
           <button
             onClick={() => { setShowForm(f => !f); if (editId) cancelEdit(); }}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-semibold bg-accent hover:bg-accent-dark text-white transition-colors"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-semibold bg-accent hover:bg-accent-dark text-white transition-colors cursor-pointer"
           >
             <Plus size={14} strokeWidth={1.5} />
             <span>Add transaction</span>
@@ -323,14 +322,13 @@ const Transactions = () => {
         </div>
       </div>
 
-      {/* Add / Edit form */}
       {showForm && (
         <div className="rounded-card bg-white dark:bg-ink-900 border border-ink-100 dark:border-[#2C2C28] p-5 mb-6 shadow-sm">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-xs font-mono font-semibold uppercase tracking-wider text-ink-900 dark:text-ink-50">
               {editId ? 'Edit transaction' : 'New transaction'}
             </h2>
-            <button onClick={cancelEdit} className="text-ink-700 dark:text-ink-200 hover:text-ink-900">
+            <button onClick={cancelEdit} className="text-ink-700 dark:text-ink-200 hover:text-ink-900 cursor-pointer">
               <X size={16} strokeWidth={1.5} />
             </button>
           </div>
@@ -354,7 +352,7 @@ const Transactions = () => {
               <button
                 type="submit"
                 disabled={submitting}
-                className="flex items-center gap-2 px-4 py-2 rounded-md text-xs font-semibold bg-accent hover:bg-accent-dark disabled:opacity-50 text-white transition-colors"
+                className="flex items-center gap-2 px-4 py-2 rounded-md text-xs font-semibold bg-accent hover:bg-accent-dark disabled:opacity-50 text-white transition-colors cursor-pointer"
               >
                 {submitting && <Loader2 size={14} className="animate-spin" />}
                 <span>{editId ? 'Update' : 'Add'}</span>
@@ -362,7 +360,7 @@ const Transactions = () => {
               <button
                 type="button"
                 onClick={cancelEdit}
-                className="px-4 py-2 rounded-md text-xs font-medium border border-ink-100 dark:border-[#2C2C28] text-ink-700 dark:text-ink-200 hover:bg-ink-50 transition-colors"
+                className="px-4 py-2 rounded-md text-xs font-medium border border-ink-100 dark:border-[#2C2C28] text-ink-700 dark:text-ink-200 hover:bg-ink-50 transition-colors cursor-pointer"
               >
                 Cancel
               </button>
@@ -371,7 +369,6 @@ const Transactions = () => {
         </div>
       )}
 
-      {/* Filters */}
       <div className="rounded-card bg-white dark:bg-ink-900 border border-ink-100 dark:border-[#2C2C28] p-4 mb-6">
         <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
           <select value={filter.type} onChange={e => setFilter({ ...filter, type: e.target.value })} className={inputCls}>
@@ -384,16 +381,16 @@ const Transactions = () => {
             {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
           </select>
           <div className="flex flex-col">
-            <label className="text-[10px] font-mono text-ink-700 dark:text-ink-200 mb-1">From</label>
+            <label className="text-[10px] font-mono text-ink-700 dark:text-ink-200 mb-1 select-none">From</label>
             <input type="date" value={filter.start_date} onChange={e => setFilter({ ...filter, start_date: e.target.value })} className={inputCls} />
           </div>
           <div className="flex flex-col">
-            <label className="text-[10px] font-mono text-ink-700 dark:text-ink-200 mb-1">To</label>
+            <label className="text-[10px] font-mono text-ink-700 dark:text-ink-200 mb-1 select-none">To</label>
             <input type="date" value={filter.end_date} onChange={e => setFilter({ ...filter, end_date: e.target.value })} className={inputCls} />
           </div>
           <button
             onClick={() => setFilter({ type: '', category: '', start_date: '', end_date: '' })}
-            className="self-end flex items-center justify-center gap-1.5 px-3 py-2 rounded-md text-xs font-medium border border-ink-100 dark:border-[#2C2C28] text-ink-700 dark:text-ink-200 hover:bg-ink-50 transition-colors"
+            className="self-end flex items-center justify-center gap-1.5 px-3 py-2 rounded-md text-xs font-medium border border-ink-100 dark:border-[#2C2C28] text-ink-700 dark:text-ink-200 hover:bg-ink-50 transition-colors cursor-pointer"
           >
             <X size={12} strokeWidth={1.5} />
             <span>Clear</span>
@@ -401,9 +398,7 @@ const Transactions = () => {
         </div>
       </div>
 
-      {/* Transaction List */}
       <div className="rounded-card bg-white dark:bg-ink-900 border border-ink-100 dark:border-[#2C2C28] overflow-hidden">
-        {/* Mobile View: Responsive Transaction Cards */}
         <div className="md:hidden p-4 space-y-3">
           {loading ? (
             <div className="space-y-3">

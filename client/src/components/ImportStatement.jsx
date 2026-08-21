@@ -67,7 +67,6 @@ const ImportStatement = ({ onImportDone }) => {
               type="file"
               accept=".xlsx,.xls,.pdf"
               tabIndex={-1}
-              style={{ caretColor: 'transparent' }}
               onChange={e => setFile(e.target.files[0])}
               className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
             />

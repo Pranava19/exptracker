@@ -41,7 +41,6 @@ const setTokenCookies = (res, user) => {
   });
 };
 
-// POST /api/auth/register
 router.post('/register', async (req, res) => {
   const { name, email, password } = req.body;
 
@@ -89,7 +88,6 @@ router.post('/register', async (req, res) => {
   }
 });
 
-// POST /api/auth/login
 router.post('/login', async (req, res) => {
   const { email, password } = req.body;
 
@@ -133,7 +131,6 @@ router.post('/login', async (req, res) => {
   }
 });
 
-// GET /api/auth/verify-email?token=...
 router.get('/verify-email', async (req, res) => {
   const { token } = req.query;
 
@@ -165,7 +162,6 @@ router.get('/verify-email', async (req, res) => {
   }
 });
 
-// POST /api/auth/resend-verification
 router.post('/resend-verification', async (req, res) => {
   const { email } = req.body;
 
@@ -206,7 +202,6 @@ router.post('/resend-verification', async (req, res) => {
   }
 });
 
-// POST /api/auth/refresh
 router.post('/refresh', async (req, res) => {
   const refreshToken = req.cookies?.refreshToken;
   if (!refreshToken) {
@@ -235,14 +230,12 @@ router.post('/refresh', async (req, res) => {
   }
 });
 
-// POST /api/auth/logout
 router.post('/logout', (req, res) => {
   res.clearCookie('token');
   res.clearCookie('refreshToken', { path: '/api/auth/refresh' });
   res.json({ message: 'Logged out successfully' });
 });
 
-// GET /api/auth/me
 router.get('/me', auth, async (req, res) => {
   try {
     const result = await pool.query(

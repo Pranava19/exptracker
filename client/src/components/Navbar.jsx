@@ -48,7 +48,6 @@ const Navbar = () => {
 
   return (
     <>
-      {/* Desktop sidebar */}
       <aside className="hidden md:flex flex-col fixed top-0 left-0 h-screen z-30 w-56 bg-white dark:bg-ink-900 border-r border-ink-100 dark:border-[#2C2C28]">
         <div className="flex items-center justify-between px-5 py-4 border-b border-ink-100 dark:border-[#2C2C28]">
           <Link to="/dashboard" className="text-ink-900 dark:text-ink-50 font-bold text-lg tracking-tight hover:opacity-80 transition-opacity">
@@ -57,7 +56,7 @@ const Navbar = () => {
           <div className="flex items-center gap-1">
             <button
               onClick={toggle}
-              className="text-ink-700 dark:text-ink-200 hover:text-ink-900 dark:hover:text-white transition-colors p-1.5 rounded-md hover:bg-ink-50 dark:hover:bg-[#2C2C28]"
+              className="text-ink-700 dark:text-ink-200 hover:text-ink-900 dark:hover:text-white transition-colors p-1.5 rounded-md hover:bg-ink-50 dark:hover:bg-[#2C2C28] cursor-pointer"
               aria-label="Toggle dark mode"
             >
               {dark ? <Sun size={18} strokeWidth={1.5} /> : <Moon size={18} strokeWidth={1.5} />}
@@ -68,7 +67,7 @@ const Navbar = () => {
         <div className="flex-1 overflow-y-auto py-3 px-3 space-y-4">
           {NAV_SECTIONS.map(({ label, items }) => (
             <div key={label}>
-              <p className="px-2 pb-1.5 text-[10px] font-mono font-semibold uppercase tracking-wider text-ink-700 dark:text-ink-200 opacity-60">
+              <p className="px-2 pb-1.5 text-[10px] font-mono font-semibold uppercase tracking-wider text-ink-700 dark:text-ink-200 opacity-60 cursor-default">
                 {label}
               </p>
               {items.map(({ to, label: itemLabel, icon: Icon }) => (
@@ -93,7 +92,7 @@ const Navbar = () => {
 
         <div className="p-3 border-t border-ink-100 dark:border-[#2C2C28] space-y-2">
           <div className="flex items-center gap-2.5 px-3 py-2 rounded-card bg-ink-50 dark:bg-[#2C2C28]">
-            <div className="w-7 h-7 rounded-full bg-accent text-white font-mono text-xs font-semibold flex items-center justify-center">
+            <div className="w-7 h-7 rounded-full bg-accent text-white font-mono text-xs font-semibold flex items-center justify-center select-none">
               {user?.name?.charAt(0).toUpperCase() || 'U'}
             </div>
             <div className="min-w-0 flex-1">
@@ -103,7 +102,7 @@ const Navbar = () => {
           </div>
           <button
             onClick={handleLogout}
-            className="flex items-center gap-2.5 w-full px-3 py-2 rounded-md text-xs font-medium text-negative hover:bg-negative/10 transition-colors"
+            className="flex items-center gap-2.5 w-full px-3 py-2 rounded-md text-xs font-medium text-negative hover:bg-negative/10 transition-colors cursor-pointer"
           >
             <LogOut size={16} strokeWidth={1.5} />
             <span>Sign out</span>
@@ -111,7 +110,6 @@ const Navbar = () => {
         </div>
       </aside>
 
-      {/* Mobile top bar */}
       <div className="md:hidden fixed top-0 left-0 right-0 z-30 bg-white dark:bg-ink-900 border-b border-ink-100 dark:border-[#2C2C28]">
         <div className="flex items-center justify-between px-4 h-12">
           <Link to="/dashboard" className="font-bold text-base text-ink-900 dark:text-ink-50">
@@ -120,14 +118,14 @@ const Navbar = () => {
           <div className="flex items-center gap-2">
             <button
               onClick={toggle}
-              className="text-ink-700 dark:text-ink-200 p-1"
+              className="text-ink-700 dark:text-ink-200 p-1 cursor-pointer"
               aria-label="Toggle dark mode"
             >
               {dark ? <Sun size={18} strokeWidth={1.5} /> : <Moon size={18} strokeWidth={1.5} />}
             </button>
             <NavLink
               to="/profile"
-              className="w-7 h-7 rounded-full bg-accent text-white font-mono text-xs font-bold flex items-center justify-center"
+              className="w-7 h-7 rounded-full bg-accent text-white font-mono text-xs font-bold flex items-center justify-center select-none"
             >
               {user?.name?.charAt(0).toUpperCase() || 'U'}
             </NavLink>
@@ -135,7 +133,6 @@ const Navbar = () => {
         </div>
       </div>
 
-      {/* Mobile bottom nav */}
       <div className="md:hidden fixed bottom-0 left-0 right-0 z-30 bg-white dark:bg-ink-900 border-t border-ink-100 dark:border-[#2C2C28]">
         <div className="flex">
           {NAV_SECTIONS.flatMap(s => s.items).map(({ to, label: l, icon: Icon }) => (

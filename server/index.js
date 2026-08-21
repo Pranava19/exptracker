@@ -23,12 +23,10 @@ app.use(cors({
 }));
 app.use(express.json());
 
-// Rate limiters
 app.use(['/api/auth/login', '/auth/login'], authLimiter);
 app.use(['/api/auth/register', '/auth/register'], authLimiter);
 app.use(['/api/auth/resend-verification', '/auth/resend-verification'], resendLimiter);
 
-// API Routes
 app.use(['/api/auth', '/auth'], authRoutes);
 app.use(['/api/transactions', '/transactions'], transactionLimiter, transactionRoutes);
 app.use(['/api/import', '/import'], importLimiter, importRoute);
@@ -43,12 +41,11 @@ app.get(['/', '/api'], (req, res) => {
   res.send('Expense Tracker API is running');
 });
 
-// 404 handler for unmatched routes
 app.use((req, res) => {
   res.status(404).json({ message: 'Route not found' });
 });
 
-// Global error handler — must be last, 4 args required for Express to recognize it
+// Global error handler (must be last; 4 parameters required by Express)
 app.use((err, req, res, next) => {
   console.error(err.stack);
   const status = err.status || 500;

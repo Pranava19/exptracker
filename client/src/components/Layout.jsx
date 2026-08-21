@@ -22,7 +22,6 @@ const Layout = ({ children }) => {
       <div className="min-h-screen bg-ink-50 dark:bg-ink-900 text-ink-900 dark:text-ink-50">
         <Navbar />
 
-        {/* Desktop */}
         <div className="hidden md:block md:ml-56">
           <div className="sticky top-0 z-20 flex items-center justify-between px-8 h-14 bg-white/80 dark:bg-ink-900/80 backdrop-blur-md border-b border-ink-100 dark:border-[#2C2C28]">
             <h1 className="text-base font-semibold text-ink-900 dark:text-ink-50 tracking-tight">{title}</h1>
@@ -31,7 +30,6 @@ const Layout = ({ children }) => {
           <div className="p-8 max-w-7xl mx-auto">{children}</div>
         </div>
 
-        {/* Mobile */}
         <div className="md:hidden pt-12 pb-20">
           <div className="p-4">{children}</div>
         </div>

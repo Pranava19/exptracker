@@ -29,8 +29,8 @@ const formatGroupLabel = (dateStr) => {
   const d = new Date(dateStr + 'T00:00:00');
   const today = new Date(); today.setHours(0, 0, 0, 0);
   const yesterday = new Date(today); yesterday.setDate(yesterday.getDate() - 1);
-  if (d.getTime() === today.getTime()) return `Today — ${d.toLocaleDateString('en-IN', { day: 'numeric', month: 'long' })}`;
-  if (d.getTime() === yesterday.getTime()) return `Yesterday — ${d.toLocaleDateString('en-IN', { day: 'numeric', month: 'long' })}`;
+  if (d.getTime() === today.getTime()) return `Today, ${d.toLocaleDateString('en-IN', { day: 'numeric', month: 'long' })}`;
+  if (d.getTime() === yesterday.getTime()) return `Yesterday, ${d.toLocaleDateString('en-IN', { day: 'numeric', month: 'long' })}`;
   return d.toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'long' });
 };
 
@@ -148,7 +148,7 @@ const DashboardHome = () => {
           <div class="header">
             <div>
               <div class="brand">Exp<span>Tracker</span></div>
-              <div class="period">Monthly Statement — ${monthName}</div>
+              <div class="period">Monthly Statement: ${monthName}</div>
             </div>
             <div style="text-align:right; font-size:11px; color:#6E6E6B;">
               Generated: ${new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' })}
@@ -181,7 +181,7 @@ const DashboardHome = () => {
             </thead>
             <tbody>${rows}</tbody>
           </table>
-          <div class="footer">ExpTracker — Personal Finance · ${monthStr}</div>
+          <div class="footer">ExpTracker · Personal Finance · ${monthStr}</div>
         </body>
         </html>
       `;
@@ -204,16 +204,14 @@ const DashboardHome = () => {
 
   return (
     <Layout>
-      {/* Asymmetric Hero Grid */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-        {/* Big Balance Hero Card */}
         <div className="md:col-span-2 p-8 bg-ink-900 text-ink-50 rounded-card flex flex-col justify-between border border-ink-700 shadow-sm relative overflow-hidden">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
               <Wallet size={18} strokeWidth={1.5} className="text-accent-light" />
-              <span className="text-xs font-mono font-medium uppercase tracking-wider text-ink-200 opacity-80">Total Net Balance</span>
+              <span className="text-xs font-mono font-medium uppercase tracking-wider text-ink-200 opacity-80 select-none">Total Net Balance</span>
             </div>
-            <span className="text-[11px] font-mono px-2 py-0.5 rounded bg-ink-700/60 text-ink-100">Live Account</span>
+            <span className="text-[11px] font-mono px-2 py-0.5 rounded bg-ink-700/60 text-ink-100 select-none">Live Account</span>
           </div>
 
           <div className="my-3">
@@ -232,7 +230,7 @@ const DashboardHome = () => {
             <button
               onClick={handleExportPDF}
               disabled={exporting || monthTxs.length === 0}
-              className="flex items-center gap-1.5 px-3 py-1 rounded-md text-xs font-semibold bg-accent hover:bg-accent-dark text-white transition-colors disabled:opacity-50"
+              className="flex items-center gap-1.5 px-3 py-1 rounded-md text-xs font-semibold bg-accent hover:bg-accent-dark text-white transition-colors disabled:opacity-50 cursor-pointer"
             >
               <Download size={14} strokeWidth={1.5} />
               <span>{exporting ? 'Exporting...' : 'Export Statement'}</span>
@@ -240,11 +238,10 @@ const DashboardHome = () => {
           </div>
         </div>
 
-        {/* Right Stack Cards: Income & Expense */}
         <div className="flex flex-col gap-4">
           <div className="flex-1 p-5 bg-white dark:bg-ink-900 border border-ink-100 dark:border-[#2C2C28] rounded-card flex flex-col justify-between">
             <div className="flex items-center justify-between mb-2">
-              <span className="text-xs font-mono font-medium uppercase tracking-wider text-ink-700 dark:text-ink-200 opacity-70">Total Income</span>
+              <span className="text-xs font-mono font-medium uppercase tracking-wider text-ink-700 dark:text-ink-200 opacity-70 select-none">Total Income</span>
               <div className="p-2 rounded bg-positive/10 text-positive">
                 <TrendingUp size={16} strokeWidth={1.5} />
               </div>
@@ -257,7 +254,7 @@ const DashboardHome = () => {
 
           <div className="flex-1 p-5 bg-white dark:bg-ink-900 border border-ink-100 dark:border-[#2C2C28] rounded-card flex flex-col justify-between">
             <div className="flex items-center justify-between mb-2">
-              <span className="text-xs font-mono font-medium uppercase tracking-wider text-ink-700 dark:text-ink-200 opacity-70">Total Expenses</span>
+              <span className="text-xs font-mono font-medium uppercase tracking-wider text-ink-700 dark:text-ink-200 opacity-70 select-none">Total Expenses</span>
               <div className="p-2 rounded bg-negative/10 text-negative">
                 <TrendingDown size={16} strokeWidth={1.5} />
               </div>
@@ -270,12 +267,11 @@ const DashboardHome = () => {
         </div>
       </div>
 
-      {/* Insight row cards */}
       {!loading && (
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
           <div className="p-5 bg-white dark:bg-ink-900 border border-ink-100 dark:border-[#2C2C28] rounded-card flex items-center justify-between">
             <div>
-              <span className="text-xs font-mono uppercase tracking-wider text-ink-700 dark:text-ink-200 opacity-70">Daily Average Spend</span>
+              <span className="text-xs font-mono uppercase tracking-wider text-ink-700 dark:text-ink-200 opacity-70 select-none">Daily Average Spend</span>
               <p className="font-mono text-xl font-semibold text-ink-900 dark:text-ink-50 mt-1">{fmtShort(dailyAvg)}</p>
               <p className="text-[11px] text-ink-700 dark:text-ink-200 opacity-60 mt-0.5">per day in {now.toLocaleString('default', { month: 'long' })}</p>
             </div>
@@ -286,7 +282,7 @@ const DashboardHome = () => {
 
           <div className="p-5 bg-white dark:bg-ink-900 border border-ink-100 dark:border-[#2C2C28] rounded-card flex items-center justify-between">
             <div className="min-w-0 flex-1 mr-3">
-              <span className="text-xs font-mono uppercase tracking-wider text-ink-700 dark:text-ink-200 opacity-70">Biggest Expense ({now.toLocaleString('default', { month: 'short' })})</span>
+              <span className="text-xs font-mono uppercase tracking-wider text-ink-700 dark:text-ink-200 opacity-70 select-none">Biggest Expense ({now.toLocaleString('default', { month: 'short' })})</span>
               {biggestTx ? (
                 <>
                   <p className="font-mono text-xl font-semibold text-negative mt-1">{fmt(biggestTx.amount)}</p>
@@ -305,14 +301,12 @@ const DashboardHome = () => {
         </div>
       )}
 
-      {/* Main Content Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Recent Transactions list (2 cols) */}
         <div className="lg:col-span-2 space-y-6">
           <div className="bg-white dark:bg-ink-900 border border-ink-100 dark:border-[#2C2C28] rounded-card overflow-hidden">
             <div className="flex items-center justify-between px-5 py-4 border-b border-ink-100 dark:border-[#2C2C28]">
               <h2 className="text-sm font-semibold text-ink-900 dark:text-ink-50">Recent Transactions</h2>
-              <Link to="/transactions" className="text-xs font-medium text-accent hover:text-accent-dark flex items-center gap-1">
+              <Link to="/transactions" className="text-xs font-medium text-accent hover:text-accent-dark flex items-center gap-1 cursor-pointer">
                 <span>View all</span>
                 <ChevronRight size={14} strokeWidth={1.5} />
               </Link>

@@ -48,7 +48,6 @@ const buildFilterClause = ({ year, month, from, to, type }, params) => {
   return clause;
 };
 
-// 1. GET /api/analysis/monthly-summary?year=2026&from=&to=
 router.get('/monthly-summary', auth, async (req, res) => {
   const year = parseBoundedInt(req.query.year, new Date().getFullYear(), 2000, 2100);
   const from = parseDateString(req.query.from);
@@ -97,7 +96,6 @@ router.get('/monthly-summary', auth, async (req, res) => {
   }
 });
 
-// 2. GET /api/analysis/net-cashflow?year=2026&from=&to=
 router.get('/net-cashflow', auth, async (req, res) => {
   const year = parseBoundedInt(req.query.year, new Date().getFullYear(), 2000, 2100);
   const from = parseDateString(req.query.from);
@@ -141,7 +139,6 @@ router.get('/net-cashflow', auth, async (req, res) => {
   }
 });
 
-// 3. GET /api/analysis/daily-expenses?year=2026&month=8&from=&to=
 router.get('/daily-expenses', auth, async (req, res) => {
   const year = parseBoundedInt(req.query.year, new Date().getFullYear(), 2000, 2100);
   const month = parseBoundedInt(req.query.month, new Date().getMonth() + 1, 1, 12);
@@ -181,7 +178,6 @@ router.get('/daily-expenses', auth, async (req, res) => {
   }
 });
 
-// 4. GET /api/analysis/top-transactions?year=2026&month=&from=&to=&limit=5
 router.get('/top-transactions', auth, async (req, res) => {
   const year = parseBoundedInt(req.query.year, new Date().getFullYear(), 2000, 2100);
   const month = parseBoundedInt(req.query.month, undefined, 1, 12);
@@ -231,7 +227,6 @@ router.get('/top-transactions', auth, async (req, res) => {
   }
 });
 
-// 5. GET /api/analysis/summary-cards?year=2026&month=&from=&to=&type=
 router.get('/summary-cards', auth, async (req, res) => {
   const year = parseBoundedInt(req.query.year, undefined, 2000, 2100);
   const month = parseBoundedInt(req.query.month, undefined, 1, 12);

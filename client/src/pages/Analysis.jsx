@@ -179,7 +179,6 @@ const Analysis = () => {
         </div>
       </div>
 
-      {/* Global Filter Bar */}
       <Card className="mb-6">
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div className="flex items-center gap-2 text-xs font-semibold text-ink-900 dark:text-ink-50">
@@ -188,25 +187,23 @@ const Analysis = () => {
           </div>
 
           <div className="flex flex-wrap items-center gap-3 text-xs">
-            {/* Year Selector */}
             <div>
-              <label className="text-[10px] font-mono text-ink-700 dark:text-ink-200 opacity-60 block mb-1">Year</label>
+              <label className="text-[10px] font-mono text-ink-700 dark:text-ink-200 opacity-60 block mb-1 select-none">Year</label>
               <select
                 value={year}
                 onChange={e => setYear(Number(e.target.value))}
-                className="font-mono border border-ink-100 dark:border-[#2C2C28] rounded-md px-2.5 py-1.5 bg-white dark:bg-[#252522] text-ink-900 dark:text-ink-50 focus:outline-none focus:border-accent"
+                className="font-mono border border-ink-100 dark:border-[#2C2C28] rounded-md px-2.5 py-1.5 bg-white dark:bg-[#252522] text-ink-900 dark:text-ink-50 focus:outline-none focus:border-accent cursor-pointer"
               >
                 {availableYears.map(y => <option key={y} value={y}>{y}</option>)}
               </select>
             </div>
 
-            {/* Month Selector */}
             <div>
-              <label className="text-[10px] font-mono text-ink-700 dark:text-ink-200 opacity-60 block mb-1">Month</label>
+              <label className="text-[10px] font-mono text-ink-700 dark:text-ink-200 opacity-60 block mb-1 select-none">Month</label>
               <select
                 value={month}
                 onChange={e => setMonth(e.target.value ? Number(e.target.value) : '')}
-                className="font-mono border border-ink-100 dark:border-[#2C2C28] rounded-md px-2.5 py-1.5 bg-white dark:bg-[#252522] text-ink-900 dark:text-ink-50 focus:outline-none focus:border-accent"
+                className="font-mono border border-ink-100 dark:border-[#2C2C28] rounded-md px-2.5 py-1.5 bg-white dark:bg-[#252522] text-ink-900 dark:text-ink-50 focus:outline-none focus:border-accent cursor-pointer"
               >
                 <option value="">All Months</option>
                 {MONTHS.map((m, idx) => (
@@ -215,37 +212,34 @@ const Analysis = () => {
               </select>
             </div>
 
-            {/* Date Range: From */}
             <div>
-              <label className="text-[10px] font-mono text-ink-700 dark:text-ink-200 opacity-60 block mb-1">From Date</label>
+              <label className="text-[10px] font-mono text-ink-700 dark:text-ink-200 opacity-60 block mb-1 select-none">From Date</label>
               <input
                 type="date"
                 value={fromDate}
                 onChange={e => setFromDate(e.target.value)}
-                className="font-mono border border-ink-100 dark:border-[#2C2C28] rounded-md px-2.5 py-1.5 bg-white dark:bg-[#252522] text-ink-900 dark:text-ink-50 focus:outline-none focus:border-accent"
+                className="font-mono border border-ink-100 dark:border-[#2C2C28] rounded-md px-2.5 py-1.5 bg-white dark:bg-[#252522] text-ink-900 dark:text-ink-50 focus:outline-none focus:border-accent cursor-pointer"
               />
             </div>
 
-            {/* Date Range: To */}
             <div>
-              <label className="text-[10px] font-mono text-ink-700 dark:text-ink-200 opacity-60 block mb-1">To Date</label>
+              <label className="text-[10px] font-mono text-ink-700 dark:text-ink-200 opacity-60 block mb-1 select-none">To Date</label>
               <input
                 type="date"
                 value={toDate}
                 onChange={e => setToDate(e.target.value)}
-                className="font-mono border border-ink-100 dark:border-[#2C2C28] rounded-md px-2.5 py-1.5 bg-white dark:bg-[#252522] text-ink-900 dark:text-ink-50 focus:outline-none focus:border-accent"
+                className="font-mono border border-ink-100 dark:border-[#2C2C28] rounded-md px-2.5 py-1.5 bg-white dark:bg-[#252522] text-ink-900 dark:text-ink-50 focus:outline-none focus:border-accent cursor-pointer"
               />
             </div>
 
-            {/* Type Toggle */}
             <div>
-              <label className="text-[10px] font-mono text-ink-700 dark:text-ink-200 opacity-60 block mb-1">Type</label>
+              <label className="text-[10px] font-mono text-ink-700 dark:text-ink-200 opacity-60 block mb-1 select-none">Type</label>
               <div className="flex bg-ink-50 dark:bg-[#252522] p-0.5 rounded-md border border-ink-100 dark:border-[#2C2C28]">
                 {['all', 'income', 'expense'].map(t => (
                   <button
                     key={t}
                     onClick={() => setType(t)}
-                    className={`px-2.5 py-1 text-[11px] font-mono capitalize rounded ${type === t ? 'bg-accent text-white font-semibold' : 'text-ink-700 dark:text-ink-200 hover:text-ink-900'}`}
+                    className={`px-2.5 py-1 text-[11px] font-mono capitalize rounded cursor-pointer ${type === t ? 'bg-accent text-white font-semibold' : 'text-ink-700 dark:text-ink-200 hover:text-ink-900'}`}
                   >
                     {t}
                   </button>
@@ -253,11 +247,10 @@ const Analysis = () => {
               </div>
             </div>
 
-            {/* Reset Button */}
             <div className="self-end">
               <button
                 onClick={handleResetFilters}
-                className="flex items-center gap-1 text-xs font-mono text-ink-700 dark:text-ink-200 hover:text-ink-900 dark:hover:text-white px-2.5 py-1.5 border border-ink-100 dark:border-[#2C2C28] rounded-md transition-colors"
+                className="flex items-center gap-1 text-xs font-mono text-ink-700 dark:text-ink-200 hover:text-ink-900 dark:hover:text-white px-2.5 py-1.5 border border-ink-100 dark:border-[#2C2C28] rounded-md transition-colors cursor-pointer"
                 title="Reset filters"
               >
                 <RotateCcw size={14} />
@@ -268,12 +261,10 @@ const Analysis = () => {
         </div>
       </Card>
 
-      {/* Six Summary Cards Grid */}
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-6">
-        {/* 1. Total Income */}
         <Card title={fmtDecimal(summaryCards.total_income)}>
           <div className="flex items-center justify-between mb-1">
-            <span className="text-[10px] font-mono uppercase tracking-wider text-ink-700 dark:text-ink-200 opacity-60">Total Income</span>
+            <span className="text-[10px] font-mono uppercase tracking-wider text-ink-700 dark:text-ink-200 opacity-60 select-none">Total Income</span>
             <div className="p-1 rounded bg-positive/10 text-positive">
               <TrendingUp size={14} strokeWidth={1.5} />
             </div>
@@ -281,10 +272,9 @@ const Analysis = () => {
           <p className="font-mono text-base font-semibold text-positive truncate">{fmt(summaryCards.total_income)}</p>
         </Card>
 
-        {/* 2. Total Expenses */}
         <Card title={fmtDecimal(summaryCards.total_expenses)}>
           <div className="flex items-center justify-between mb-1">
-            <span className="text-[10px] font-mono uppercase tracking-wider text-ink-700 dark:text-ink-200 opacity-60">Total Expenses</span>
+            <span className="text-[10px] font-mono uppercase tracking-wider text-ink-700 dark:text-ink-200 opacity-60 select-none">Total Expenses</span>
             <div className="p-1 rounded bg-negative/10 text-negative">
               <TrendingDown size={14} strokeWidth={1.5} />
             </div>
@@ -292,10 +282,9 @@ const Analysis = () => {
           <p className="font-mono text-base font-semibold text-negative truncate">{fmt(summaryCards.total_expenses)}</p>
         </Card>
 
-        {/* 3. Current Balance */}
         <Card title={fmtDecimal(summaryCards.current_balance)}>
           <div className="flex items-center justify-between mb-1">
-            <span className="text-[10px] font-mono uppercase tracking-wider text-ink-700 dark:text-ink-200 opacity-60">Current Balance</span>
+            <span className="text-[10px] font-mono uppercase tracking-wider text-ink-700 dark:text-ink-200 opacity-60 select-none">Current Balance</span>
             <div className="p-1 rounded bg-accent/10 text-accent">
               <Wallet size={14} strokeWidth={1.5} />
             </div>
@@ -305,10 +294,9 @@ const Analysis = () => {
           </p>
         </Card>
 
-        {/* 4. Highest Expense */}
         <Card title={fmtDecimal(summaryCards.highest_expense)}>
           <div className="flex items-center justify-between mb-1">
-            <span className="text-[10px] font-mono uppercase tracking-wider text-ink-700 dark:text-ink-200 opacity-60">Highest Expense</span>
+            <span className="text-[10px] font-mono uppercase tracking-wider text-ink-700 dark:text-ink-200 opacity-60 select-none">Highest Expense</span>
             <div className="p-1 rounded bg-negative/10 text-negative">
               <ArrowUpRight size={14} strokeWidth={1.5} />
             </div>
@@ -316,10 +304,9 @@ const Analysis = () => {
           <p className="font-mono text-base font-semibold text-negative truncate">{fmt(summaryCards.highest_expense)}</p>
         </Card>
 
-        {/* 5. Average Daily Expense */}
         <Card title={`${fmtDecimal(summaryCards.avg_daily_expense)} / active day`}>
           <div className="flex items-center justify-between mb-1">
-            <span className="text-[10px] font-mono uppercase tracking-wider text-ink-700 dark:text-ink-200 opacity-60">Avg Daily Spend</span>
+            <span className="text-[10px] font-mono uppercase tracking-wider text-ink-700 dark:text-ink-200 opacity-60 select-none">Avg Daily Spend</span>
             <div className="p-1 rounded bg-accent/10 text-accent">
               <Calendar size={14} strokeWidth={1.5} />
             </div>
@@ -327,10 +314,9 @@ const Analysis = () => {
           <p className="font-mono text-base font-semibold text-ink-900 dark:text-ink-50 truncate">{fmt(summaryCards.avg_daily_expense)}</p>
         </Card>
 
-        {/* 6. Number of Transactions */}
         <Card title={`${summaryCards.transaction_count} recorded transactions`}>
           <div className="flex items-center justify-between mb-1">
-            <span className="text-[10px] font-mono uppercase tracking-wider text-ink-700 dark:text-ink-200 opacity-60">Transactions</span>
+            <span className="text-[10px] font-mono uppercase tracking-wider text-ink-700 dark:text-ink-200 opacity-60 select-none">Transactions</span>
             <div className="p-1 rounded bg-ink-100 dark:bg-ink-700 text-ink-900 dark:text-ink-50">
               <Hash size={14} strokeWidth={1.5} />
             </div>
@@ -346,13 +332,11 @@ const Analysis = () => {
         </div>
       ) : (
         <>
-          {/* Grid 1: Monthly Income vs Expenses & Monthly Net Cash Flow */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-            {/* Chart 1: Monthly Income vs Expenses (Grouped Bar Chart) */}
             <Card>
               <SectionHeader
                 title="Monthly Income vs Expenses"
-                subtitle={`Full year cash flow comparison — ${year}`}
+                subtitle={`Full year cash flow comparison (${year})`}
               />
               <ResponsiveContainer width="100%" height={240}>
                 <BarChart data={monthlyBarData} barGap={2} barCategoryGap="25%">
@@ -366,11 +350,10 @@ const Analysis = () => {
               </ResponsiveContainer>
             </Card>
 
-            {/* Chart 2: Monthly Net Cash Flow (Line Chart) */}
             <Card>
               <SectionHeader
                 title="Monthly Net Cash Flow"
-                subtitle={`Net income minus expenses per month — ${year}`}
+                subtitle={`Net income minus expenses per month (${year})`}
               />
               <ResponsiveContainer width="100%" height={240}>
                 <LineChart data={netCashFlowData}>
@@ -394,9 +377,7 @@ const Analysis = () => {
             </Card>
           </div>
 
-          {/* Grid 2: Daily Expense Trend & Top 5 Transactions */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-            {/* Chart 3: Daily Expense Trend (Line Chart) */}
             <Card>
               <SectionHeader
                 title="Daily Expense Trend"
@@ -428,7 +409,6 @@ const Analysis = () => {
               )}
             </Card>
 
-            {/* Chart 4: Top 5 Transactions (Horizontal Bar Chart) */}
             <Card>
               <SectionHeader
                 title="Top 5 Expense Transactions"
