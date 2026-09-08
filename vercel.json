@@ -3,23 +3,23 @@
   "rewrites": [
     {
       "source": "/api/(.*)",
-      "destination": "/api"
+      "destination": "/api/$1"
     },
     {
       "source": "/import",
-      "destination": "/api"
+      "destination": "/api/import"
     },
     {
       "source": "/auth/(.*)",
-      "destination": "/api"
+      "destination": "/api/auth/$1"
     },
     {
       "source": "/transactions/(.*)",
-      "destination": "/api"
+      "destination": "/api/transactions/$1"
     },
     {
       "source": "/analysis/(.*)",
-      "destination": "/api"
+      "destination": "/api/analysis/$1"
     }
   ]
 }
