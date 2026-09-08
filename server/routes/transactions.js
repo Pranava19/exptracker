@@ -73,49 +73,49 @@ router.delete('/duplicates', auth, async (req, res) => {
 
 router.get('/', auth, async (req, res) => {
   const user_id = req.user.id;
-  const { type, category, start_date, end_date, limit, offset, page } = req.query;
+  const { type, category, start_date, end_date, limit, cursorDate, cursorId, cursor_date, cursor_id, offset, page } = req.query;
   try {
     let whereClause = `WHERE user_id = $1`;
     let params = [user_id];
     let index = 2;
+
     if (type) { whereClause += ` AND type = $${index}`; params.push(type); index++; }
     if (category) { whereClause += ` AND category = $${index}`; params.push(category); index++; }
     if (start_date) { whereClause += ` AND date >= $${index}`; params.push(start_date); index++; }
     if (end_date) { whereClause += ` AND date <= $${index}`; params.push(end_date); index++; }
 
-    const isPaginated = limit !== undefined || offset !== undefined || page !== undefined;
+    const cDate = cursorDate || cursor_date;
+    const cId = cursorId || cursor_id;
+    const isPaginated = cDate !== undefined || cId !== undefined || limit !== undefined || offset !== undefined || page !== undefined;
 
     if (isPaginated) {
-      const countResult = await pool.query(
-        `SELECT COUNT(*) FROM transactions ${whereClause}`,
-        params
-      );
-      const total = parseInt(countResult.rows[0].count, 10);
+      const parsedLimit = Math.max(1, Math.min(100, parseInt(limit, 10) || 50));
 
-      const parsedLimit = Math.max(1, parseInt(limit, 10) || 50);
-      let parsedOffset = 0;
-      if (offset !== undefined) {
-        parsedOffset = Math.max(0, parseInt(offset, 10) || 0);
-      } else if (page !== undefined) {
-        const currentPage = Math.max(1, parseInt(page, 10) || 1);
-        parsedOffset = (currentPage - 1) * parsedLimit;
+      if (cDate && cId) {
+        whereClause += ` AND (date, id) < ($${index}, $${index + 1})`;
+        params.push(cDate, parseInt(cId, 10));
+        index += 2;
       }
 
-      const paginatedParams = [...params, parsedLimit, parsedOffset];
-      const dataQuery = `SELECT * FROM transactions ${whereClause} ORDER BY date DESC, id DESC LIMIT $${index} OFFSET $${index + 1}`;
-      const result = await pool.query(dataQuery, paginatedParams);
+      const dataQuery = `SELECT * FROM transactions ${whereClause} ORDER BY date DESC, id DESC LIMIT $${index}`;
+      params.push(parsedLimit + 1);
 
-      const totalPages = Math.ceil(total / parsedLimit) || 1;
-      const currentPage = Math.floor(parsedOffset / parsedLimit) + 1;
+      const result = await pool.query(dataQuery, params);
+      const hasNextPage = result.rows.length > parsedLimit;
+      const rows = hasNextPage ? result.rows.slice(0, parsedLimit) : result.rows;
+
+      const lastItem = rows[rows.length - 1];
+      const nextCursor = hasNextPage && lastItem ? {
+        cursorDate: lastItem.date instanceof Date ? lastItem.date.toISOString().slice(0, 10) : String(lastItem.date).slice(0, 10),
+        cursorId: lastItem.id,
+      } : null;
 
       return res.json({
-        transactions: result.rows,
+        transactions: rows,
         pagination: {
-          total,
           limit: parsedLimit,
-          offset: parsedOffset,
-          page: currentPage,
-          totalPages,
+          hasNextPage,
+          nextCursor,
         },
       });
     }
@@ -194,20 +194,31 @@ router.delete('/:id', auth, async (req, res) => {
 router.post('/import', auth, async (req, res) => {
   const { transactions } = req.body;
   const user_id = req.user.id;
+  let client;
   try {
+    client = await pool.connect();
+    await client.query('BEGIN');
     const inserted = [];
     for (const tx of transactions) {
-      const result = await pool.query(
+      const result = await client.query(
         `INSERT INTO transactions (user_id, type, category, amount, description, date, mode)
          VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *`,
         [user_id, tx.type, tx.category, tx.amount, tx.description, tx.date, tx.mode]
       );
       inserted.push(result.rows[0]);
     }
+    await client.query('COMMIT');
     res.status(201).json({ count: inserted.length, transactions: inserted });
   } catch (err) {
+    if (client) {
+      try { await client.query('ROLLBACK'); } catch (rbErr) { console.error('Rollback error:', rbErr.message); }
+    }
     console.error(err.message);
     res.status(500).json({ message: 'Server error' });
+  } finally {
+    if (client) {
+      client.release();
+    }
   }
 });
 

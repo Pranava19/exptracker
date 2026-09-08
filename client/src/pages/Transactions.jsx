@@ -197,19 +197,30 @@ const Transactions = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setSubmitting(true);
+    const previousSnapshot = [...transactions];
+
     try {
       if (editId) {
+        const updatedItem = {
+          ...transactions.find(t => t.id === editId),
+          ...form,
+          amount: Number(form.amount),
+        };
+        setTransactions(prev => prev.map(t => t.id === editId ? updatedItem : t));
+
         await axios.put(`/transactions/${editId}`, form);
         showToast('Transaction updated');
         setEditId(null);
       } else {
-        await axios.post('/transactions', form);
+        const res = await axios.post('/transactions', form);
         showToast('Transaction added');
+        const newTx = res.data && res.data.id ? res.data : { ...form, id: Date.now() };
+        setTransactions(prev => [newTx, ...prev]);
       }
       setForm({ type: 'expense', category: 'Food', amount: '', description: '', date: '', mode: 'Other' });
       setShowForm(false);
-      fetchAll();
     } catch (err) {
+      setTransactions(previousSnapshot);
       showToast(err.response?.data?.message || 'Something went wrong', 'error');
     } finally {
       setSubmitting(false);
@@ -232,12 +243,14 @@ const Transactions = () => {
 
   const handleDelete = async (id) => {
     if (!window.confirm('Delete this transaction?')) return;
+    const previousSnapshot = [...transactions];
+    setTransactions(prev => prev.filter(t => t.id !== id));
     try {
       await axios.delete(`/transactions/${id}`);
       showToast('Deleted');
-      fetchAll();
     } catch {
-      showToast('Failed to delete', 'error');
+      setTransactions(previousSnapshot);
+      showToast('Failed to delete transaction, change reverted', 'error');
     }
   };
 
@@ -248,12 +261,16 @@ const Transactions = () => {
   };
 
   const handleInlineUpdate = async (id, field, value) => {
+    const previousSnapshot = [...transactions];
     const tx = transactions.find(t => t.id === id);
+    if (!tx) return;
+
+    setTransactions(prev => prev.map(t => t.id === id ? { ...t, [field]: value } : t));
     try {
       await axios.patch(`/transactions/${id}`, { category: tx.category, mode: tx.mode || 'Other', [field]: value });
-      fetchAll();
     } catch {
-      showToast('Update failed', 'error');
+      setTransactions(previousSnapshot);
+      showToast('Update failed, changes reverted', 'error');
     }
   };
 
