@@ -77,8 +77,13 @@ const Analysis = () => {
 
   useEffect(() => {
     axios.get('/transactions').then(res => {
-      if (res.data && res.data.length > 0) {
-        const txYears = [...new Set(res.data.map(tx => new Date(tx.date).getFullYear()))].sort((a, b) => b - a);
+      const txList = Array.isArray(res.data) ? res.data : (res.data?.transactions || []);
+      if (txList.length > 0) {
+        const txYears = [...new Set(txList.map(tx => {
+          if (!tx.date) return null;
+          const y = parseInt(String(tx.date).slice(0, 4), 10);
+          return isNaN(y) ? null : y;
+        }).filter(Boolean))].sort((a, b) => b - a);
         if (txYears.length > 0) {
           setAvailableYears(txYears);
           setYear(txYears[0]); // Auto-select most recent transaction year
@@ -148,10 +153,14 @@ const Analysis = () => {
     Expense: m.expense,
   }));
 
+  const hasMonthlyBarData = monthlySummary.some(m => (m.income || 0) > 0 || (m.expense || 0) > 0);
+
   const netCashFlowData = netCashFlow.map(m => ({
     month: MONTHS[m.month - 1],
     'Net Cash Flow': m.net,
   }));
+
+  const hasNetCashFlowData = netCashFlow.some(m => (m.net || 0) !== 0);
 
   const dailyExpenseData = dailyExpenses.map(d => ({
     date: d.date.slice(5), // MM-DD for x-axis
@@ -338,16 +347,22 @@ const Analysis = () => {
                 title="Monthly Income vs Expenses"
                 subtitle={`Full year cash flow comparison (${year})`}
               />
-              <ResponsiveContainer width="100%" height={240}>
-                <BarChart data={monthlyBarData} barGap={2} barCategoryGap="25%">
-                  <CartesianGrid strokeDasharray="0" stroke="#EDECE8" vertical={false} />
-                  <XAxis dataKey="month" tick={{ fontSize: 11, fontFamily: 'IBM Plex Mono' }} stroke="#888" />
-                  <YAxis tick={{ fontSize: 11, fontFamily: 'IBM Plex Mono' }} stroke="#888" tickFormatter={v => '₹' + (v >= 1000 ? (v / 1000).toFixed(0) + 'k' : v)} />
-                  <Tooltip content={<CustomTooltip />} />
-                  <Bar dataKey="Income" name="Income" fill="#16A34A" radius={[2, 2, 0, 0]} isAnimationActive={false} />
-                  <Bar dataKey="Expense" name="Expense" fill="#DC2626" radius={[2, 2, 0, 0]} isAnimationActive={false} />
-                </BarChart>
-              </ResponsiveContainer>
+              {!hasMonthlyBarData ? (
+                <div className="py-16 text-center text-xs font-mono text-ink-700 dark:text-ink-200 opacity-60">
+                  No monthly income or expense data for {year}
+                </div>
+              ) : (
+                <ResponsiveContainer width="100%" height={240}>
+                  <BarChart data={monthlyBarData} barGap={2} barCategoryGap="25%">
+                    <CartesianGrid strokeDasharray="3 3" stroke="#444440" opacity={0.3} vertical={false} />
+                    <XAxis dataKey="month" tick={{ fontSize: 11, fontFamily: 'IBM Plex Mono' }} stroke="#888" />
+                    <YAxis tick={{ fontSize: 11, fontFamily: 'IBM Plex Mono' }} stroke="#888" tickFormatter={v => '₹' + (v >= 1000 ? (v / 1000).toFixed(0) + 'k' : v)} />
+                    <Tooltip content={<CustomTooltip />} />
+                    <Bar dataKey="Income" name="Income" fill="#16A34A" radius={[2, 2, 0, 0]} isAnimationActive={false} />
+                    <Bar dataKey="Expense" name="Expense" fill="#DC2626" radius={[2, 2, 0, 0]} isAnimationActive={false} />
+                  </BarChart>
+                </ResponsiveContainer>
+              )}
             </Card>
 
             <Card>
@@ -355,25 +370,31 @@ const Analysis = () => {
                 title="Monthly Net Cash Flow"
                 subtitle={`Net income minus expenses per month (${year})`}
               />
-              <ResponsiveContainer width="100%" height={240}>
-                <LineChart data={netCashFlowData}>
-                  <CartesianGrid strokeDasharray="0" stroke="#EDECE8" vertical={false} />
-                  <XAxis dataKey="month" tick={{ fontSize: 11, fontFamily: 'IBM Plex Mono' }} stroke="#888" />
-                  <YAxis tick={{ fontSize: 11, fontFamily: 'IBM Plex Mono' }} stroke="#888" tickFormatter={v => '₹' + (v >= 1000 ? (v / 1000).toFixed(0) + 'k' : v)} />
-                  <Tooltip content={<CustomTooltip />} />
-                  <ReferenceLine y={0} stroke="#888" strokeDasharray="3 3" />
-                  <Line
-                    type="monotone"
-                    dataKey="Net Cash Flow"
-                    name="Net Cash Flow"
-                    stroke="#2563EB"
-                    strokeWidth={2}
-                    dot={{ r: 3, fill: '#2563EB' }}
-                    activeDot={{ r: 5 }}
-                    isAnimationActive={false}
-                  />
-                </LineChart>
-              </ResponsiveContainer>
+              {!hasNetCashFlowData ? (
+                <div className="py-16 text-center text-xs font-mono text-ink-700 dark:text-ink-200 opacity-60">
+                  No net cash flow data for {year}
+                </div>
+              ) : (
+                <ResponsiveContainer width="100%" height={240}>
+                  <LineChart data={netCashFlowData}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#444440" opacity={0.3} vertical={false} />
+                    <XAxis dataKey="month" tick={{ fontSize: 11, fontFamily: 'IBM Plex Mono' }} stroke="#888" />
+                    <YAxis tick={{ fontSize: 11, fontFamily: 'IBM Plex Mono' }} stroke="#888" tickFormatter={v => '₹' + (v >= 1000 ? (v / 1000).toFixed(0) + 'k' : v)} />
+                    <Tooltip content={<CustomTooltip />} />
+                    <ReferenceLine y={0} stroke="#888" strokeDasharray="3 3" />
+                    <Line
+                      type="monotone"
+                      dataKey="Net Cash Flow"
+                      name="Net Cash Flow"
+                      stroke="#2563EB"
+                      strokeWidth={2}
+                      dot={{ r: 3, fill: '#2563EB' }}
+                      activeDot={{ r: 5 }}
+                      isAnimationActive={false}
+                    />
+                  </LineChart>
+                </ResponsiveContainer>
+              )}
             </Card>
           </div>
 
@@ -390,7 +411,7 @@ const Analysis = () => {
               ) : (
                 <ResponsiveContainer width="100%" height={240}>
                   <LineChart data={dailyExpenseData}>
-                    <CartesianGrid strokeDasharray="0" stroke="#EDECE8" vertical={false} />
+                    <CartesianGrid strokeDasharray="3 3" stroke="#444440" opacity={0.3} vertical={false} />
                     <XAxis dataKey="date" tick={{ fontSize: 10, fontFamily: 'IBM Plex Mono' }} stroke="#888" />
                     <YAxis tick={{ fontSize: 11, fontFamily: 'IBM Plex Mono' }} stroke="#888" tickFormatter={v => '₹' + (v >= 1000 ? (v / 1000).toFixed(0) + 'k' : v)} />
                     <Tooltip content={<CustomTooltip />} />
@@ -421,7 +442,7 @@ const Analysis = () => {
               ) : (
                 <ResponsiveContainer width="100%" height={240}>
                   <BarChart data={topTransactionsData} layout="vertical" barCategoryGap="25%">
-                    <CartesianGrid strokeDasharray="0" stroke="#EDECE8" vertical={false} />
+                    <CartesianGrid strokeDasharray="3 3" stroke="#444440" opacity={0.3} vertical={false} />
                     <XAxis type="number" tick={{ fontSize: 11, fontFamily: 'IBM Plex Mono' }} stroke="#888" tickFormatter={v => '₹' + (v >= 1000 ? (v / 1000).toFixed(0) + 'k' : v)} />
                     <YAxis
                       type="category"
