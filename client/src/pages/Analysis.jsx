@@ -4,11 +4,11 @@ import Layout from '../components/Layout';
 import SEO from '../components/SEO';
 import {
   BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer,
-  LineChart, Line, CartesianGrid, ReferenceLine,
+  LineChart, Line, CartesianGrid, ReferenceLine, AreaChart, Area
 } from 'recharts';
 import {
   TrendingUp, TrendingDown, Wallet, ArrowUpRight,
-  Calendar, Hash, Filter, RotateCcw
+  Calendar, Filter, RotateCcw, Sparkles, Activity
 } from 'lucide-react';
 
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
@@ -19,30 +19,34 @@ const fmtDecimal = (n) => '₹' + Number(n || 0).toLocaleString('en-IN', { minim
 const CustomTooltip = ({ active, payload, label }) => {
   if (!active || !payload?.length) return null;
   return (
-    <div className="bg-ink-900 text-ink-50 border border-ink-700 rounded-card p-3 shadow-lg font-mono text-xs max-w-sm">
-      <p className="font-sans font-semibold mb-1 opacity-80 truncate">{label}</p>
+    <div className="bg-ink-900 text-white border border-ink-700 rounded-xl p-3.5 shadow-xl font-mono text-xs max-w-xs space-y-1.5 backdrop-blur-md">
+      <p className="font-sans font-semibold text-ink-200 text-xs border-b border-ink-700/60 pb-1">{label}</p>
       {payload.map((p, i) => (
-        <p key={i} className="font-semibold flex items-center justify-between gap-3" style={{ color: p.color || p.fill }}>
-          <span>{p.name}:</span>
-          <span>{fmtDecimal(p.value)}</span>
-        </p>
+        <div key={i} className="flex items-center justify-between gap-4 font-medium" style={{ color: p.color || p.fill }}>
+          <span className="opacity-90">{p.name}:</span>
+          <span className="font-semibold">{fmtDecimal(p.value)}</span>
+        </div>
       ))}
     </div>
   );
 };
 
-const SectionHeader = ({ title, subtitle, action }) => (
-  <div className="flex items-center justify-between mb-4">
+const SectionHeader = ({ title, subtitle, icon: Icon }) => (
+  <div className="flex items-center gap-2.5 mb-4">
+    {Icon && (
+      <div className="p-2 rounded-lg bg-accent/10 text-accent dark:bg-accent/20">
+        <Icon size={18} strokeWidth={2} />
+      </div>
+    )}
     <div>
-      <h2 className="text-sm font-semibold text-ink-900 dark:text-ink-50">{title}</h2>
-      {subtitle && <p className="text-xs text-ink-700 dark:text-ink-200 opacity-60 mt-0.5">{subtitle}</p>}
+      <h2 className="text-base font-bold text-ink-900 dark:text-ink-50">{title}</h2>
+      {subtitle && <p className="text-xs text-ink-600 dark:text-ink-300 mt-0.5">{subtitle}</p>}
     </div>
-    {action && <div>{action}</div>}
   </div>
 );
 
 const Card = ({ children, className = '' }) => (
-  <div className={`bg-white dark:bg-ink-900 border border-ink-100 dark:border-[#2C2C28] rounded-card p-5 ${className}`}>
+  <div className={`bg-white dark:bg-ink-900 border border-ink-100 dark:border-[#2C2C28] rounded-2xl p-5 shadow-sm transition-all hover:shadow-md ${className}`}>
     {children}
   </div>
 );
@@ -87,7 +91,7 @@ const Analysis = () => {
         }).filter(Boolean))].sort((a, b) => b - a);
         if (txYears.length > 0) {
           setAvailableYears(txYears);
-          setYear(txYears[0]); // Auto-select most recent transaction year
+          setYear(txYears[0]);
         }
       }
     }).catch(err => console.error(err));
@@ -164,14 +168,13 @@ const Analysis = () => {
   const hasNetCashFlowData = netCashFlow.some(m => (m.net || 0) !== 0);
 
   const dailyExpenseData = dailyExpenses.map(d => ({
-    date: d.date.slice(5), // MM-DD for x-axis
+    date: d.date.slice(5),
     fullDate: d.date,
     Expense: d.total_expense,
   }));
 
-  // Format Top 5 transactions data preserving exact description/payee
   const topTransactionsData = topTransactions.map(t => ({
-    label: t.label || t.description || t.payee || 'Unknown',
+    label: (t.label || t.description || t.payee || 'Unknown').slice(0, 20),
     fullDescription: t.description || t.payee || 'Unknown',
     amount: t.amount,
     date: t.date,
@@ -180,191 +183,195 @@ const Analysis = () => {
   return (
     <Layout>
       <SEO
-        title="Financial Analysis - Monthly Cash Flow & Trends"
-        description="Analyze cash flow trends, monthly income vs expenses breakdown, daily average spend, and top expense categories with visual charts."
+        title="Financial Analysis - Cash Flow & Spending Reports"
+        description="Clear visual financial analytics, cash flow breakdowns, and expense trends for ExpTracker."
         path="/analysis"
       />
+
       {/* Header */}
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
         <div>
-          <h1 className="text-base font-semibold text-ink-900 dark:text-ink-50">Financial Analysis</h1>
-          <p className="text-xs font-mono text-ink-700 dark:text-ink-200 opacity-60 mt-0.5">
-            Cash flow, expense trends, and financial performance summary
+          <div className="flex items-center gap-2">
+            <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-ink-900 dark:text-ink-50">
+              Financial Analysis
+            </h1>
+            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-accent/10 text-accent">
+              <Sparkles size={12} /> Insights
+            </span>
+          </div>
+          <p className="text-xs text-ink-600 dark:text-ink-300 mt-1">
+            Simple breakdown of your income, expenses, cash flow trends, and highest spending.
           </p>
         </div>
+
+        <button
+          onClick={handleResetFilters}
+          className="self-start sm:self-auto flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-ink-700 dark:text-ink-200 bg-ink-50 dark:bg-ink-800 hover:bg-ink-100 border border-ink-200 dark:border-ink-700 rounded-xl transition-all cursor-pointer min-h-[44px]"
+        >
+          <RotateCcw size={14} />
+          <span>Reset Filters</span>
+        </button>
       </div>
 
-      <Card className="mb-6">
-        <div className="space-y-3">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2 text-xs font-semibold text-ink-900 dark:text-ink-50">
-              <Filter size={16} strokeWidth={1.5} className="text-accent" />
-              <span>Filter Transactions</span>
-            </div>
-            <button
-              onClick={handleResetFilters}
-              className="flex items-center gap-1 text-xs font-mono text-ink-700 dark:text-ink-200 hover:text-ink-900 dark:hover:text-white px-2.5 py-1 border border-ink-100 dark:border-[#2C2C28] rounded-md transition-colors cursor-pointer"
-              title="Reset filters"
+      {/* Easy Filter Controls */}
+      <Card className="mb-6 bg-gradient-to-r from-white to-ink-50/50 dark:from-ink-900 dark:to-ink-900/50">
+        <div className="flex items-center gap-2 text-xs font-bold text-ink-900 dark:text-ink-50 mb-3">
+          <Filter size={16} className="text-accent" />
+          <span>Quick Filters</span>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 text-xs">
+          <div>
+            <label className="text-[11px] font-semibold text-ink-600 dark:text-ink-300 block mb-1">Year</label>
+            <select
+              value={year}
+              onChange={e => setYear(Number(e.target.value))}
+              className="w-full border border-ink-200 dark:border-ink-700 rounded-xl px-3 py-2 bg-white dark:bg-ink-800 text-ink-900 dark:text-ink-50 focus:ring-2 focus:ring-accent focus:outline-none cursor-pointer text-xs min-h-[44px]"
             >
-              <RotateCcw size={13} />
-              <span>Reset</span>
-            </button>
+              {availableYears.map(y => <option key={y} value={y}>{y}</option>)}
+            </select>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 text-xs">
-            <div>
-              <label className="text-[10px] font-mono text-ink-700 dark:text-ink-200 opacity-60 block mb-1 select-none">Year</label>
-              <select
-                value={year}
-                onChange={e => setYear(Number(e.target.value))}
-                className="w-full font-mono border border-ink-100 dark:border-[#2C2C28] rounded-md px-2.5 py-1.5 bg-white dark:bg-[#252522] text-ink-900 dark:text-ink-50 focus:outline-none focus:border-accent cursor-pointer"
-              >
-                {availableYears.map(y => <option key={y} value={y}>{y}</option>)}
-              </select>
-            </div>
+          <div>
+            <label className="text-[11px] font-semibold text-ink-600 dark:text-ink-300 block mb-1">Month</label>
+            <select
+              value={month}
+              onChange={e => setMonth(e.target.value ? Number(e.target.value) : '')}
+              className="w-full border border-ink-200 dark:border-ink-700 rounded-xl px-3 py-2 bg-white dark:bg-ink-800 text-ink-900 dark:text-ink-50 focus:ring-2 focus:ring-accent focus:outline-none cursor-pointer text-xs min-h-[44px]"
+            >
+              <option value="">All Months</option>
+              {MONTHS.map((m, idx) => (
+                <option key={m} value={idx + 1}>{m}</option>
+              ))}
+            </select>
+          </div>
 
-            <div>
-              <label className="text-[10px] font-mono text-ink-700 dark:text-ink-200 opacity-60 block mb-1 select-none">Month</label>
-              <select
-                value={month}
-                onChange={e => setMonth(e.target.value ? Number(e.target.value) : '')}
-                className="w-full font-mono border border-ink-100 dark:border-[#2C2C28] rounded-md px-2.5 py-1.5 bg-white dark:bg-[#252522] text-ink-900 dark:text-ink-50 focus:outline-none focus:border-accent cursor-pointer"
-              >
-                <option value="">All Months</option>
-                {MONTHS.map((m, idx) => (
-                  <option key={m} value={idx + 1}>{m}</option>
-                ))}
-              </select>
-            </div>
+          <div>
+            <label className="text-[11px] font-semibold text-ink-600 dark:text-ink-300 block mb-1">From Date</label>
+            <input
+              type="date"
+              value={fromDate}
+              onChange={e => setFromDate(e.target.value)}
+              className="w-full border border-ink-200 dark:border-ink-700 rounded-xl px-3 py-2 bg-white dark:bg-ink-800 text-ink-900 dark:text-ink-50 focus:ring-2 focus:ring-accent focus:outline-none cursor-pointer text-xs min-h-[44px]"
+            />
+          </div>
 
-            <div>
-              <label className="text-[10px] font-mono text-ink-700 dark:text-ink-200 opacity-60 block mb-1 select-none">From Date</label>
-              <input
-                type="date"
-                value={fromDate}
-                onChange={e => setFromDate(e.target.value)}
-                className="w-full font-mono border border-ink-100 dark:border-[#2C2C28] rounded-md px-2.5 py-1.5 bg-white dark:bg-[#252522] text-ink-900 dark:text-ink-50 focus:outline-none focus:border-accent cursor-pointer"
-              />
-            </div>
+          <div>
+            <label className="text-[11px] font-semibold text-ink-600 dark:text-ink-300 block mb-1">To Date</label>
+            <input
+              type="date"
+              value={toDate}
+              onChange={e => setToDate(e.target.value)}
+              className="w-full border border-ink-200 dark:border-ink-700 rounded-xl px-3 py-2 bg-white dark:bg-ink-800 text-ink-900 dark:text-ink-50 focus:ring-2 focus:ring-accent focus:outline-none cursor-pointer text-xs min-h-[44px]"
+            />
+          </div>
 
-            <div>
-              <label className="text-[10px] font-mono text-ink-700 dark:text-ink-200 opacity-60 block mb-1 select-none">To Date</label>
-              <input
-                type="date"
-                value={toDate}
-                onChange={e => setToDate(e.target.value)}
-                className="w-full font-mono border border-ink-100 dark:border-[#2C2C28] rounded-md px-2.5 py-1.5 bg-white dark:bg-[#252522] text-ink-900 dark:text-ink-50 focus:outline-none focus:border-accent cursor-pointer"
-              />
-            </div>
-
-            <div>
-              <label className="text-[10px] font-mono text-ink-700 dark:text-ink-200 opacity-60 block mb-1 select-none">Type</label>
-              <div className="flex bg-ink-50 dark:bg-[#252522] p-0.5 rounded-md border border-ink-100 dark:border-[#2C2C28]">
-                {['all', 'income', 'expense'].map(t => (
-                  <button
-                    key={t}
-                    onClick={() => setType(t)}
-                    className={`flex-1 py-1 text-[11px] font-mono capitalize rounded cursor-pointer ${type === t ? 'bg-accent text-white font-semibold' : 'text-ink-700 dark:text-ink-200 hover:text-ink-900'}`}
-                  >
-                    {t}
-                  </button>
-                ))}
-              </div>
+          <div>
+            <label className="text-[11px] font-semibold text-ink-600 dark:text-ink-300 block mb-1">Transaction Type</label>
+            <div className="flex bg-ink-100 dark:bg-ink-800 p-1 rounded-xl border border-ink-200 dark:border-ink-700 min-h-[44px] items-center">
+              {['all', 'income', 'expense'].map(t => (
+                <button
+                  key={t}
+                  onClick={() => setType(t)}
+                  className={`flex-1 py-1.5 text-xs font-semibold capitalize rounded-lg transition-all cursor-pointer ${type === t ? 'bg-accent text-white shadow-sm' : 'text-ink-700 dark:text-ink-200 hover:text-ink-900'}`}
+                >
+                  {t}
+                </button>
+              ))}
             </div>
           </div>
         </div>
       </Card>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 mb-6">
-        <Card title={fmtDecimal(summaryCards.total_income)}>
-          <div className="flex items-center justify-between mb-1">
-            <span className="text-[10px] font-mono uppercase tracking-wider text-ink-700 dark:text-ink-200 opacity-60 select-none">Total Income</span>
-            <div className="p-1 rounded bg-positive/10 text-positive">
-              <TrendingUp size={14} strokeWidth={1.5} />
+      {/* KPI Cards: Clean 4-Column Layout */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+        {/* Total Income */}
+        <Card className="border-l-4 border-l-positive">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-xs font-bold uppercase tracking-wider text-ink-600 dark:text-ink-300">Total Income</span>
+            <div className="p-2 rounded-xl bg-positive/10 text-positive">
+              <TrendingUp size={18} strokeWidth={2} />
             </div>
           </div>
-          <p className="font-mono text-base font-semibold text-positive truncate">{fmt(summaryCards.total_income)}</p>
+          <p className="text-2xl font-bold font-mono text-positive tracking-tight">
+            {fmt(summaryCards.total_income)}
+          </p>
+          <p className="text-[11px] text-ink-500 dark:text-ink-400 mt-1">Total credited funds in range</p>
         </Card>
 
-        <Card title={fmtDecimal(summaryCards.total_expenses)}>
-          <div className="flex items-center justify-between mb-1">
-            <span className="text-[10px] font-mono uppercase tracking-wider text-ink-700 dark:text-ink-200 opacity-60 select-none">Total Expenses</span>
-            <div className="p-1 rounded bg-negative/10 text-negative">
-              <TrendingDown size={14} strokeWidth={1.5} />
+        {/* Total Expenses */}
+        <Card className="border-l-4 border-l-negative">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-xs font-bold uppercase tracking-wider text-ink-600 dark:text-ink-300">Total Expenses</span>
+            <div className="p-2 rounded-xl bg-negative/10 text-negative">
+              <TrendingDown size={18} strokeWidth={2} />
             </div>
           </div>
-          <p className="font-mono text-base font-semibold text-negative truncate">{fmt(summaryCards.total_expenses)}</p>
+          <p className="text-2xl font-bold font-mono text-negative tracking-tight">
+            {fmt(summaryCards.total_expenses)}
+          </p>
+          <p className="text-[11px] text-ink-500 dark:text-ink-400 mt-1">Total debited spend in range</p>
         </Card>
 
-        <Card title={fmtDecimal(summaryCards.current_balance)}>
-          <div className="flex items-center justify-between mb-1">
-            <span className="text-[10px] font-mono uppercase tracking-wider text-ink-700 dark:text-ink-200 opacity-60 select-none">Current Balance</span>
-            <div className="p-1 rounded bg-accent/10 text-accent">
-              <Wallet size={14} strokeWidth={1.5} />
+        {/* Net Cash Flow / Balance */}
+        <Card className="border-l-4 border-l-accent">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-xs font-bold uppercase tracking-wider text-ink-600 dark:text-ink-300">Net Cash Flow</span>
+            <div className="p-2 rounded-xl bg-accent/10 text-accent">
+              <Wallet size={18} strokeWidth={2} />
             </div>
           </div>
-          <p className={`font-mono text-base font-semibold truncate ${summaryCards.current_balance >= 0 ? 'text-accent' : 'text-negative'}`}>
+          <p className={`text-2xl font-bold font-mono tracking-tight ${summaryCards.current_balance >= 0 ? 'text-accent' : 'text-negative'}`}>
             {fmt(summaryCards.current_balance)}
           </p>
+          <p className="text-[11px] text-ink-500 dark:text-ink-400 mt-1">Income minus total expenses</p>
         </Card>
 
-        <Card title={fmtDecimal(summaryCards.highest_expense)}>
-          <div className="flex items-center justify-between mb-1">
-            <span className="text-[10px] font-mono uppercase tracking-wider text-ink-700 dark:text-ink-200 opacity-60 select-none">Highest Expense</span>
-            <div className="p-1 rounded bg-negative/10 text-negative">
-              <ArrowUpRight size={14} strokeWidth={1.5} />
+        {/* Highest Single Expense */}
+        <Card className="border-l-4 border-l-purple-500">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-xs font-bold uppercase tracking-wider text-ink-600 dark:text-ink-300">Highest Single Spend</span>
+            <div className="p-2 rounded-xl bg-purple-500/10 text-purple-600 dark:text-purple-400">
+              <ArrowUpRight size={18} strokeWidth={2} />
             </div>
           </div>
-          <p className="font-mono text-base font-semibold text-negative truncate">{fmt(summaryCards.highest_expense)}</p>
-        </Card>
-
-        <Card title={`${fmtDecimal(summaryCards.avg_daily_expense)} / active day`}>
-          <div className="flex items-center justify-between mb-1">
-            <span className="text-[10px] font-mono uppercase tracking-wider text-ink-700 dark:text-ink-200 opacity-60 select-none">Avg Daily Spend</span>
-            <div className="p-1 rounded bg-accent/10 text-accent">
-              <Calendar size={14} strokeWidth={1.5} />
-            </div>
-          </div>
-          <p className="font-mono text-base font-semibold text-ink-900 dark:text-ink-50 truncate">{fmt(summaryCards.avg_daily_expense)}</p>
-        </Card>
-
-        <Card title={`${summaryCards.transaction_count} recorded transactions`}>
-          <div className="flex items-center justify-between mb-1">
-            <span className="text-[10px] font-mono uppercase tracking-wider text-ink-700 dark:text-ink-200 opacity-60 select-none">Transactions</span>
-            <div className="p-1 rounded bg-ink-100 dark:bg-ink-700 text-ink-900 dark:text-ink-50">
-              <Hash size={14} strokeWidth={1.5} />
-            </div>
-          </div>
-          <p className="font-mono text-base font-semibold text-ink-900 dark:text-ink-50 truncate">{summaryCards.transaction_count}</p>
+          <p className="text-2xl font-bold font-mono text-purple-600 dark:text-purple-400 tracking-tight">
+            {fmt(summaryCards.highest_expense)}
+          </p>
+          <p className="text-[11px] text-ink-500 dark:text-ink-400 mt-1">
+            {summaryCards.avg_daily_expense > 0 ? `Avg ${fmt(summaryCards.avg_daily_expense)} / active day` : 'Single largest transaction'}
+          </p>
         </Card>
       </div>
 
       {loading ? (
-        <div className="flex items-center justify-center py-24 text-ink-700 dark:text-ink-200">
-          <span className="w-5 h-5 border-2 border-accent border-t-transparent rounded-full animate-spin mr-3" />
-          <span className="text-xs font-mono">Loading cash flow analysis...</span>
+        <div className="flex flex-col items-center justify-center py-24 text-ink-600 dark:text-ink-300 bg-white dark:bg-ink-900 rounded-2xl border border-ink-100 dark:border-ink-800">
+          <span className="w-8 h-8 border-3 border-accent border-t-transparent rounded-full animate-spin mb-3" />
+          <span className="text-sm font-semibold">Loading cash flow analysis...</span>
         </div>
       ) : (
         <>
+          {/* Main Charts Row */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
             <Card>
               <SectionHeader
                 title="Monthly Income vs Expenses"
-                subtitle={`Full year cash flow comparison (${year})`}
+                subtitle={`Side-by-side comparison for ${year}`}
+                icon={Activity}
               />
               {!hasMonthlyBarData ? (
-                <div className="py-16 text-center text-xs font-mono text-ink-700 dark:text-ink-200 opacity-60">
-                  No monthly income or expense data for {year}
+                <div className="py-20 text-center text-xs font-mono text-ink-500 dark:text-ink-400">
+                  No monthly data recorded for {year}
                 </div>
               ) : (
-                <ResponsiveContainer width="100%" height={240}>
-                  <BarChart data={monthlyBarData} barGap={2} barCategoryGap="25%">
-                    <CartesianGrid strokeDasharray="3 3" stroke="#444440" opacity={0.3} vertical={false} />
-                    <XAxis dataKey="month" tick={{ fontSize: 11, fontFamily: 'IBM Plex Mono' }} stroke="#888" />
-                    <YAxis tick={{ fontSize: 11, fontFamily: 'IBM Plex Mono' }} stroke="#888" tickFormatter={v => '₹' + (v >= 1000 ? (v / 1000).toFixed(0) + 'k' : v)} />
+                <ResponsiveContainer width="100%" height={280}>
+                  <BarChart data={monthlyBarData} barGap={4} barCategoryGap="20%">
+                    <CartesianGrid strokeDasharray="3 3" stroke="#888888" opacity={0.15} vertical={false} />
+                    <XAxis dataKey="month" tick={{ fontSize: 12, fill: '#6B7280' }} stroke="#888" />
+                    <YAxis tick={{ fontSize: 11, fill: '#6B7280' }} stroke="#888" tickFormatter={v => '₹' + (v >= 1000 ? (v / 1000).toFixed(0) + 'k' : v)} />
                     <Tooltip content={<CustomTooltip />} />
-                    <Bar dataKey="Income" name="Income" fill="#16A34A" radius={[2, 2, 0, 0]} isAnimationActive={false} />
-                    <Bar dataKey="Expense" name="Expense" fill="#DC2626" radius={[2, 2, 0, 0]} isAnimationActive={false} />
+                    <Bar dataKey="Income" name="Income" fill="#059669" radius={[4, 4, 0, 0]} isAnimationActive={false} />
+                    <Bar dataKey="Expense" name="Expense" fill="#DC2626" radius={[4, 4, 0, 0]} isAnimationActive={false} />
                   </BarChart>
                 </ResponsiveContainer>
               )}
@@ -373,52 +380,61 @@ const Analysis = () => {
             <Card>
               <SectionHeader
                 title="Monthly Net Cash Flow"
-                subtitle={`Net income minus expenses per month (${year})`}
+                subtitle={`Net profit/loss trajectory over ${year}`}
+                icon={TrendingUp}
               />
               {!hasNetCashFlowData ? (
-                <div className="py-16 text-center text-xs font-mono text-ink-700 dark:text-ink-200 opacity-60">
-                  No net cash flow data for {year}
+                <div className="py-20 text-center text-xs font-mono text-ink-500 dark:text-ink-400">
+                  No cash flow trajectory data for {year}
                 </div>
               ) : (
-                <ResponsiveContainer width="100%" height={240}>
-                  <LineChart data={netCashFlowData}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#444440" opacity={0.3} vertical={false} />
-                    <XAxis dataKey="month" tick={{ fontSize: 11, fontFamily: 'IBM Plex Mono' }} stroke="#888" />
-                    <YAxis tick={{ fontSize: 11, fontFamily: 'IBM Plex Mono' }} stroke="#888" tickFormatter={v => '₹' + (v >= 1000 ? (v / 1000).toFixed(0) + 'k' : v)} />
+                <ResponsiveContainer width="100%" height={280}>
+                  <AreaChart data={netCashFlowData}>
+                    <defs>
+                      <linearGradient id="netColor" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="#2563EB" stopOpacity={0.4}/>
+                        <stop offset="95%" stopColor="#2563EB" stopOpacity={0.0}/>
+                      </linearGradient>
+                    </defs>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#888888" opacity={0.15} vertical={false} />
+                    <XAxis dataKey="month" tick={{ fontSize: 12, fill: '#6B7280' }} stroke="#888" />
+                    <YAxis tick={{ fontSize: 11, fill: '#6B7280' }} stroke="#888" tickFormatter={v => '₹' + (v >= 1000 ? (v / 1000).toFixed(0) + 'k' : v)} />
                     <Tooltip content={<CustomTooltip />} />
-                    <ReferenceLine y={0} stroke="#888" strokeDasharray="3 3" />
-                    <Line
+                    <ReferenceLine y={0} stroke="#9CA3AF" strokeDasharray="3 3" />
+                    <Area
                       type="monotone"
                       dataKey="Net Cash Flow"
                       name="Net Cash Flow"
                       stroke="#2563EB"
-                      strokeWidth={2}
-                      dot={{ r: 3, fill: '#2563EB' }}
-                      activeDot={{ r: 5 }}
+                      strokeWidth={2.5}
+                      fillOpacity={1}
+                      fill="url(#netColor)"
                       isAnimationActive={false}
                     />
-                  </LineChart>
+                  </AreaChart>
                 </ResponsiveContainer>
               )}
             </Card>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+          {/* Secondary Detail Row */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <Card>
               <SectionHeader
-                title="Daily Expense Trend"
-                subtitle={`Expense timeline for ${MONTHS[(month || currentMonth) - 1]} ${year}`}
+                title="Daily Expense Timeline"
+                subtitle={`Daily spend patterns for ${MONTHS[(month || currentMonth) - 1]} ${year}`}
+                icon={Calendar}
               />
               {dailyExpenseData.length === 0 ? (
-                <div className="py-16 text-center text-xs font-mono text-ink-700 dark:text-ink-200 opacity-60">
-                  No daily expense data for {MONTHS[(month || currentMonth) - 1]} {year}
+                <div className="py-20 text-center text-xs font-mono text-ink-500 dark:text-ink-400">
+                  No daily expense entries for {MONTHS[(month || currentMonth) - 1]} {year}
                 </div>
               ) : (
-                <ResponsiveContainer width="100%" height={240}>
+                <ResponsiveContainer width="100%" height={260}>
                   <LineChart data={dailyExpenseData}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#444440" opacity={0.3} vertical={false} />
-                    <XAxis dataKey="date" tick={{ fontSize: 10, fontFamily: 'IBM Plex Mono' }} stroke="#888" />
-                    <YAxis tick={{ fontSize: 11, fontFamily: 'IBM Plex Mono' }} stroke="#888" tickFormatter={v => '₹' + (v >= 1000 ? (v / 1000).toFixed(0) + 'k' : v)} />
+                    <CartesianGrid strokeDasharray="3 3" stroke="#888888" opacity={0.15} vertical={false} />
+                    <XAxis dataKey="date" tick={{ fontSize: 11, fill: '#6B7280' }} stroke="#888" />
+                    <YAxis tick={{ fontSize: 11, fill: '#6B7280' }} stroke="#888" tickFormatter={v => '₹' + (v >= 1000 ? (v / 1000).toFixed(0) + 'k' : v)} />
                     <Tooltip content={<CustomTooltip />} />
                     <Line
                       type="monotone"
@@ -437,22 +453,23 @@ const Analysis = () => {
 
             <Card>
               <SectionHeader
-                title="Top 5 Expense Transactions"
-                subtitle="Highest debited single transactions (exact imported text)"
+                title="Top 5 Largest Expenses"
+                subtitle="Highest individual debited transactions"
+                icon={ArrowUpRight}
               />
               {topTransactionsData.length === 0 ? (
-                <div className="py-16 text-center text-xs font-mono text-ink-700 dark:text-ink-200 opacity-60">
-                  No expense transactions found
+                <div className="py-20 text-center text-xs font-mono text-ink-500 dark:text-ink-400">
+                  No expense transactions recorded
                 </div>
               ) : (
-                <ResponsiveContainer width="100%" height={240}>
+                <ResponsiveContainer width="100%" height={260}>
                   <BarChart data={topTransactionsData} layout="vertical" barCategoryGap="25%">
-                    <CartesianGrid strokeDasharray="3 3" stroke="#444440" opacity={0.3} vertical={false} />
-                    <XAxis type="number" tick={{ fontSize: 11, fontFamily: 'IBM Plex Mono' }} stroke="#888" tickFormatter={v => '₹' + (v >= 1000 ? (v / 1000).toFixed(0) + 'k' : v)} />
+                    <CartesianGrid strokeDasharray="3 3" stroke="#888888" opacity={0.15} vertical={false} />
+                    <XAxis type="number" tick={{ fontSize: 11, fill: '#6B7280' }} stroke="#888" tickFormatter={v => '₹' + (v >= 1000 ? (v / 1000).toFixed(0) + 'k' : v)} />
                     <YAxis
                       type="category"
                       dataKey="label"
-                      tick={{ fontSize: 10, fontFamily: 'IBM Plex Mono' }}
+                      tick={{ fontSize: 11, fill: '#374151' }}
                       stroke="#888"
                       width={120}
                     />
@@ -461,15 +478,15 @@ const Analysis = () => {
                         if (!active || !payload?.length) return null;
                         const data = payload[0].payload;
                         return (
-                          <div className="bg-ink-900 text-ink-50 border border-ink-700 rounded-card p-3 shadow-lg font-mono text-xs max-w-md whitespace-normal break-words">
-                            <p className="font-sans font-semibold mb-1 opacity-80">{data.fullDescription}</p>
-                            <p className="text-[10px] text-ink-200 opacity-60 mb-2">{data.date}</p>
-                            <p className="font-semibold text-negative">{fmtDecimal(data.amount)}</p>
+                          <div className="bg-ink-900 text-white border border-ink-700 rounded-xl p-3 shadow-xl font-mono text-xs max-w-xs whitespace-normal break-words">
+                            <p className="font-sans font-semibold text-ink-200 mb-1">{data.fullDescription}</p>
+                            <p className="text-[10px] text-ink-400 mb-1.5">{data.date}</p>
+                            <p className="font-bold text-negative">{fmtDecimal(data.amount)}</p>
                           </div>
                         );
                       }}
                     />
-                    <Bar dataKey="amount" name="Amount" fill="#2563EB" radius={[0, 2, 2, 0]} isAnimationActive={false} />
+                    <Bar dataKey="amount" name="Amount" fill="#2563EB" radius={[0, 4, 4, 0]} isAnimationActive={false} />
                   </BarChart>
                 </ResponsiveContainer>
               )}
