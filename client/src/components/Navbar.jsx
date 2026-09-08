@@ -110,22 +110,22 @@ const Navbar = () => {
         </div>
       </aside>
 
-      <div className="md:hidden fixed top-0 left-0 right-0 z-30 bg-white dark:bg-ink-900 border-b border-ink-100 dark:border-[#2C2C28]">
+      <div className="md:hidden fixed top-0 left-0 right-0 z-30 bg-white/90 dark:bg-ink-900/90 backdrop-blur-md border-b border-ink-100 dark:border-[#2C2C28]">
         <div className="flex items-center justify-between px-4 h-12">
           <Link to="/dashboard" className="font-bold text-base text-ink-900 dark:text-ink-50">
-            <span>Exp<span className="text-accent">Tracker</span></span>
+            <span>Exp<span className="text-accent font-semibold">Tracker</span></span>
           </Link>
           <div className="flex items-center gap-2">
             <button
               onClick={toggle}
-              className="text-ink-700 dark:text-ink-200 p-1 cursor-pointer"
+              className="text-ink-700 dark:text-ink-200 p-1.5 rounded-md hover:bg-ink-50 dark:hover:bg-[#2C2C28] cursor-pointer"
               aria-label="Toggle dark mode"
             >
               {dark ? <Sun size={18} strokeWidth={1.5} /> : <Moon size={18} strokeWidth={1.5} />}
             </button>
             <NavLink
               to="/profile"
-              className="w-7 h-7 rounded-full bg-accent text-white font-mono text-xs font-bold flex items-center justify-center select-none"
+              className="w-7 h-7 rounded-full bg-accent text-white font-mono text-xs font-bold flex items-center justify-center select-none shadow-xs"
             >
               {user?.name?.charAt(0).toUpperCase() || 'U'}
             </NavLink>
@@ -133,20 +133,22 @@ const Navbar = () => {
         </div>
       </div>
 
-      <div className="md:hidden fixed bottom-0 left-0 right-0 z-30 bg-white dark:bg-ink-900 border-t border-ink-100 dark:border-[#2C2C28]">
-        <div className="flex">
+      <div className="md:hidden fixed bottom-0 left-0 right-0 z-30 bg-white/95 dark:bg-ink-900/95 backdrop-blur-md border-t border-ink-100 dark:border-[#2C2C28] pb-[env(safe-area-inset-bottom,0px)]">
+        <div className="flex items-center justify-around px-2 py-1">
           {NAV_SECTIONS.flatMap(s => s.items).map(({ to, label: l, icon: Icon }) => (
             <NavLink
               key={to}
               to={to}
               className={({ isActive }) =>
-                `flex flex-col items-center flex-1 py-2 gap-1 transition-colors ${
-                  isActive ? 'text-accent font-semibold' : 'text-ink-700 dark:text-ink-200 opacity-60'
+                `flex flex-col items-center flex-1 py-1.5 gap-1 rounded-md transition-all ${
+                  isActive
+                    ? 'text-accent font-semibold bg-accent/10 dark:bg-accent/20'
+                    : 'text-ink-700 dark:text-ink-200 opacity-60 hover:opacity-100'
                 }`
               }
             >
               <Icon size={18} strokeWidth={1.5} />
-              <span className="text-[10px]">{l}</span>
+              <span className="text-[10px] font-medium tracking-tight">{l}</span>
             </NavLink>
           ))}
         </div>

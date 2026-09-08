@@ -1,16 +1,32 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
+import axios from '../api/axios';
 import Layout from '../components/Layout';
-import { User, Mail, ShieldCheck, LogOut } from 'lucide-react';
+import { User, Mail, ShieldCheck, LogOut, KeyRound, CheckCircle2, Loader2 } from 'lucide-react';
 
 const Profile = () => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
+  const [resetSent, setResetSent] = useState(false);
+  const [resetLoading, setResetLoading] = useState(false);
 
   const handleLogout = async () => {
     await logout();
     navigate('/login');
+  };
+
+  const handlePasswordReset = async () => {
+    if (!user?.email) return;
+    setResetLoading(true);
+    try {
+      await axios.post('/auth/forgot-password', { email: user.email });
+      setResetSent(true);
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setResetLoading(false);
+    }
   };
 
   return (
@@ -57,10 +73,26 @@ const Profile = () => {
             </div>
           </div>
 
-          <div className="pt-4 border-t border-ink-100 dark:border-[#2C2C28]">
+          <div className="pt-4 border-t border-ink-100 dark:border-[#2C2C28] space-y-3">
+            {resetSent ? (
+              <div className="p-3 rounded-md bg-accent/10 border border-accent/20 text-accent text-xs flex items-center gap-2">
+                <CheckCircle2 size={16} strokeWidth={1.5} />
+                <span>Password reset link sent to your email address!</span>
+              </div>
+            ) : (
+              <button
+                onClick={handlePasswordReset}
+                disabled={resetLoading}
+                className="w-full flex items-center justify-center gap-2 border border-ink-100 dark:border-[#2C2C28] hover:bg-ink-50 dark:hover:bg-[#252522] text-ink-900 dark:text-ink-50 py-2.5 rounded-md text-xs font-semibold transition-colors cursor-pointer disabled:opacity-50"
+              >
+                {resetLoading ? <Loader2 size={16} className="animate-spin" /> : <KeyRound size={16} strokeWidth={1.5} />}
+                <span>Send Password Reset Email</span>
+              </button>
+            )}
+
             <button
               onClick={handleLogout}
-              className="w-full flex items-center justify-center gap-2 bg-negative/10 hover:bg-negative/20 text-negative py-2.5 rounded-md text-xs font-semibold transition-colors"
+              className="w-full flex items-center justify-center gap-2 bg-negative/10 hover:bg-negative/20 text-negative py-2.5 rounded-md text-xs font-semibold transition-colors cursor-pointer"
             >
               <LogOut size={16} strokeWidth={1.5} />
               <span>Sign out</span>

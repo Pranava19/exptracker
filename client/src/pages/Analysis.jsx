@@ -189,19 +189,29 @@ const Analysis = () => {
       </div>
 
       <Card className="mb-6">
-        <div className="flex flex-wrap items-center justify-between gap-4">
-          <div className="flex items-center gap-2 text-xs font-semibold text-ink-900 dark:text-ink-50">
-            <Filter size={16} strokeWidth={1.5} className="text-accent" />
-            <span>Filter Transactions</span>
+        <div className="space-y-3">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2 text-xs font-semibold text-ink-900 dark:text-ink-50">
+              <Filter size={16} strokeWidth={1.5} className="text-accent" />
+              <span>Filter Transactions</span>
+            </div>
+            <button
+              onClick={handleResetFilters}
+              className="flex items-center gap-1 text-xs font-mono text-ink-700 dark:text-ink-200 hover:text-ink-900 dark:hover:text-white px-2.5 py-1 border border-ink-100 dark:border-[#2C2C28] rounded-md transition-colors cursor-pointer"
+              title="Reset filters"
+            >
+              <RotateCcw size={13} />
+              <span>Reset</span>
+            </button>
           </div>
 
-          <div className="flex flex-wrap items-center gap-3 text-xs">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 text-xs">
             <div>
               <label className="text-[10px] font-mono text-ink-700 dark:text-ink-200 opacity-60 block mb-1 select-none">Year</label>
               <select
                 value={year}
                 onChange={e => setYear(Number(e.target.value))}
-                className="font-mono border border-ink-100 dark:border-[#2C2C28] rounded-md px-2.5 py-1.5 bg-white dark:bg-[#252522] text-ink-900 dark:text-ink-50 focus:outline-none focus:border-accent cursor-pointer"
+                className="w-full font-mono border border-ink-100 dark:border-[#2C2C28] rounded-md px-2.5 py-1.5 bg-white dark:bg-[#252522] text-ink-900 dark:text-ink-50 focus:outline-none focus:border-accent cursor-pointer"
               >
                 {availableYears.map(y => <option key={y} value={y}>{y}</option>)}
               </select>
@@ -212,7 +222,7 @@ const Analysis = () => {
               <select
                 value={month}
                 onChange={e => setMonth(e.target.value ? Number(e.target.value) : '')}
-                className="font-mono border border-ink-100 dark:border-[#2C2C28] rounded-md px-2.5 py-1.5 bg-white dark:bg-[#252522] text-ink-900 dark:text-ink-50 focus:outline-none focus:border-accent cursor-pointer"
+                className="w-full font-mono border border-ink-100 dark:border-[#2C2C28] rounded-md px-2.5 py-1.5 bg-white dark:bg-[#252522] text-ink-900 dark:text-ink-50 focus:outline-none focus:border-accent cursor-pointer"
               >
                 <option value="">All Months</option>
                 {MONTHS.map((m, idx) => (
@@ -227,7 +237,7 @@ const Analysis = () => {
                 type="date"
                 value={fromDate}
                 onChange={e => setFromDate(e.target.value)}
-                className="font-mono border border-ink-100 dark:border-[#2C2C28] rounded-md px-2.5 py-1.5 bg-white dark:bg-[#252522] text-ink-900 dark:text-ink-50 focus:outline-none focus:border-accent cursor-pointer"
+                className="w-full font-mono border border-ink-100 dark:border-[#2C2C28] rounded-md px-2.5 py-1.5 bg-white dark:bg-[#252522] text-ink-900 dark:text-ink-50 focus:outline-none focus:border-accent cursor-pointer"
               />
             </div>
 
@@ -237,7 +247,7 @@ const Analysis = () => {
                 type="date"
                 value={toDate}
                 onChange={e => setToDate(e.target.value)}
-                className="font-mono border border-ink-100 dark:border-[#2C2C28] rounded-md px-2.5 py-1.5 bg-white dark:bg-[#252522] text-ink-900 dark:text-ink-50 focus:outline-none focus:border-accent cursor-pointer"
+                className="w-full font-mono border border-ink-100 dark:border-[#2C2C28] rounded-md px-2.5 py-1.5 bg-white dark:bg-[#252522] text-ink-900 dark:text-ink-50 focus:outline-none focus:border-accent cursor-pointer"
               />
             </div>
 
@@ -248,29 +258,18 @@ const Analysis = () => {
                   <button
                     key={t}
                     onClick={() => setType(t)}
-                    className={`px-2.5 py-1 text-[11px] font-mono capitalize rounded cursor-pointer ${type === t ? 'bg-accent text-white font-semibold' : 'text-ink-700 dark:text-ink-200 hover:text-ink-900'}`}
+                    className={`flex-1 py-1 text-[11px] font-mono capitalize rounded cursor-pointer ${type === t ? 'bg-accent text-white font-semibold' : 'text-ink-700 dark:text-ink-200 hover:text-ink-900'}`}
                   >
                     {t}
                   </button>
                 ))}
               </div>
             </div>
-
-            <div className="self-end">
-              <button
-                onClick={handleResetFilters}
-                className="flex items-center gap-1 text-xs font-mono text-ink-700 dark:text-ink-200 hover:text-ink-900 dark:hover:text-white px-2.5 py-1.5 border border-ink-100 dark:border-[#2C2C28] rounded-md transition-colors cursor-pointer"
-                title="Reset filters"
-              >
-                <RotateCcw size={14} />
-                <span>Reset</span>
-              </button>
-            </div>
           </div>
         </div>
       </Card>
 
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 mb-6">
         <Card title={fmtDecimal(summaryCards.total_income)}>
           <div className="flex items-center justify-between mb-1">
             <span className="text-[10px] font-mono uppercase tracking-wider text-ink-700 dark:text-ink-200 opacity-60 select-none">Total Income</span>
