@@ -5,6 +5,7 @@ const cookieParser = require('cookie-parser');
 require('dotenv').config();
 
 const pool = require('./db/index');
+const logger = require('./utils/logger');
 const authRoutes = require('./routes/auth');
 const transactionRoutes = require('./routes/transactions');
 const importRoute = require('./routes/import');
@@ -26,6 +27,25 @@ app.use(express.json());
 app.use(['/api/auth/login', '/auth/login'], authLimiter);
 app.use(['/api/auth/register', '/auth/register'], authLimiter);
 app.use(['/api/auth/resend-verification', '/auth/resend-verification'], resendLimiter);
+app.use(['/api/auth/forgot-password', '/auth/forgot-password'], resendLimiter);
+
+app.get(['/api/health', '/health'], async (req, res) => {
+  try {
+    await pool.query('SELECT 1');
+    res.json({
+      status: 'ok',
+      database: 'connected',
+      timestamp: new Date().toISOString(),
+    });
+  } catch (err) {
+    logger.error('Health check database query failed: %s', err.message);
+    res.status(503).json({
+      status: 'error',
+      database: 'disconnected',
+      timestamp: new Date().toISOString(),
+    });
+  }
+});
 
 app.use(['/api/auth', '/auth'], authRoutes);
 app.use(['/api/transactions', '/transactions'], transactionLimiter, transactionRoutes);
@@ -47,7 +67,7 @@ app.use((req, res) => {
 
 // Global error handler (must be last; 4 parameters required by Express)
 app.use((err, req, res, next) => {
-  console.error(err.stack);
+  logger.error(err.stack || err.message);
   const status = err.status || 500;
   res.status(status).json({
     message: status === 500 ? 'Internal server error' : err.message,
@@ -56,7 +76,7 @@ app.use((err, req, res, next) => {
 
 if (require.main === module) {
   const PORT = process.env.PORT || 5000;
-  app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+  app.listen(PORT, () => logger.info(`Server running on port ${PORT}`));
 }
 
 module.exports = app;

@@ -8,6 +8,8 @@ CREATE TABLE IF NOT EXISTS users (
     is_verified BOOLEAN DEFAULT false,
     verification_token VARCHAR(255),
     verification_token_expires TIMESTAMP WITH TIME ZONE,
+    reset_token VARCHAR(255),
+    reset_token_expires TIMESTAMP WITH TIME ZONE,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -28,3 +30,4 @@ CREATE INDEX IF NOT EXISTS idx_transactions_user_id ON transactions(user_id);
 CREATE INDEX IF NOT EXISTS idx_transactions_date ON transactions(date);
 CREATE INDEX IF NOT EXISTS idx_transactions_category ON transactions(category);
 CREATE INDEX IF NOT EXISTS idx_users_verification_token ON users(verification_token);
+CREATE INDEX IF NOT EXISTS idx_users_reset_token ON users(reset_token);

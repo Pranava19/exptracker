@@ -38,4 +38,33 @@ const sendVerificationEmail = async (toEmail, token) => {
   });
 };
 
-module.exports = { sendVerificationEmail };
+const sendPasswordResetEmail = async (toEmail, token) => {
+  const resend = getResendClient();
+  const clientUrl = process.env.CLIENT_URL || 'http://localhost:3000';
+  const resetLink = `${clientUrl}/reset-password?token=${token}`;
+
+  return await resend.emails.send({
+    from: process.env.EMAIL_FROM || 'ExpTracker <onboarding@resend.dev>',
+    to: toEmail,
+    subject: 'Reset your ExpTracker Password',
+    html: `
+      <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 560px; margin: 0 auto; padding: 24px; background-color: #ffffff; border: 1px solid #e2e8f0; border-radius: 8px;">
+        <div style="text-align: center; margin-bottom: 24px;">
+          <h2 style="color: #0f172a; margin: 0; font-size: 22px;">Exp<span style="color: #2563eb;">Tracker</span></h2>
+          <p style="color: #475569; font-size: 14px; margin-top: 4px;">Password Reset Request</p>
+        </div>
+        <div style="color: #1e293b; font-size: 14px; line-height: 1.6;">
+          <p>Hello,</p>
+          <p>We received a request to reset your ExpTracker account password. Click the button below to choose a new password:</p>
+          <div style="text-align: center; margin: 28px 0;">
+            <a href="${resetLink}" style="background-color: #2563eb; color: #ffffff; font-weight: 600; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block; font-size: 14px;">Reset Password</a>
+          </div>
+          <p style="font-size: 12px; color: #64748b;">Or copy and paste this link into your browser:<br/><a href="${resetLink}" style="color: #2563eb;">${resetLink}</a></p>
+          <p style="font-size: 12px; color: #94a3b8; margin-top: 24px;">This password reset link will expire in 1 hour. If you did not request a password reset, please ignore this email.</p>
+        </div>
+      </div>
+    `,
+  });
+};
+
+module.exports = { sendVerificationEmail, sendPasswordResetEmail };

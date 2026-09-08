@@ -1,0 +1,55 @@
+name: ExpTracker CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test-server:
+    name: Backend Tests (Node.js)
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [18.x, 20.x]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+
+      - name: Install Server Dependencies
+        working-directory: ./server
+        run: npm install
+
+      - name: Run Server Tests
+        working-directory: ./server
+        env:
+          JWT_SECRET: ci_test_jwt_secret
+          NODE_ENV: test
+        run: npm test --if-present
+
+  build-client:
+    name: Frontend Build Check
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js 20.x
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20.x
+
+      - name: Install Client Dependencies
+        working-directory: ./client
+        run: npm install
+
+      - name: Build Client Production Bundle
+        working-directory: ./client
+        run: npm run build
