@@ -59,7 +59,7 @@ router.delete('/duplicates', auth, async (req, res) => {
          SELECT MIN(id)
          FROM transactions
          WHERE user_id = $1
-         GROUP BY user_id, date, amount, description, type
+         GROUP BY user_id, date, amount, type, LOWER(TRIM(COALESCE(description, ''))), LOWER(TRIM(COALESCE(payee, '')))
        )
        AND user_id = $1`,
       [user_id]
@@ -73,17 +73,55 @@ router.delete('/duplicates', auth, async (req, res) => {
 
 router.get('/', auth, async (req, res) => {
   const user_id = req.user.id;
-  const { type, category, start_date, end_date } = req.query;
+  const { type, category, start_date, end_date, limit, offset, page } = req.query;
   try {
-    let query = `SELECT * FROM transactions WHERE user_id = $1`;
+    let whereClause = `WHERE user_id = $1`;
     let params = [user_id];
     let index = 2;
-    if (type) { query += ` AND type = $${index}`; params.push(type); index++; }
-    if (category) { query += ` AND category = $${index}`; params.push(category); index++; }
-    if (start_date) { query += ` AND date >= $${index}`; params.push(start_date); index++; }
-    if (end_date) { query += ` AND date <= $${index}`; params.push(end_date); index++; }
-    query += ` ORDER BY date DESC`;
-    const result = await pool.query(query, params);
+    if (type) { whereClause += ` AND type = $${index}`; params.push(type); index++; }
+    if (category) { whereClause += ` AND category = $${index}`; params.push(category); index++; }
+    if (start_date) { whereClause += ` AND date >= $${index}`; params.push(start_date); index++; }
+    if (end_date) { whereClause += ` AND date <= $${index}`; params.push(end_date); index++; }
+
+    const isPaginated = limit !== undefined || offset !== undefined || page !== undefined;
+
+    if (isPaginated) {
+      const countResult = await pool.query(
+        `SELECT COUNT(*) FROM transactions ${whereClause}`,
+        params
+      );
+      const total = parseInt(countResult.rows[0].count, 10);
+
+      const parsedLimit = Math.max(1, parseInt(limit, 10) || 50);
+      let parsedOffset = 0;
+      if (offset !== undefined) {
+        parsedOffset = Math.max(0, parseInt(offset, 10) || 0);
+      } else if (page !== undefined) {
+        const currentPage = Math.max(1, parseInt(page, 10) || 1);
+        parsedOffset = (currentPage - 1) * parsedLimit;
+      }
+
+      const paginatedParams = [...params, parsedLimit, parsedOffset];
+      const dataQuery = `SELECT * FROM transactions ${whereClause} ORDER BY date DESC, id DESC LIMIT $${index} OFFSET $${index + 1}`;
+      const result = await pool.query(dataQuery, paginatedParams);
+
+      const totalPages = Math.ceil(total / parsedLimit) || 1;
+      const currentPage = Math.floor(parsedOffset / parsedLimit) + 1;
+
+      return res.json({
+        transactions: result.rows,
+        pagination: {
+          total,
+          limit: parsedLimit,
+          offset: parsedOffset,
+          page: currentPage,
+          totalPages,
+        },
+      });
+    }
+
+    const dataQuery = `SELECT * FROM transactions ${whereClause} ORDER BY date DESC, id DESC`;
+    const result = await pool.query(dataQuery, params);
     res.json(result.rows);
   } catch (err) {
     console.error(err.message);

@@ -10,6 +10,8 @@ const authRoutes = require('./routes/auth');
 const transactionRoutes = require('./routes/transactions');
 const importRoute = require('./routes/import');
 const analysisRoutes = require('./routes/analysis');
+const swaggerUi = require('swagger-ui-express');
+const swaggerSpec = require('./config/swagger');
 const { authLimiter, importLimiter, transactionLimiter, resendLimiter } = require('./middleware/rateLimiter');
 
 const app = express();
@@ -46,6 +48,8 @@ app.get(['/api/health', '/health'], async (req, res) => {
     });
   }
 });
+
+app.use(['/api-docs', '/docs'], swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 app.use(['/api/auth', '/auth'], authRoutes);
 app.use(['/api/transactions', '/transactions'], transactionLimiter, transactionRoutes);
