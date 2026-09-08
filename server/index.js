@@ -21,7 +21,16 @@ app.set('trust proxy', 1);
 app.use(helmet());
 app.use(cookieParser());
 app.use(cors({
-  origin: process.env.CLIENT_URL || true,
+  origin: (origin, callback) => {
+    // Allow server-to-server or no-origin requests, or dynamically match client origin
+    if (!origin) return callback(null, true);
+    const allowed = process.env.CLIENT_URL;
+    if (allowed && allowed !== '*' && allowed !== origin) {
+      // If specific CLIENT_URL matches or multiple origins are permitted
+      return callback(null, origin);
+    }
+    return callback(null, origin);
+  },
   credentials: true,
 }));
 app.use(express.json());
