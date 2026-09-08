@@ -9,6 +9,8 @@ import { User, Mail, ShieldCheck, LogOut, KeyRound, CheckCircle2, Loader2 } from
 const Profile = () => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
+  const [reportSent, setReportSent] = useState(false);
+  const [reportLoading, setReportLoading] = useState(false);
   const [resetSent, setResetSent] = useState(false);
   const [resetLoading, setResetLoading] = useState(false);
 
@@ -27,6 +29,18 @@ const Profile = () => {
       console.error(e);
     } finally {
       setResetLoading(false);
+    }
+  };
+
+  const handleSendReport = async () => {
+    setReportLoading(true);
+    try {
+      await axios.post('/reports/send-monthly-email');
+      setReportSent(true);
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setReportLoading(false);
     }
   };
 
@@ -80,6 +94,22 @@ const Profile = () => {
           </div>
 
           <div className="pt-4 border-t border-ink-100 dark:border-[#2C2C28] space-y-3">
+            {reportSent ? (
+              <div className="p-3 rounded-md bg-positive/10 border border-positive/20 text-positive text-xs flex items-center gap-2 font-medium">
+                <CheckCircle2 size={16} strokeWidth={1.5} />
+                <span>Monthly financial summary email sent to {user?.email}!</span>
+              </div>
+            ) : (
+              <button
+                onClick={handleSendReport}
+                disabled={reportLoading}
+                className="w-full flex items-center justify-center gap-2 bg-accent/10 hover:bg-accent/20 text-accent py-2.5 rounded-md text-xs font-semibold transition-colors cursor-pointer disabled:opacity-50"
+              >
+                {reportLoading ? <Loader2 size={16} className="animate-spin" /> : <Mail size={16} strokeWidth={1.5} />}
+                <span>Email Me Monthly Financial Summary</span>
+              </button>
+            )}
+
             {resetSent ? (
               <div className="p-3 rounded-md bg-accent/10 border border-accent/20 text-accent text-xs flex items-center gap-2">
                 <CheckCircle2 size={16} strokeWidth={1.5} />

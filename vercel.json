@@ -20,6 +20,10 @@
     {
       "source": "/analysis/(.*)",
       "destination": "/api/analysis/$1"
+    },
+    {
+      "source": "/reports/(.*)",
+      "destination": "/api/reports/$1"
     }
   ]
 }

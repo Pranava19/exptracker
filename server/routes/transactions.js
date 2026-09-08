@@ -11,19 +11,26 @@ const validateTransaction = [
   body('date').isISO8601().withMessage('Valid date is required'),
 ];
 
+const { cleanPayeeAndCategory } = require('../utils/payeeCleaner');
+
 router.post('/', auth, validateTransaction, async (req, res) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
     return res.status(400).json({ message: errors.array()[0].msg, errors: errors.array() });
   }
 
-  const { type, category, amount, description, date, mode } = req.body;
+  const { type, category, amount, description, date, mode, payee: reqPayee } = req.body;
   const user_id = req.user.id;
+  const cleaned = cleanPayeeAndCategory(description || reqPayee, category);
+  const finalPayee = reqPayee || cleaned.payee;
+  const finalCategory = category || cleaned.category;
+  const finalType = type || cleaned.type || 'expense';
+
   try {
     const result = await pool.query(
-      `INSERT INTO transactions (user_id, type, category, amount, description, date, mode)
-       VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *`,
-      [user_id, type, category, amount, description, date, mode || 'Other']
+      `INSERT INTO transactions (user_id, type, category, amount, description, payee, date, mode)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *`,
+      [user_id, finalType, finalCategory, amount, description, finalPayee, date, mode || 'Other']
     );
     res.status(201).json(result.rows[0]);
   } catch (err) {
@@ -203,10 +210,15 @@ router.post('/import', auth, async (req, res) => {
     await client.query('BEGIN');
     const inserted = [];
     for (const tx of transactions) {
+      const cleaned = cleanPayeeAndCategory(tx.description || tx.payee, tx.category);
+      const payee = tx.payee || cleaned.payee;
+      const category = tx.category || cleaned.category;
+      const type = tx.type || cleaned.type || 'expense';
+
       const result = await client.query(
-        `INSERT INTO transactions (user_id, type, category, amount, description, date, mode)
-         VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *`,
-        [user_id, tx.type, tx.category, tx.amount, tx.description, tx.date, tx.mode]
+        `INSERT INTO transactions (user_id, type, category, amount, description, payee, date, mode)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *`,
+        [user_id, type, category, tx.amount, tx.description, payee, tx.date, tx.mode || 'Other']
       );
       inserted.push(result.rows[0]);
     }

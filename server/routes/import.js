@@ -24,17 +24,11 @@ const upload = multer({
   },
 });
 
-function autoCategory(desc) {
-  if (!desc) return 'Other';
-  const d = String(desc).toUpperCase();
-  if (/ZOMATO|SWIGGY|RESTAURANT|FOOD|HOTEL|CAFE|BAKERY|FRUITS|MALIGAI|STORES|JAI STORES|K K FRUITS|SUPERMARKET|GROCERY|DUNZO|BIGBASKET|BLINKIT|ZEPTO/.test(d)) return 'Food';
-  if (/OLA|UBER|RAPIDO|PETROL|FUEL|TRANSPORT|BUS|TRAIN|METRO|IRCTC|SHELL|HPCL|IOCL|BPCL/.test(d)) return 'Transport';
-  if (/AMAZON|FLIPKART|MYNTRA|SHOP|MALL|MARKET|CLOTHES|FASHION|ZARA|H&M|UNIQLO|AJIO/.test(d)) return 'Shopping';
-  if (/NETFLIX|PRIME|SPOTIFY|HOTSTAR|GAME|CINEMA|THEATRE|GOOGLE|YOUTUBE|APPLE|STEAM/.test(d)) return 'Entertainment';
-  if (/HOSPITAL|PHARMACY|MEDICAL|DOCTOR|HEALTH|APOLLO|CLINIC|LAB|MEDPLUS|PHARMEASY/.test(d)) return 'Health';
-  if (/SALARY|PAYROLL|STIPEND|REMUNERATION/.test(d)) return 'Salary';
-  if (/FREELANCE|UPWORK|FIVERR|CONSULTING|CLIENT/.test(d)) return 'Freelance';
-  return 'Other';
+const { cleanPayeeAndCategory } = require('../utils/payeeCleaner');
+
+function autoCategory(desc, existingCat) {
+  const result = cleanPayeeAndCategory(desc, existingCat);
+  return result.category;
 }
 
 function parseDate(raw) {

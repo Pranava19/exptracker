@@ -60,10 +60,13 @@ app.get(['/api/health', '/health'], async (req, res) => {
 
 app.use(['/api-docs', '/docs'], swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
+const reportRoutes = require('./routes/report');
+
 app.use(['/api/auth', '/auth'], authRoutes);
 app.use(['/api/transactions', '/transactions'], transactionLimiter, transactionRoutes);
 app.use(['/api/import', '/import'], importLimiter, importRoute);
 app.use(['/api/analysis', '/analysis'], transactionLimiter, analysisRoutes);
+app.use(['/api/reports', '/reports'], transactionLimiter, reportRoutes);
 
 // Serverless root POST fallback for /import
 app.post(['/', '/api'], (req, res, next) => {
