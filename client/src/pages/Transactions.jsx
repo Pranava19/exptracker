@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from '../api/axios';
 import Layout from '../components/Layout';
+import SEO from '../components/SEO';
 import Toast from '../components/Toast';
 import { useToast } from '../hooks/useToast';
 import { SkeletonRow } from '../components/Skeleton';
@@ -317,6 +318,11 @@ const Transactions = () => {
 
   return (
     <Layout>
+      <SEO
+        title="Transactions - Filter, Search & Export Ledger"
+        description="View, filter, edit, and export your personal transactions to CSV. Filter by category, payment mode, date range, or transaction type."
+        path="/transactions"
+      />
       {toast && <Toast message={toast.message} type={toast.type} onClose={hideToast} />}
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-6">

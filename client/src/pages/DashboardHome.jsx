@@ -4,6 +4,7 @@ import axios from '../api/axios';
 import MonthlyChart from '../components/MonthlyChart';
 import CategoryChart from '../components/CategoryChart';
 import Layout from '../components/Layout';
+import SEO from '../components/SEO';
 import { SkeletonChart } from '../components/Skeleton';
 import {
   Wallet,
@@ -218,6 +219,13 @@ const DashboardHome = () => {
 
   return (
     <Layout>
+      <SEO
+        title="Dashboard - Financial Overview & Net Balance"
+        description="Track your total income, monthly expenses, net savings, and recent transactions in real time with ExpTracker personal finance dashboard."
+        path="/dashboard"
+      />
+      <h1 className="sr-only">Financial Dashboard Overview</h1>
+
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
         <div className="md:col-span-2 p-5 sm:p-8 bg-ink-900 text-ink-50 rounded-card flex flex-col justify-between border border-ink-700 shadow-sm relative overflow-hidden">
           <div className="flex items-center justify-between mb-4">

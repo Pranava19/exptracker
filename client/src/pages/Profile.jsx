@@ -3,6 +3,7 @@ import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import axios from '../api/axios';
 import Layout from '../components/Layout';
+import SEO from '../components/SEO';
 import { User, Mail, ShieldCheck, LogOut, KeyRound, CheckCircle2, Loader2 } from 'lucide-react';
 
 const Profile = () => {
@@ -31,6 +32,11 @@ const Profile = () => {
 
   return (
     <Layout>
+      <SEO
+        title="Account Profile & Security Settings"
+        description="Manage your personal account profile credentials, session authentication security, and password reset preferences in ExpTracker."
+        path="/profile"
+      />
       <div className="max-w-md mx-auto space-y-6">
         <div>
           <h1 className="text-base font-semibold text-ink-900 dark:text-ink-50">Account Profile</h1>

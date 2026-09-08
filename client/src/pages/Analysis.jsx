@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from '../api/axios';
 import Layout from '../components/Layout';
+import SEO from '../components/SEO';
 import {
   BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer,
   LineChart, Line, CartesianGrid, ReferenceLine,
@@ -178,6 +179,11 @@ const Analysis = () => {
 
   return (
     <Layout>
+      <SEO
+        title="Financial Analysis - Monthly Cash Flow & Trends"
+        description="Analyze cash flow trends, monthly income vs expenses breakdown, daily average spend, and top expense categories with visual charts."
+        path="/analysis"
+      />
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div>

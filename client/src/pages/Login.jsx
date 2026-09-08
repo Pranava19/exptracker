@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import axios from '../api/axios';
+import SEO from '../components/SEO';
 import { Lock, Mail, Loader2, Send, CheckCircle2, Eye, EyeOff } from 'lucide-react';
 
 const Login = () => {
@@ -53,10 +54,17 @@ const Login = () => {
 
   return (
     <div className="min-h-screen bg-ink-50 dark:bg-ink-900 flex items-center justify-center p-4">
-      <div className="w-full max-w-sm">
+      <SEO
+        title="Sign In to ExpTracker - Finance Account Login"
+        description="Sign in to your ExpTracker account to access your personal expense dashboard, transactions ledger, bank statement parser, and reports."
+        path="/login"
+      />
+      <main className="w-full max-w-sm">
         <div className="text-center mb-8">
-          <Link to="/dashboard" className="inline-flex items-center font-bold text-2xl text-ink-900 dark:text-ink-50">
-            <span>Exp<span className="text-accent">Tracker</span></span>
+          <Link to="/dashboard" className="inline-flex items-center">
+            <h1 className="font-bold text-2xl text-ink-900 dark:text-ink-50">
+              Exp<span className="text-accent">Tracker</span>
+            </h1>
           </Link>
           <p className="text-xs text-ink-700 dark:text-ink-200 opacity-60 mt-1">Sign in to manage your finances</p>
         </div>
@@ -145,7 +153,7 @@ const Login = () => {
             <Link to="/register" className="text-accent font-semibold hover:underline">Create one</Link>
           </p>
         </div>
-      </div>
+      </main>
     </div>
   );
 };

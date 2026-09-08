@@ -1,3 +1,14 @@
-# https://www.robotstxt.org/robotstxt.html
 User-agent: *
-Disallow:
+Allow: /
+Allow: /login
+Allow: /register
+
+# Disallow private user authenticated application routes from public search index
+Disallow: /dashboard
+Disallow: /transactions
+Disallow: /analysis
+Disallow: /import
+Disallow: /profile
+Disallow: /api/
+
+Sitemap: https://exptracker.vercel.app/sitemap.xml

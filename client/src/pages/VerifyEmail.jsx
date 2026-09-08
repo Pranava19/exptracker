@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
 import axios from '../api/axios';
+import SEO from '../components/SEO';
 import { CheckCircle2, XCircle, Loader2 } from 'lucide-react';
 
 const VerifyEmail = () => {
@@ -32,10 +33,17 @@ const VerifyEmail = () => {
 
   return (
     <div className="min-h-screen bg-ink-50 dark:bg-ink-900 flex items-center justify-center p-4">
-      <div className="w-full max-w-sm">
+      <SEO
+        title="Verify Email Address - ExpTracker Account"
+        description="Verify your email address to activate your ExpTracker account and secure your personal financial dashboard access."
+        path="/verify-email"
+      />
+      <main className="w-full max-w-sm">
         <div className="text-center mb-8">
-          <Link to="/login" className="inline-flex items-center font-bold text-2xl text-ink-900 dark:text-ink-50">
-            <span>Exp<span className="text-accent">Tracker</span></span>
+          <Link to="/login" className="inline-flex items-center">
+            <h1 className="font-bold text-2xl text-ink-900 dark:text-ink-50">
+              Exp<span className="text-accent">Tracker</span>
+            </h1>
           </Link>
           <p className="text-xs text-ink-700 dark:text-ink-200 opacity-60 mt-1">Account Verification</p>
         </div>
@@ -87,7 +95,7 @@ const VerifyEmail = () => {
             </div>
           )}
         </div>
-      </div>
+      </main>
     </div>
   );
 };
