@@ -58,32 +58,56 @@ const extractPayee = (desc) => {
 const TransactionCard = ({ tx, onEdit, onDelete, onInlineUpdate }) => {
   const payee = tx.payee || extractPayee(tx.description);
   return (
-    <div className="bg-white dark:bg-ink-900 border border-ink-100 dark:border-[#2C2C28] rounded-card p-4 space-y-2">
-      <div className="flex items-start justify-between">
-        <div>
-          <p className="text-sm font-medium text-ink-900 dark:text-ink-50">{payee !== '-' ? payee : (tx.description || tx.category)}</p>
-          <p className="text-xs text-ink-700 dark:text-ink-200 opacity-60 mt-0.5">{tx.description}</p>
+    <div className="bg-white dark:bg-ink-900 border border-ink-100 dark:border-[#2C2C28] rounded-card p-4 space-y-3 shadow-xs">
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0 flex-1">
+          <p className="text-sm font-semibold text-ink-900 dark:text-ink-50 truncate" title={payee !== '-' ? payee : (tx.description || tx.category)}>
+            {payee !== '-' ? payee : (tx.description || tx.category)}
+          </p>
+          {tx.description && (
+            <p className="text-xs text-ink-700 dark:text-ink-200 opacity-65 mt-0.5 line-clamp-2 break-words">
+              {tx.description}
+            </p>
+          )}
         </div>
-        <p className={`font-mono text-sm font-semibold ${tx.type === 'income' ? 'text-positive' : 'text-negative'}`}>
-          {tx.type === 'income' ? '+' : '−'}₹{Number(tx.amount).toLocaleString('en-IN', { minimumFractionDigits: 2 })}
-        </p>
+        <div className="text-right shrink-0">
+          <p className={`font-mono text-sm sm:text-base font-bold ${tx.type === 'income' ? 'text-positive' : 'text-negative'}`}>
+            {tx.type === 'income' ? '+' : '−'}₹{Number(tx.amount).toLocaleString('en-IN', { minimumFractionDigits: 2 })}
+          </p>
+          <span className="text-[10px] font-mono text-ink-700 dark:text-ink-200 opacity-60">
+            {tx.date.slice(0, 10)}
+          </span>
+        </div>
       </div>
 
-      <div className="flex items-center justify-between pt-2 border-t border-ink-100 dark:border-[#2C2C28] text-xs">
-        <div className="flex items-center gap-2">
-          <span className={`text-[10px] font-mono font-semibold px-2 py-0.5 rounded-sharp ${tx.type === 'income' ? 'bg-positive/10 text-positive' : 'bg-negative/10 text-negative'}`}>
-            {tx.type}
-          </span>
-          <span className="text-ink-700 dark:text-ink-200 opacity-60 font-mono">{tx.date.slice(0, 10)}</span>
-        </div>
+      <div className="flex flex-wrap items-center gap-2 pt-2 border-t border-ink-100 dark:border-[#2C2C28] text-xs">
+        <span className={`text-[10px] font-mono font-semibold px-2 py-0.5 rounded-sharp ${tx.type === 'income' ? 'bg-positive/10 text-positive' : 'bg-negative/10 text-negative'}`}>
+          {tx.type}
+        </span>
+        
+        <select
+          value={tx.category}
+          onChange={e => onInlineUpdate(tx.id, 'category', e.target.value)}
+          className="text-[11px] font-sans border border-ink-100 dark:border-[#2C2C28] rounded-sharp px-2 py-1 bg-white dark:bg-[#252522] text-ink-900 dark:text-ink-50 focus:outline-none focus:border-accent cursor-pointer"
+        >
+          {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
+        </select>
 
-        <div className="flex items-center gap-2">
-          <button onClick={() => onEdit(tx)} className="text-xs font-medium text-accent hover:underline flex items-center gap-1 cursor-pointer">
-            <Edit2 size={12} strokeWidth={1.5} />
+        <select
+          value={tx.mode || 'Other'}
+          onChange={e => onInlineUpdate(tx.id, 'mode', e.target.value)}
+          className="text-[11px] font-sans border border-ink-100 dark:border-[#2C2C28] rounded-sharp px-2 py-1 bg-white dark:bg-[#252522] text-ink-900 dark:text-ink-50 focus:outline-none focus:border-accent cursor-pointer"
+        >
+          {MODES.map(m => <option key={m} value={m}>{m}</option>)}
+        </select>
+
+        <div className="ml-auto flex items-center gap-2">
+          <button onClick={() => onEdit(tx)} className="p-1 text-xs font-medium text-accent hover:underline flex items-center gap-1 cursor-pointer">
+            <Edit2 size={13} strokeWidth={1.5} />
             <span>Edit</span>
           </button>
-          <button onClick={() => onDelete(tx.id)} className="text-xs font-medium text-negative hover:underline flex items-center gap-1 cursor-pointer">
-            <Trash2 size={12} strokeWidth={1.5} />
+          <button onClick={() => onDelete(tx.id)} className="p-1 text-xs font-medium text-negative hover:underline flex items-center gap-1 cursor-pointer">
+            <Trash2 size={13} strokeWidth={1.5} />
             <span>Delete</span>
           </button>
         </div>
@@ -278,7 +302,7 @@ const Transactions = () => {
     <Layout>
       {toast && <Toast message={toast.message} type={toast.type} onClose={hideToast} />}
 
-      <div className="grid grid-cols-3 gap-4 mb-6">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-6">
         <div className="bg-white dark:bg-ink-900 border border-ink-100 dark:border-[#2C2C28] rounded-card p-4">
           <p className="text-[10px] font-mono font-semibold uppercase tracking-wider text-ink-700 dark:text-ink-200 opacity-60 mb-1">{currentYear} Income</p>
           <p className="font-mono text-base font-semibold text-positive">
@@ -299,22 +323,22 @@ const Transactions = () => {
         </div>
       </div>
 
-      <div className="flex items-center justify-between mb-5">
-        <h1 className="text-base font-semibold text-ink-900 dark:text-ink-50 tracking-tight">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-5">
+        <h1 className="text-base font-semibold text-ink-900 dark:text-ink-50 tracking-tight flex items-center gap-2">
           All Transactions
-          <span className="ml-2 text-xs font-mono font-normal text-ink-700 dark:text-ink-200 opacity-60">({sorted.length})</span>
+          <span className="text-xs font-mono font-normal text-ink-700 dark:text-ink-200 opacity-60">({sorted.length})</span>
         </h1>
         <div className="flex items-center gap-2">
           <button
             onClick={handleExport}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-semibold border border-ink-100 dark:border-[#2C2C28] text-ink-900 dark:text-ink-50 hover:bg-ink-50 dark:hover:bg-[#252522] transition-colors cursor-pointer"
+            className="flex-1 sm:flex-none justify-center flex items-center gap-1.5 px-3 py-2 sm:py-1.5 rounded-md text-xs font-semibold border border-ink-100 dark:border-[#2C2C28] text-ink-900 dark:text-ink-50 hover:bg-ink-50 dark:hover:bg-[#252522] transition-colors cursor-pointer"
           >
             <Download size={14} strokeWidth={1.5} />
             <span>Export</span>
           </button>
           <button
             onClick={() => { setShowForm(f => !f); if (editId) cancelEdit(); }}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-semibold bg-accent hover:bg-accent-dark text-white transition-colors cursor-pointer"
+            className="flex-1 sm:flex-none justify-center flex items-center gap-1.5 px-3 py-2 sm:py-1.5 rounded-md text-xs font-semibold bg-accent hover:bg-accent-dark text-white transition-colors cursor-pointer"
           >
             <Plus size={14} strokeWidth={1.5} />
             <span>Add transaction</span>
@@ -323,7 +347,7 @@ const Transactions = () => {
       </div>
 
       {showForm && (
-        <div className="rounded-card bg-white dark:bg-ink-900 border border-ink-100 dark:border-[#2C2C28] p-5 mb-6 shadow-sm">
+        <div className="rounded-card bg-white dark:bg-ink-900 border border-ink-100 dark:border-[#2C2C28] p-4 sm:p-5 mb-6 shadow-sm">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-xs font-mono font-semibold uppercase tracking-wider text-ink-900 dark:text-ink-50">
               {editId ? 'Edit transaction' : 'New transaction'}
@@ -333,7 +357,7 @@ const Transactions = () => {
             </button>
           </div>
           <form onSubmit={handleSubmit}>
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
               <select name="type" value={form.type} onChange={handleChange} className={inputCls}>
                 <option value="expense">Expense</option>
                 <option value="income">Income</option>
@@ -352,7 +376,7 @@ const Transactions = () => {
               <button
                 type="submit"
                 disabled={submitting}
-                className="flex items-center gap-2 px-4 py-2 rounded-md text-xs font-semibold bg-accent hover:bg-accent-dark disabled:opacity-50 text-white transition-colors cursor-pointer"
+                className="flex-1 sm:flex-none justify-center flex items-center gap-2 px-4 py-2 rounded-md text-xs font-semibold bg-accent hover:bg-accent-dark disabled:opacity-50 text-white transition-colors cursor-pointer"
               >
                 {submitting && <Loader2 size={14} className="animate-spin" />}
                 <span>{editId ? 'Update' : 'Add'}</span>
@@ -360,7 +384,7 @@ const Transactions = () => {
               <button
                 type="button"
                 onClick={cancelEdit}
-                className="px-4 py-2 rounded-md text-xs font-medium border border-ink-100 dark:border-[#2C2C28] text-ink-700 dark:text-ink-200 hover:bg-ink-50 transition-colors cursor-pointer"
+                className="flex-1 sm:flex-none justify-center px-4 py-2 rounded-md text-xs font-medium border border-ink-100 dark:border-[#2C2C28] text-ink-700 dark:text-ink-200 hover:bg-ink-50 transition-colors cursor-pointer"
               >
                 Cancel
               </button>
@@ -370,7 +394,7 @@ const Transactions = () => {
       )}
 
       <div className="rounded-card bg-white dark:bg-ink-900 border border-ink-100 dark:border-[#2C2C28] p-4 mb-6">
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-3">
           <select value={filter.type} onChange={e => setFilter({ ...filter, type: e.target.value })} className={inputCls}>
             <option value="">All types</option>
             <option value="income">Income</option>
@@ -390,7 +414,7 @@ const Transactions = () => {
           </div>
           <button
             onClick={() => setFilter({ type: '', category: '', start_date: '', end_date: '' })}
-            className="self-end flex items-center justify-center gap-1.5 px-3 py-2 rounded-md text-xs font-medium border border-ink-100 dark:border-[#2C2C28] text-ink-700 dark:text-ink-200 hover:bg-ink-50 transition-colors cursor-pointer"
+            className="sm:col-span-2 md:col-span-1 self-end flex items-center justify-center gap-1.5 px-3 py-2 rounded-md text-xs font-medium border border-ink-100 dark:border-[#2C2C28] text-ink-700 dark:text-ink-200 hover:bg-ink-50 transition-colors cursor-pointer w-full"
           >
             <X size={12} strokeWidth={1.5} />
             <span>Clear</span>
@@ -417,6 +441,19 @@ const Transactions = () => {
               <Inbox size={32} strokeWidth={1.5} className="mx-auto mb-2 opacity-50" />
               <p className="text-xs font-mono opacity-70">No transactions found</p>
             </div>
+          ) : sort.field === 'date' ? (
+            Object.entries(grouped)
+              .sort(([a], [b]) => sort.order === 'desc' ? b.localeCompare(a) : a.localeCompare(b))
+              .map(([date, txs]) => (
+                <div key={date} className="space-y-2">
+                  <div className="pt-2 pb-1 border-b border-ink-100 dark:border-[#2C2C28]">
+                    <p className="text-[10px] font-mono font-semibold uppercase tracking-wider text-ink-700 dark:text-ink-200 opacity-75">
+                      {formatGroupLabel(date)}
+                    </p>
+                  </div>
+                  {txs.map(tx => <TransactionCard key={tx.id} tx={tx} {...rowProps} />)}
+                </div>
+              ))
           ) : (
             sorted.map(tx => <TransactionCard key={tx.id} tx={tx} {...rowProps} />)
           )}
