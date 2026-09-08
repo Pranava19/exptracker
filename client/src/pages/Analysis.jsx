@@ -116,11 +116,11 @@ const Analysis = () => {
         topParams.set('limit', '5');
 
         const [summaryRes, monthlyRes, netRes, dailyRes, topRes] = await Promise.all([
-          axios.get(`/analysis/summary-cards?${queryParams.toString()}`),
-          axios.get(`/analysis/monthly-summary?${queryParams.toString()}`),
-          axios.get(`/analysis/net-cashflow?${queryParams.toString()}`),
-          axios.get(`/analysis/daily-expenses?${dailyParams.toString()}`),
-          axios.get(`/analysis/top-transactions?${topParams.toString()}`),
+          axios.get(`/analysis/summary-cards?${queryParams.toString()}`).catch(() => ({ data: {} })),
+          axios.get(`/analysis/monthly-summary?${queryParams.toString()}`).catch(() => ({ data: [] })),
+          axios.get(`/analysis/net-cashflow?${queryParams.toString()}`).catch(() => ({ data: [] })),
+          axios.get(`/analysis/daily-expenses?${dailyParams.toString()}`).catch(() => ({ data: [] })),
+          axios.get(`/analysis/top-transactions?${topParams.toString()}`).catch(() => ({ data: [] })),
         ]);
 
         setSummaryCards(summaryRes.data || {});

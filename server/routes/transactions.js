@@ -50,6 +50,9 @@ router.get('/summary', auth, async (req, res) => {
   }
 });
 
+const analysisRoutes = require('./analysis');
+router.use(['/summary_cards', '/summary-cards', '/monthly_breakdown', '/monthly-summary', '/monthly_summary', '/cashflow', '/net-cashflow', '/net_cashflow', '/daily_expenses', '/daily-expenses', '/recent_transactions', '/recent-transactions', '/top-transactions', '/top_transactions'], analysisRoutes);
+
 router.delete('/duplicates', auth, async (req, res) => {
   const user_id = req.user.id;
   try {

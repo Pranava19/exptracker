@@ -48,7 +48,7 @@ const buildFilterClause = ({ year, month, from, to, type }, params) => {
   return clause;
 };
 
-router.get('/monthly-summary', auth, async (req, res) => {
+router.get(['/monthly-summary', '/monthly_summary', '/monthly_breakdown'], auth, async (req, res) => {
   const year = parseBoundedInt(req.query.year, new Date().getFullYear(), 2000, 2100);
   const from = parseDateString(req.query.from);
   const to = parseDateString(req.query.to);
@@ -96,7 +96,7 @@ router.get('/monthly-summary', auth, async (req, res) => {
   }
 });
 
-router.get('/net-cashflow', auth, async (req, res) => {
+router.get(['/net-cashflow', '/net_cashflow', '/cashflow'], auth, async (req, res) => {
   const year = parseBoundedInt(req.query.year, new Date().getFullYear(), 2000, 2100);
   const from = parseDateString(req.query.from);
   const to = parseDateString(req.query.to);
@@ -139,7 +139,7 @@ router.get('/net-cashflow', auth, async (req, res) => {
   }
 });
 
-router.get('/daily-expenses', auth, async (req, res) => {
+router.get(['/daily-expenses', '/daily_expenses'], auth, async (req, res) => {
   const year = parseBoundedInt(req.query.year, new Date().getFullYear(), 2000, 2100);
   const month = parseBoundedInt(req.query.month, new Date().getMonth() + 1, 1, 12);
   const from = parseDateString(req.query.from);
@@ -178,7 +178,7 @@ router.get('/daily-expenses', auth, async (req, res) => {
   }
 });
 
-router.get('/top-transactions', auth, async (req, res) => {
+router.get(['/top-transactions', '/top_transactions', '/recent_transactions', '/recent-transactions'], auth, async (req, res) => {
   const year = parseBoundedInt(req.query.year, new Date().getFullYear(), 2000, 2100);
   const month = parseBoundedInt(req.query.month, undefined, 1, 12);
   const limit = parseBoundedInt(req.query.limit, 5, 1, 100);
@@ -227,7 +227,7 @@ router.get('/top-transactions', auth, async (req, res) => {
   }
 });
 
-router.get('/summary-cards', auth, async (req, res) => {
+router.get(['/summary-cards', '/summary_cards'], auth, async (req, res) => {
   const year = parseBoundedInt(req.query.year, undefined, 2000, 2100);
   const month = parseBoundedInt(req.query.month, undefined, 1, 12);
   const from = parseDateString(req.query.from);
