@@ -18,8 +18,14 @@ module.exports = {
           50: '#F8FAFC',
           100: '#E2E8F0',
           200: '#CBD5E1',
+          300: '#94A3B8',
+          400: '#64748B',
+          500: '#64748B',
+          600: '#475569',
           700: '#475569',
+          800: '#1E293B',
           900: '#0F172A',
+          950: '#020617',
         },
         positive: '#2563EB', // blue shade for income/positive
         negative: '#DC2626', // red for expense

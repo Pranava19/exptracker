@@ -206,7 +206,7 @@ const Analysis = () => {
 
         <button
           onClick={handleResetFilters}
-          className="self-start sm:self-auto flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-ink-700 dark:text-ink-200 bg-ink-50 dark:bg-ink-800 hover:bg-ink-100 border border-ink-200 dark:border-ink-700 rounded-xl transition-all cursor-pointer min-h-[44px]"
+          className="self-start sm:self-auto flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-ink-700 dark:text-ink-200 bg-ink-50 dark:bg-ink-800 hover:bg-ink-100 dark:hover:bg-ink-700 border border-ink-200 dark:border-ink-700 rounded-xl transition-all cursor-pointer min-h-[44px]"
         >
           <RotateCcw size={14} />
           <span>Reset Filters</span>
@@ -228,7 +228,11 @@ const Analysis = () => {
               onChange={e => setYear(Number(e.target.value))}
               className="w-full border border-ink-200 dark:border-ink-700 rounded-xl px-3 py-2 bg-white dark:bg-ink-800 text-ink-900 dark:text-ink-50 focus:ring-2 focus:ring-accent focus:outline-none cursor-pointer text-xs min-h-[44px]"
             >
-              {availableYears.map(y => <option key={y} value={y}>{y}</option>)}
+              {availableYears.map(y => (
+                <option key={y} value={y} className="bg-white dark:bg-ink-800 text-ink-900 dark:text-ink-50">
+                  {y}
+                </option>
+              ))}
             </select>
           </div>
 
@@ -239,9 +243,11 @@ const Analysis = () => {
               onChange={e => setMonth(e.target.value ? Number(e.target.value) : '')}
               className="w-full border border-ink-200 dark:border-ink-700 rounded-xl px-3 py-2 bg-white dark:bg-ink-800 text-ink-900 dark:text-ink-50 focus:ring-2 focus:ring-accent focus:outline-none cursor-pointer text-xs min-h-[44px]"
             >
-              <option value="">All Months</option>
+              <option value="" className="bg-white dark:bg-ink-800 text-ink-900 dark:text-ink-50">All Months</option>
               {MONTHS.map((m, idx) => (
-                <option key={m} value={idx + 1}>{m}</option>
+                <option key={m} value={idx + 1} className="bg-white dark:bg-ink-800 text-ink-900 dark:text-ink-50">
+                  {m}
+                </option>
               ))}
             </select>
           </div>
@@ -252,7 +258,7 @@ const Analysis = () => {
               type="date"
               value={fromDate}
               onChange={e => setFromDate(e.target.value)}
-              className="w-full border border-ink-200 dark:border-ink-700 rounded-xl px-3 py-2 bg-white dark:bg-ink-800 text-ink-900 dark:text-ink-50 focus:ring-2 focus:ring-accent focus:outline-none cursor-pointer text-xs min-h-[44px]"
+              className="w-full border border-ink-200 dark:border-ink-700 rounded-xl px-3 py-2 bg-white dark:bg-ink-800 text-ink-900 dark:text-ink-50 focus:ring-2 focus:ring-accent focus:outline-none cursor-pointer text-xs min-h-[44px] dark:[color-scheme:dark]"
             />
           </div>
 
@@ -262,7 +268,7 @@ const Analysis = () => {
               type="date"
               value={toDate}
               onChange={e => setToDate(e.target.value)}
-              className="w-full border border-ink-200 dark:border-ink-700 rounded-xl px-3 py-2 bg-white dark:bg-ink-800 text-ink-900 dark:text-ink-50 focus:ring-2 focus:ring-accent focus:outline-none cursor-pointer text-xs min-h-[44px]"
+              className="w-full border border-ink-200 dark:border-ink-700 rounded-xl px-3 py-2 bg-white dark:bg-ink-800 text-ink-900 dark:text-ink-50 focus:ring-2 focus:ring-accent focus:outline-none cursor-pointer text-xs min-h-[44px] dark:[color-scheme:dark]"
             />
           </div>
 
@@ -273,7 +279,7 @@ const Analysis = () => {
                 <button
                   key={t}
                   onClick={() => setType(t)}
-                  className={`flex-1 py-1.5 text-xs font-semibold capitalize rounded-lg transition-all cursor-pointer ${type === t ? 'bg-accent text-white shadow-sm' : 'text-ink-700 dark:text-ink-200 hover:text-ink-900'}`}
+                  className={`flex-1 py-1.5 text-xs font-semibold capitalize rounded-lg transition-all cursor-pointer ${type === t ? 'bg-accent text-white shadow-sm' : 'text-ink-700 dark:text-ink-200 hover:text-ink-900 dark:hover:text-white'}`}
                 >
                   {t}
                 </button>
