@@ -11,6 +11,8 @@ const PAGE_TITLES = {
   '/analysis': 'Analysis',
   '/import': 'Import statement',
   '/profile': 'Profile',
+  '/privacy': 'Privacy Policy',
+  '/terms': 'Terms of Service',
 };
 
 const Layout = ({ children }) => {

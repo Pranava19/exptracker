@@ -11,6 +11,11 @@ const validateTransaction = [
   body('date').isISO8601().withMessage('Valid date is required'),
 ];
 
+const validatePatch = [
+  body('category').optional().trim().isLength({ min: 1, max: 100 }).withMessage('Category must be between 1 and 100 characters'),
+  body('mode').optional().isIn(['UPI', 'Card', 'Cash', 'Net Banking', 'Other']).withMessage('Invalid payment mode'),
+];
+
 const { cleanPayeeAndCategory } = require('../utils/payeeCleaner');
 
 router.post('/', auth, validateTransaction, async (req, res) => {
@@ -165,7 +170,12 @@ router.put('/:id', auth, validateTransaction, async (req, res) => {
   }
 });
 
-router.patch('/:id', auth, async (req, res) => {
+router.patch('/:id', auth, validatePatch, async (req, res) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(400).json({ message: errors.array()[0].msg, errors: errors.array() });
+  }
+
   const { id } = req.params;
   const { category, mode } = req.body;
   const user_id = req.user.id;
@@ -176,7 +186,7 @@ router.patch('/:id', auth, async (req, res) => {
     if (check.rows.length === 0) return res.status(404).json({ message: 'Transaction not found' });
     const result = await pool.query(
       `UPDATE transactions SET category=$1, mode=$2 WHERE id=$3 AND user_id=$4 RETURNING *`,
-      [category, mode, id, user_id]
+      [category !== undefined ? category : check.rows[0].category, mode !== undefined ? mode : check.rows[0].mode, id, user_id]
     );
     res.json(result.rows[0]);
   } catch (err) {

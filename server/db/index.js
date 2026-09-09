@@ -58,6 +58,11 @@ const initSchema = async (client) => {
       CREATE INDEX IF NOT EXISTS idx_transactions_category ON transactions(category);
       CREATE INDEX IF NOT EXISTS idx_users_verification_token ON users(verification_token);
       CREATE INDEX IF NOT EXISTS idx_users_reset_token ON users(reset_token);
+
+      CREATE EXTENSION IF NOT EXISTS "pgcrypto";
+      ALTER TABLE transactions ADD COLUMN IF NOT EXISTS uuid UUID DEFAULT gen_random_uuid() NOT NULL;
+      CREATE UNIQUE INDEX IF NOT EXISTS idx_transactions_uuid ON transactions(uuid);
+      ALTER TABLE transactions ENABLE ROW LEVEL SECURITY;
     `);
     console.log('PostgreSQL schema verified/initialized');
   } catch (err) {

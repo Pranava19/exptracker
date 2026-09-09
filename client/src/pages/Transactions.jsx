@@ -361,9 +361,9 @@ const Transactions = () => {
           </button>
           <button
             onClick={() => { setShowForm(f => !f); if (editId) cancelEdit(); }}
-            className="flex-1 sm:flex-none justify-center flex items-center gap-1.5 px-3 py-2 sm:py-1.5 rounded-md text-xs font-semibold bg-accent hover:bg-accent-dark text-white transition-colors cursor-pointer"
+            className="fixed sm:static bottom-20 sm:bottom-auto right-4 sm:right-auto z-40 sm:z-auto shadow-lg sm:shadow-none rounded-full sm:rounded-md px-4 sm:px-3 py-3 sm:py-1.5 flex items-center justify-center gap-1.5 text-xs font-semibold bg-accent hover:bg-accent-dark text-white transition-all cursor-pointer"
           >
-            <Plus size={14} strokeWidth={1.5} />
+            <Plus size={15} strokeWidth={2} />
             <span>Add transaction</span>
           </button>
         </div>

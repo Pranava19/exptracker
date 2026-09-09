@@ -105,6 +105,16 @@ const DashboardHome = () => {
 
   const maxPayeeAmount = top5Payees[0]?.[1] || 1;
 
+  const escapeHtml = (str) => {
+    if (str === null || str === undefined) return '';
+    return String(str)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#039;');
+  };
+
   const handleExportPDF = async () => {
     setExporting(true);
     try {
@@ -119,10 +129,10 @@ const DashboardHome = () => {
         .sort((a, b) => new Date(b.date) - new Date(a.date))
         .map(tx => `
           <tr>
-            <td>${tx.date.slice(0, 10)}</td>
-            <td>${(tx.payee || tx.description || '').slice(0, 40)}</td>
-            <td>${tx.category}</td>
-            <td>${tx.mode || 'Other'}</td>
+            <td>${escapeHtml(tx.date ? tx.date.slice(0, 10) : '')}</td>
+            <td>${escapeHtml((tx.payee || tx.description || '').slice(0, 40))}</td>
+            <td>${escapeHtml(tx.category || '')}</td>
+            <td>${escapeHtml(tx.mode || 'Other')}</td>
             <td style="color:${tx.type === 'income' ? '#2563EB' : '#B5473B'}; font-weight:600; text-align:right;">
               ${tx.type === 'income' ? '+' : '−'}${fmt(tx.amount)}
             </td>

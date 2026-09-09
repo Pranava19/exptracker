@@ -73,8 +73,8 @@ router.post('/send-monthly-email', auth, async (req, res) => {
     logger.info(`Monthly financial report email sent to user ${user.email} for ${monthName}`);
     res.json({ message: `Monthly financial summary report sent to ${user.email} successfully!` });
   } catch (err) {
-    logger.error('Error sending monthly email report:', err.message);
-    res.status(500).json({ message: 'Failed to send monthly email report', error: err.message });
+    logger.error('Error sending monthly email report: %s', err.message);
+    res.status(500).json({ message: 'Failed to generate monthly report. Please try again later.' });
   }
 });
 
