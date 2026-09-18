@@ -26,6 +26,7 @@ const inputCls = [
   'text-ink-900 dark:text-ink-50',
   'placeholder-ink-700 dark:placeholder-ink-200',
   'focus:outline-none focus:border-accent',
+  'dark:[color-scheme:dark]',
 ].join(' ');
 
 const groupByDate = (txs) => {
@@ -419,13 +420,13 @@ const Transactions = () => {
       <div className="rounded-card bg-white dark:bg-ink-900 border border-ink-100 dark:border-[#2C2C28] p-4 mb-6">
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-3">
           <select value={filter.type} onChange={e => setFilter({ ...filter, type: e.target.value })} className={inputCls}>
-            <option value="">All types</option>
-            <option value="income">Income</option>
-            <option value="expense">Expense</option>
+            <option value="" className="bg-white dark:bg-[#252522] text-ink-900 dark:text-ink-50">All types</option>
+            <option value="income" className="bg-white dark:bg-[#252522] text-ink-900 dark:text-ink-50">Income</option>
+            <option value="expense" className="bg-white dark:bg-[#252522] text-ink-900 dark:text-ink-50">Expense</option>
           </select>
           <select value={filter.category} onChange={e => setFilter({ ...filter, category: e.target.value })} className={inputCls}>
-            <option value="">All categories</option>
-            {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
+            <option value="" className="bg-white dark:bg-[#252522] text-ink-900 dark:text-ink-50">All categories</option>
+            {CATEGORIES.map(c => <option key={c} value={c} className="bg-white dark:bg-[#252522] text-ink-900 dark:text-ink-50">{c}</option>)}
           </select>
           <div className="flex flex-col">
             <label className="text-[10px] font-mono text-ink-700 dark:text-ink-200 mb-1 select-none">From</label>
@@ -437,7 +438,7 @@ const Transactions = () => {
           </div>
           <button
             onClick={() => setFilter({ type: '', category: '', start_date: '', end_date: '' })}
-            className="sm:col-span-2 md:col-span-1 self-end flex items-center justify-center gap-1.5 px-3 py-2 rounded-md text-xs font-medium border border-ink-100 dark:border-[#2C2C28] text-ink-700 dark:text-ink-200 hover:bg-ink-50 transition-colors cursor-pointer w-full"
+            className="sm:col-span-2 md:col-span-1 self-end flex items-center justify-center gap-1.5 px-3 py-2 rounded-md text-xs font-medium border border-ink-100 dark:border-[#2C2C28] text-ink-700 dark:text-ink-200 hover:bg-ink-50 dark:hover:bg-[#252522] transition-colors cursor-pointer w-full"
           >
             <X size={12} strokeWidth={1.5} />
             <span>Clear</span>

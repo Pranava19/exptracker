@@ -475,7 +475,7 @@ const Analysis = () => {
                     <YAxis
                       type="category"
                       dataKey="label"
-                      tick={{ fontSize: 11, fill: '#374151' }}
+                      tick={{ fontSize: 11, fill: '#9CA3AF' }}
                       stroke="#888"
                       width={120}
                     />
