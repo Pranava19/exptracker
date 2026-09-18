@@ -48,7 +48,7 @@ const Layout = ({ children }) => {
           </main>
         </div>
 
-        <div className="md:hidden pt-12 pb-20">
+        <div className="md:hidden pt-[calc(3rem+env(safe-area-inset-top,0px))] pb-[calc(5rem+env(safe-area-inset-bottom,0px))]">
           <main id="main-content" className="p-4">
             {children}
           </main>

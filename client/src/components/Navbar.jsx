@@ -110,7 +110,7 @@ const Navbar = () => {
         </div>
       </aside>
 
-      <div className="md:hidden fixed top-0 left-0 right-0 z-30 bg-white/90 dark:bg-ink-900/90 backdrop-blur-md border-b border-ink-100 dark:border-[#2C2C28]">
+      <div className="md:hidden fixed top-0 left-0 right-0 z-30 bg-white/90 dark:bg-ink-900/90 backdrop-blur-md border-b border-ink-100 dark:border-[#2C2C28] pt-[env(safe-area-inset-top,0px)]">
         <div className="flex items-center justify-between px-4 h-12">
           <Link to="/dashboard" className="font-bold text-base text-ink-900 dark:text-ink-50">
             <span>Exp<span className="text-accent font-semibold">Tracker</span></span>

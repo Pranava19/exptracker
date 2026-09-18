@@ -46,7 +46,7 @@ const SectionHeader = ({ title, subtitle, icon: Icon }) => (
 );
 
 const Card = ({ children, className = '' }) => (
-  <div className={`bg-white dark:bg-ink-900 border border-ink-100 dark:border-[#2C2C28] rounded-2xl p-5 shadow-sm transition-all hover:shadow-md ${className}`}>
+  <div className={`bg-white dark:bg-ink-900 border border-ink-100 dark:border-[#2C2C28] rounded-2xl p-5 shadow-sm transition-all hover:shadow-md min-w-0 ${className}`}>
     {children}
   </div>
 );
@@ -371,10 +371,10 @@ const Analysis = () => {
                 </div>
               ) : (
                 <ResponsiveContainer width="100%" height={280}>
-                  <BarChart data={monthlyBarData} barGap={4} barCategoryGap="20%">
+                  <BarChart data={monthlyBarData} barGap={4} barCategoryGap="20%" margin={{ top: 10, right: 10, left: -15, bottom: 0 }}>
                     <CartesianGrid strokeDasharray="3 3" stroke="#888888" opacity={0.15} vertical={false} />
                     <XAxis dataKey="month" tick={{ fontSize: 12, fill: '#6B7280' }} stroke="#888" />
-                    <YAxis tick={{ fontSize: 11, fill: '#6B7280' }} stroke="#888" tickFormatter={v => '₹' + (v >= 1000 ? (v / 1000).toFixed(0) + 'k' : v)} />
+                    <YAxis tick={{ fontSize: 11, fill: '#6B7280' }} stroke="#888" tickFormatter={v => '₹' + (v >= 1000 ? (v / 1000).toFixed(0) + 'k' : v)} width={45} />
                     <Tooltip content={<CustomTooltip />} />
                     <Bar dataKey="Income" name="Income" fill="#059669" radius={[4, 4, 0, 0]} isAnimationActive={false} />
                     <Bar dataKey="Expense" name="Expense" fill="#DC2626" radius={[4, 4, 0, 0]} isAnimationActive={false} />
@@ -395,7 +395,7 @@ const Analysis = () => {
                 </div>
               ) : (
                 <ResponsiveContainer width="100%" height={280}>
-                  <AreaChart data={netCashFlowData}>
+                  <AreaChart data={netCashFlowData} margin={{ top: 10, right: 10, left: -15, bottom: 0 }}>
                     <defs>
                       <linearGradient id="netColor" x1="0" y1="0" x2="0" y2="1">
                         <stop offset="5%" stopColor="#2563EB" stopOpacity={0.4}/>
@@ -404,7 +404,7 @@ const Analysis = () => {
                     </defs>
                     <CartesianGrid strokeDasharray="3 3" stroke="#888888" opacity={0.15} vertical={false} />
                     <XAxis dataKey="month" tick={{ fontSize: 12, fill: '#6B7280' }} stroke="#888" />
-                    <YAxis tick={{ fontSize: 11, fill: '#6B7280' }} stroke="#888" tickFormatter={v => '₹' + (v >= 1000 ? (v / 1000).toFixed(0) + 'k' : v)} />
+                    <YAxis tick={{ fontSize: 11, fill: '#6B7280' }} stroke="#888" tickFormatter={v => '₹' + (v >= 1000 ? (v / 1000).toFixed(0) + 'k' : v)} width={45} />
                     <Tooltip content={<CustomTooltip />} />
                     <ReferenceLine y={0} stroke="#9CA3AF" strokeDasharray="3 3" />
                     <Area
@@ -437,10 +437,10 @@ const Analysis = () => {
                 </div>
               ) : (
                 <ResponsiveContainer width="100%" height={260}>
-                  <LineChart data={dailyExpenseData}>
+                  <LineChart data={dailyExpenseData} margin={{ top: 10, right: 10, left: -15, bottom: 0 }}>
                     <CartesianGrid strokeDasharray="3 3" stroke="#888888" opacity={0.15} vertical={false} />
                     <XAxis dataKey="date" tick={{ fontSize: 11, fill: '#6B7280' }} stroke="#888" />
-                    <YAxis tick={{ fontSize: 11, fill: '#6B7280' }} stroke="#888" tickFormatter={v => '₹' + (v >= 1000 ? (v / 1000).toFixed(0) + 'k' : v)} />
+                    <YAxis tick={{ fontSize: 11, fill: '#6B7280' }} stroke="#888" tickFormatter={v => '₹' + (v >= 1000 ? (v / 1000).toFixed(0) + 'k' : v)} width={45} />
                     <Tooltip content={<CustomTooltip />} />
                     <Line
                       type="monotone"
@@ -469,7 +469,7 @@ const Analysis = () => {
                 </div>
               ) : (
                 <ResponsiveContainer width="100%" height={260}>
-                  <BarChart data={topTransactionsData} layout="vertical" barCategoryGap="25%">
+                  <BarChart data={topTransactionsData} layout="vertical" barCategoryGap="25%" margin={{ top: 10, right: 15, left: -10, bottom: 0 }}>
                     <CartesianGrid strokeDasharray="3 3" stroke="#888888" opacity={0.15} vertical={false} />
                     <XAxis type="number" tick={{ fontSize: 11, fill: '#6B7280' }} stroke="#888" tickFormatter={v => '₹' + (v >= 1000 ? (v / 1000).toFixed(0) + 'k' : v)} />
                     <YAxis
@@ -477,7 +477,7 @@ const Analysis = () => {
                       dataKey="label"
                       tick={{ fontSize: 11, fill: '#9CA3AF' }}
                       stroke="#888"
-                      width={120}
+                      width={100}
                     />
                     <Tooltip
                       content={({ active, payload }) => {

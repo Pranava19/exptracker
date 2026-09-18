@@ -3,23 +3,69 @@
 @tailwind utilities;
 
 @layer base {
+  :root {
+    color-scheme: light;
+  }
+
   html {
     color-scheme: light;
+    -webkit-text-size-adjust: 100%;
+    -moz-text-size-adjust: 100%;
+    text-size-adjust: 100%;
   }
 
   html.dark {
     color-scheme: dark;
   }
 
+  * {
+    -webkit-tap-highlight-color: transparent;
+  }
+
   body {
     font-family: 'Instrument Sans', sans-serif;
     background-color: #F7F7F5;
     color: #1C1C1A;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    overflow-x: hidden;
   }
   
   .dark body {
     background-color: #1C1C1A;
     color: #F7F7F5;
+  }
+
+  /* Prevent iOS Safari 16px auto-zoom on input/select/textarea focus */
+  @media screen and (max-width: 768px) {
+    input:not([type="checkbox"]):not([type="radio"]):not([type="button"]):not([type="submit"]):not([type="reset"]),
+    select,
+    textarea {
+      font-size: 16px !important;
+    }
+  }
+
+  /* Universal cross-browser WebKit date picker styling */
+  input[type="date"]::-webkit-calendar-picker-indicator {
+    cursor: pointer;
+    border-radius: 4px;
+    padding: 2px;
+  }
+
+  .dark input[type="date"]::-webkit-calendar-picker-indicator {
+    filter: invert(1) brightness(1.2);
+    opacity: 0.85;
+  }
+
+  /* Consistent native dropdown option styling across browsers */
+  select option {
+    background-color: #ffffff;
+    color: #0f172a;
+  }
+
+  .dark select option {
+    background-color: #1e293b;
+    color: #f8fafc;
   }
 }
 
