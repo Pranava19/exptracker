@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import axios from '../api/axios';
+import * as XLSX from 'xlsx';
 import Layout from '../components/Layout';
 import SEO from '../components/SEO';
 import Toast from '../components/Toast';
 import { useToast } from '../hooks/useToast';
 import { SkeletonRow } from '../components/Skeleton';
 import {
-  Download,
+  FileSpreadsheet,
   Plus,
   X,
   ArrowUpDown,
@@ -172,6 +173,7 @@ const Transactions = () => {
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [showForm, setShowForm] = useState(false);
+  const [exporting, setExporting] = useState(false);
   const { toast, showToast, hideToast } = useToast();
 
   const fetchAll = async () => {
@@ -287,22 +289,106 @@ const Transactions = () => {
 
   const toggleSort = (field) => setSort(p => ({ field, order: p.field === field && p.order === 'asc' ? 'desc' : 'asc' }));
 
-  const handleExport = () => {
-    const headers = ['Date', 'Type', 'Category', 'Mode', 'Payee', 'Description', 'Amount'];
-    const rows = sorted.map(tx => [
-      tx.date.slice(0, 10), tx.type, tx.category, tx.mode || 'Other',
-      `"${(tx.payee || extractPayee(tx.description)).replace(/"/g, '""')}"`,
-      `"${(tx.description || '').replace(/"/g, '""')}"`,
-      Number(tx.amount).toFixed(2),
-    ]);
-    const csv = [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
-    const blob = new Blob([csv], { type: 'text/csv' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `transactions_${new Date().toISOString().slice(0, 10)}.csv`;
-    a.click();
-    URL.revokeObjectURL(url);
+  const handleExport = async () => {
+    setExporting(true);
+    try {
+      // Fetch all user transactions from the start without screen filters
+      const res = await axios.get('/transactions');
+      const allTxs = Array.isArray(res.data) ? res.data : (res.data?.transactions || []);
+
+      if (allTxs.length === 0) {
+        showToast('No transactions found to export', 'error');
+        return;
+      }
+
+      const today = new Date();
+      today.setHours(23, 59, 59, 999);
+      const todayStr = new Date().toISOString().slice(0, 10);
+
+      // Filter all records from the earliest start date up to today and sort chronologically
+      const filteredTxs = allTxs
+        .filter(tx => {
+          if (!tx.date) return false;
+          const txDate = new Date(tx.date);
+          return txDate <= today;
+        })
+        .sort((a, b) => new Date(a.date) - new Date(b.date));
+
+      if (filteredTxs.length === 0) {
+        showToast('No transactions recorded up to today', 'error');
+        return;
+      }
+
+      const startDateStr = filteredTxs[0].date.slice(0, 10);
+
+      // Calculate overall ledger totals
+      const totalIncome = filteredTxs
+        .filter(t => t.type === 'income')
+        .reduce((acc, t) => acc + Number(t.amount || 0), 0);
+      const totalExpense = filteredTxs
+        .filter(t => t.type === 'expense')
+        .reduce((acc, t) => acc + Number(t.amount || 0), 0);
+      const netSavings = totalIncome - totalExpense;
+
+      // 1. Transactions Ledger Sheet
+      const sheetData = filteredTxs.map((tx, idx) => ({
+        '#': idx + 1,
+        'Date': tx.date.slice(0, 10),
+        'Type': (tx.type || 'expense').toUpperCase(),
+        'Category': tx.category || 'Other',
+        'Payment Mode': tx.mode || 'Other',
+        'Payee': tx.payee || extractPayee(tx.description) || '-',
+        'Description': tx.description || '-',
+        'Amount (INR)': Number(Number(tx.amount || 0).toFixed(2)),
+      }));
+
+      const worksheet = XLSX.utils.json_to_sheet(sheetData);
+
+      // Format clean, comfortable column widths
+      worksheet['!cols'] = [
+        { wch: 6 },  // #
+        { wch: 14 }, // Date
+        { wch: 12 }, // Type
+        { wch: 18 }, // Category
+        { wch: 16 }, // Payment Mode
+        { wch: 28 }, // Payee
+        { wch: 40 }, // Description
+        { wch: 16 }, // Amount (INR)
+      ];
+
+      // 2. Summary Overview Sheet
+      const summaryData = [
+        { 'Metric': 'Report Name', 'Value': 'ExpTracker All-Time Financial Ledger' },
+        { 'Metric': 'Start Date', 'Value': startDateStr },
+        { 'Metric': 'End Date (Today)', 'Value': todayStr },
+        { 'Metric': 'Total Transactions', 'Value': filteredTxs.length },
+        { 'Metric': 'Total Income (₹)', 'Value': Number(totalIncome.toFixed(2)) },
+        { 'Metric': 'Total Expenses (₹)', 'Value': Number(totalExpense.toFixed(2)) },
+        { 'Metric': 'Net Savings (₹)', 'Value': Number(netSavings.toFixed(2)) },
+        { 'Metric': 'Export Date & Time', 'Value': new Date().toLocaleString('en-IN') },
+      ];
+      const summarySheet = XLSX.utils.json_to_sheet(summaryData);
+      summarySheet['!cols'] = [
+        { wch: 26 },
+        { wch: 38 },
+      ];
+
+      // Create workbook with both sheets
+      const workbook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(workbook, worksheet, 'All Transactions');
+      XLSX.utils.book_append_sheet(workbook, summarySheet, 'Ledger Summary');
+
+      // Export native .xlsx file
+      const fileName = `ExpTracker_Transactions_${startDateStr}_to_${todayStr}.xlsx`;
+      XLSX.writeFile(workbook, fileName);
+
+      showToast(`Exported ${filteredTxs.length} transactions to Excel!`);
+    } catch (err) {
+      console.error('Export error:', err);
+      showToast('Failed to export Excel file', 'error');
+    } finally {
+      setExporting(false);
+    }
   };
 
   const grouped = groupByDate(sorted);
@@ -355,10 +441,21 @@ const Transactions = () => {
         <div className="flex items-center gap-2">
           <button
             onClick={handleExport}
-            className="flex-1 sm:flex-none justify-center flex items-center gap-1.5 px-3 py-2 sm:py-1.5 rounded-md text-xs font-semibold border border-ink-100 dark:border-[#2C2C28] text-ink-900 dark:text-ink-50 hover:bg-ink-50 dark:hover:bg-[#252522] transition-colors cursor-pointer"
+            disabled={exporting}
+            className="flex-1 sm:flex-none justify-center flex items-center gap-1.5 px-3 py-2 sm:py-1.5 rounded-md text-xs font-semibold border border-ink-100 dark:border-[#2C2C28] text-ink-900 dark:text-ink-50 hover:bg-ink-50 dark:hover:bg-[#252522] transition-colors cursor-pointer disabled:opacity-50"
+            title="Export all transactions from start date till today as an Excel (.xlsx) spreadsheet"
           >
-            <Download size={14} strokeWidth={1.5} />
-            <span>Export</span>
+            {exporting ? (
+              <>
+                <Loader2 size={14} className="animate-spin" />
+                <span>Exporting...</span>
+              </>
+            ) : (
+              <>
+                <FileSpreadsheet size={14} strokeWidth={1.5} className="text-emerald-500" />
+                <span>Export Excel</span>
+              </>
+            )}
           </button>
           <button
             onClick={() => { setShowForm(f => !f); if (editId) cancelEdit(); }}
