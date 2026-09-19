@@ -78,6 +78,7 @@ CREATE TABLE IF NOT EXISTS transactions (
 -- 3. Create Performance Indexes
 CREATE INDEX IF NOT EXISTS idx_transactions_user_id ON transactions(user_id);
 CREATE INDEX IF NOT EXISTS idx_transactions_date ON transactions(date);
+CREATE INDEX IF NOT EXISTS idx_transactions_user_id_date ON transactions(user_id, date);
 CREATE INDEX IF NOT EXISTS idx_transactions_category ON transactions(category);
 CREATE INDEX IF NOT EXISTS idx_users_verification_token ON users(verification_token);
 ```
@@ -160,7 +161,7 @@ npm start
 ### **Statement Import (`/api/import`)**
 | Method | Endpoint | Description |
 | :--- | :--- | :--- |
-| `POST` | `/api/import` | Upload bank statement (`.pdf`, `.xlsx`, `.xls`, `.csv`) with optional password |
+| `POST` | `/api/import` | Upload bank statement (`.pdf`, `.xlsx`, `.xls`, `.csv`) with optional password. Returns `{ count, skipped, unparsed }`. |
 
 ---
 
