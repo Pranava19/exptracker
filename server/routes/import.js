@@ -181,6 +181,28 @@ function parseSBIPDF(text) {
   return { transactions, unparsed };
 }
 
+function isHeaderRow(rowCells) {
+  if (!rowCells || !Array.isArray(rowCells)) return false;
+
+  const nonEmptyCount = rowCells.filter(c => c !== undefined && c !== null && String(c).trim() !== '').length;
+  if (nonEmptyCount < 3) return false;
+
+  const row = rowCells.map(c => String(c || '').trim().toLowerCase());
+  const hasDate = row.some(c =>
+    c === 'date' || c === 'txn dt' || c.includes('txn date') || c.includes('transaction date') ||
+    c.includes('value date') || c.includes('tran date') || c.includes('posting date')
+  );
+  const hasAmountCol = row.some(c =>
+    c.includes('debit') || c.includes('credit') || c.includes('withdrawal') ||
+    c.includes('deposit') || c.includes('amount')
+  );
+  const hasDescCol = row.some(c =>
+    c.includes('narration') || c.includes('description') || c.includes('particulars') || c.includes('details')
+  );
+
+  return hasDate && (hasAmountCol || hasDescCol);
+}
+
 async function parseExcel(buffer, password) {
   const XLSX = require('xlsx');
   let buf = buffer;
@@ -196,18 +218,7 @@ async function parseExcel(buffer, password) {
 
   let headerIdx = -1;
   for (let i = 0; i < Math.min(rows.length, 30); i++) {
-    if (!rows[i] || !Array.isArray(rows[i])) continue;
-    const row = rows[i].map(c => String(c || '').trim().toLowerCase());
-    const hasDate = row.some(c => c === 'date' || c.includes('txn date') || c.includes('transaction date') || c.includes('value date'));
-    const hasAmountCol = row.some(c =>
-      c.includes('debit') || c.includes('credit') || c.includes('withdrawal') ||
-      c.includes('deposit') || c.includes('amount')
-    );
-    const hasDescCol = row.some(c =>
-      c.includes('narration') || c.includes('description') || c.includes('particulars') || c.includes('details')
-    );
-    // Require date column AND at least one of (amount-type column OR description column) in separate cells
-    if (hasDate && (hasAmountCol || hasDescCol)) {
+    if (isHeaderRow(rows[i])) {
       headerIdx = i;
       break;
     }
@@ -389,20 +400,8 @@ router.post(['/', '/import', '/api/import'], auth, (req, res, next) => {
     }
   }
 });
-  } catch (err) {
-    if (client) {
-      try { await client.query('ROLLBACK'); } catch (rbErr) { console.error('Rollback error:', rbErr.message); }
-    }
-    console.error('Import error:', err.message || err);
-    if (err.name === 'PasswordException' || err.message?.includes('password')) {
-      return res.status(400).json({ message: 'File is password protected. Please enter the correct password.' });
-    }
-    res.status(500).json({ message: err.message || 'Failed to process statement file.' });
-  } finally {
-    if (client) {
-      client.release();
-    }
-  }
-});
+
+router.parseDate = parseDate;
+router.isHeaderRow = isHeaderRow;
 
 module.exports = router;
