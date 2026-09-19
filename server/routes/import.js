@@ -103,10 +103,18 @@ function parseDate(raw) {
   return null;
 }
 
+const crypto = require('crypto');
+
+function createTxnHash(date, amount, type, payee, description, extraInfo = '') {
+  const payload = `${date}|${amount}|${type}|${(payee || '').trim()}|${(description || '').trim()}|${(extraInfo || '').trim()}`;
+  return crypto.createHash('sha256').update(payload).digest('hex');
+}
+
 function parseSBIPDF(text) {
   const transactions = [];
   const lines = text.split('\n');
   const seen = new Set();
+  let unparsed = 0;
 
   for (const line of lines) {
     const trimmed = line.trim();
@@ -117,7 +125,7 @@ function parseSBIPDF(text) {
     if (!dateMatch) continue;
 
     const date = parseDate(dateMatch[1]);
-    if (!date) continue;
+    if (!date) { unparsed++; continue; }
 
     // Extract numbers with 2 decimal places from the line
     const amountMatches = [...trimmed.matchAll(/([\d,]+\.\d{2})/g)].map(m => parseFloat(m[1].replace(/,/g, '')));
@@ -156,6 +164,8 @@ function parseSBIPDF(text) {
     if (seen.has(key)) continue;
     seen.add(key);
 
+    const txnHash = createTxnHash(date, amount, type, payee, desc);
+
     transactions.push({
       date,
       description: desc || 'Bank Transaction',
@@ -164,10 +174,11 @@ function parseSBIPDF(text) {
       type,
       category: autoCategory(payee || desc),
       mode,
+      txnHash,
     });
   }
 
-  return transactions;
+  return { transactions, unparsed };
 }
 
 async function parseExcel(buffer, password) {
@@ -220,14 +231,15 @@ async function parseExcel(buffer, password) {
 
   const transactions = [];
   const seen = new Set();
+  let unparsed = 0;
 
   for (let i = headerIdx + 1; i < rows.length; i++) {
     const row = rows[i];
-    if (!row || !row[dateCol]) continue;
+    if (!row || row[dateCol] === undefined || row[dateCol] === null || String(row[dateCol]).trim() === '') continue;
 
     const dateRaw = row[dateCol];
     const date = parseDate(dateRaw);
-    if (!date) continue;
+    if (!date) { unparsed++; continue; }
 
     const desc = descCol !== -1 && row[descCol] ? String(row[descCol]).trim() : 'Bank Transaction';
 
@@ -266,7 +278,8 @@ async function parseExcel(buffer, password) {
       const key = `${date}|${debit}|expense|${desc.slice(0, 20)}`;
       if (!seen.has(key)) {
         seen.add(key);
-        transactions.push({ date, description: desc, payee, amount: debit, type: 'expense', category: autoCategory(payee || desc), mode });
+        const txnHash = createTxnHash(date, debit, 'expense', payee, desc);
+        transactions.push({ date, description: desc, payee, amount: debit, type: 'expense', category: autoCategory(payee || desc), mode, txnHash });
       }
     }
 
@@ -274,12 +287,13 @@ async function parseExcel(buffer, password) {
       const key = `${date}|${credit}|income|${desc.slice(0, 20)}`;
       if (!seen.has(key)) {
         seen.add(key);
-        transactions.push({ date, description: desc, payee, amount: credit, type: 'income', category: autoCategory(payee || desc), mode });
+        const txnHash = createTxnHash(date, credit, 'income', payee, desc);
+        transactions.push({ date, description: desc, payee, amount: credit, type: 'income', category: autoCategory(payee || desc), mode, txnHash });
       }
     }
   }
 
-  return transactions;
+  return { transactions, unparsed };
 }
 
 async function extractPDFText(buffer, password) {
@@ -317,18 +331,20 @@ router.post(['/', '/import', '/api/import'], auth, (req, res, next) => {
     const ext = path.extname(req.file.originalname).toLowerCase();
     const userId = req.user.id;
 
-    let parsed = [];
+    let parsedResult = { transactions: [], unparsed: 0 };
 
     if (ext === '.pdf') {
       const text = await extractPDFText(buffer, password);
-      parsed = parseSBIPDF(text);
+      parsedResult = parseSBIPDF(text);
     } else if (ext === '.xlsx' || ext === '.xls' || ext === '.csv') {
-      parsed = await parseExcel(buffer, password);
+      parsedResult = await parseExcel(buffer, password);
     } else {
       return res.status(400).json({ message: 'Unsupported file format. Please upload .xlsx, .xls, or .pdf' });
     }
 
-    if (parsed.length === 0) {
+    const { transactions, unparsed } = parsedResult;
+
+    if (transactions.length === 0) {
       return res.status(400).json({ message: 'No transactions found in file. Please ensure it is a valid bank statement.' });
     }
 
@@ -336,22 +352,43 @@ router.post(['/', '/import', '/api/import'], auth, (req, res, next) => {
     await client.query('BEGIN');
 
     let inserted = 0, skipped = 0;
-    for (const tx of parsed) {
+    for (const tx of transactions) {
       const dup = await client.query(
         `SELECT id FROM transactions WHERE user_id=$1 AND date=$2 AND amount=$3 AND type=$4`,
         [userId, tx.date, tx.amount, tx.type]
       );
       if (dup.rows.length > 0) { skipped++; continue; }
-      await client.query(
-        `INSERT INTO transactions (user_id, date, amount, description, payee, type, category, mode)
-         VALUES ($1,$2,$3,$4,$5,$6,$7,$8)`,
-        [userId, tx.date, tx.amount, tx.description, tx.payee || '', tx.type, tx.category, tx.mode]
+
+      const resIns = await client.query(
+        `INSERT INTO transactions (user_id, date, amount, description, payee, type, category, mode, txn_hash)
+         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)
+         ON CONFLICT DO NOTHING`,
+        [userId, tx.date, tx.amount, tx.description, tx.payee || '', tx.type, tx.category, tx.mode, tx.txnHash]
       );
-      inserted++;
+      if (resIns.rowCount > 0) {
+        inserted++;
+      } else {
+        skipped++;
+      }
     }
 
     await client.query('COMMIT');
-    res.json({ count: inserted, skipped });
+    res.json({ count: inserted, skipped, unparsed });
+  } catch (err) {
+    if (client) {
+      try { await client.query('ROLLBACK'); } catch (rbErr) { console.error('Rollback error:', rbErr.message); }
+    }
+    console.error('Import error:', err.message || err);
+    if (err.name === 'PasswordException' || err.message?.includes('password')) {
+      return res.status(400).json({ message: 'File is password protected. Please enter the correct password.' });
+    }
+    res.status(500).json({ message: err.message || 'Failed to process statement file.' });
+  } finally {
+    if (client) {
+      client.release();
+    }
+  }
+});
   } catch (err) {
     if (client) {
       try { await client.query('ROLLBACK'); } catch (rbErr) { console.error('Rollback error:', rbErr.message); }
