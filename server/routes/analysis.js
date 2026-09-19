@@ -48,8 +48,47 @@ const buildFilterClause = ({ year, month, from, to, type }, params) => {
   return clause;
 };
 
+function calculatePeriodDays({ from, to, year, month }) {
+  const today = new Date();
+  const todayMs = Date.UTC(today.getFullYear(), today.getMonth(), today.getDate());
+
+  if (from || to) {
+    let startMs = from ? new Date(from).getTime() : undefined;
+    let endMs = to ? new Date(to).getTime() : undefined;
+    if (!startMs && endMs) startMs = endMs;
+    if (!endMs && startMs) endMs = startMs;
+    if (startMs && endMs) {
+      if (endMs > todayMs) endMs = todayMs;
+      if (startMs > endMs) return 1;
+      return Math.max(1, Math.floor((endMs - startMs) / 86400000) + 1);
+    }
+  }
+
+  if (month !== undefined && month !== null) {
+    const yr = year !== undefined && year !== null ? year : today.getFullYear();
+    const startMs = Date.UTC(yr, month - 1, 1);
+    const lastDayOfMonth = new Date(Date.UTC(yr, month, 0)).getUTCDate();
+    let endMs = Date.UTC(yr, month - 1, lastDayOfMonth);
+    if (endMs > todayMs) endMs = todayMs;
+    if (startMs > endMs) return 1;
+    return Math.max(1, Math.floor((endMs - startMs) / 86400000) + 1);
+  }
+
+  if (year !== undefined && year !== null) {
+    const startMs = Date.UTC(year, 0, 1);
+    let endMs = Date.UTC(year, 11, 31);
+    if (endMs > todayMs) endMs = todayMs;
+    if (startMs > endMs) return 1;
+    return Math.max(1, Math.floor((endMs - startMs) / 86400000) + 1);
+  }
+
+  return null;
+}
+
 router.get(['/monthly-summary', '/monthly_summary', '/monthly_breakdown'], auth, async (req, res) => {
-  const year = parseBoundedInt(req.query.year, new Date().getFullYear(), 2000, 2100);
+  const hasFromTo = Boolean(req.query.from || req.query.to);
+  const defaultYear = hasFromTo ? undefined : new Date().getFullYear();
+  const year = parseBoundedInt(req.query.year, defaultYear, 2000, 2100);
   const from = parseDateString(req.query.from);
   const to = parseDateString(req.query.to);
 
@@ -97,7 +136,9 @@ router.get(['/monthly-summary', '/monthly_summary', '/monthly_breakdown'], auth,
 });
 
 router.get(['/net-cashflow', '/net_cashflow', '/cashflow'], auth, async (req, res) => {
-  const year = parseBoundedInt(req.query.year, new Date().getFullYear(), 2000, 2100);
+  const hasFromTo = Boolean(req.query.from || req.query.to);
+  const defaultYear = hasFromTo ? undefined : new Date().getFullYear();
+  const year = parseBoundedInt(req.query.year, defaultYear, 2000, 2100);
   const from = parseDateString(req.query.from);
   const to = parseDateString(req.query.to);
 
@@ -140,8 +181,11 @@ router.get(['/net-cashflow', '/net_cashflow', '/cashflow'], auth, async (req, re
 });
 
 router.get(['/daily-expenses', '/daily_expenses'], auth, async (req, res) => {
-  const year = parseBoundedInt(req.query.year, new Date().getFullYear(), 2000, 2100);
-  const month = parseBoundedInt(req.query.month, new Date().getMonth() + 1, 1, 12);
+  const hasFromTo = Boolean(req.query.from || req.query.to);
+  const defaultYear = hasFromTo ? undefined : new Date().getFullYear();
+  const defaultMonth = hasFromTo ? undefined : new Date().getMonth() + 1;
+  const year = parseBoundedInt(req.query.year, defaultYear, 2000, 2100);
+  const month = parseBoundedInt(req.query.month, defaultMonth, 1, 12);
   const from = parseDateString(req.query.from);
   const to = parseDateString(req.query.to);
 
@@ -179,7 +223,7 @@ router.get(['/daily-expenses', '/daily_expenses'], auth, async (req, res) => {
 });
 
 router.get(['/top-transactions', '/top_transactions', '/recent_transactions', '/recent-transactions'], auth, async (req, res) => {
-  const year = parseBoundedInt(req.query.year, new Date().getFullYear(), 2000, 2100);
+  const year = parseBoundedInt(req.query.year, undefined, 2000, 2100);
   const month = parseBoundedInt(req.query.month, undefined, 1, 12);
   const limit = parseBoundedInt(req.query.limit, 5, 1, 100);
   const from = parseDateString(req.query.from);
@@ -262,10 +306,36 @@ router.get(['/summary-cards', '/summary_cards'], auth, async (req, res) => {
     const row = result.rows[0] || {};
     const total_income = parseFloat(row.total_income || 0);
     const total_expenses = parseFloat(row.total_expenses || 0);
-    const current_balance = total_income - total_expenses;
+
+    let current_balance = total_income - total_expenses;
+    if (type !== 'all') {
+      const unfParams = [req.user.id];
+      const unfFilterClause = buildFilterClause({ year, month, from, to, type: 'all' }, unfParams);
+      const unfResult = await pool.query(
+        `SELECT
+          SUM(CASE WHEN type = 'income' THEN amount ELSE 0 END) AS unf_income,
+          SUM(CASE WHEN type = 'expense' THEN amount ELSE 0 END) AS unf_expenses
+         FROM transactions
+         WHERE user_id = $1
+           AND date IS NOT NULL AND amount IS NOT NULL
+           ${unfFilterClause}`,
+        unfParams
+      );
+      const unfRow = unfResult.rows[0] || {};
+      current_balance = parseFloat(unfRow.unf_income || 0) - parseFloat(unfRow.unf_expenses || 0);
+    }
+
     const highest_expense = parseFloat(row.highest_expense || 0);
     const distinct_expense_days = parseInt(row.distinct_expense_days || 0, 10);
-    const avg_daily_expense = distinct_expense_days > 0 ? total_expenses / distinct_expense_days : 0;
+
+    const periodDays = calculatePeriodDays({ from, to, year, month });
+    let avg_daily_expense = 0;
+    if (periodDays !== null) {
+      avg_daily_expense = total_expenses / periodDays;
+    } else {
+      avg_daily_expense = distinct_expense_days > 0 ? total_expenses / distinct_expense_days : 0;
+    }
+
     const transaction_count = parseInt(row.transaction_count || 0, 10);
 
     res.json({
