@@ -51,3 +51,25 @@ BEGIN
             USING (user_id = NULLIF(current_setting('app.current_user_id', true), '')::int OR current_setting('app.current_user_id', true) IS NULL);
     END IF;
 END $$;
+
+-- Hardening database additions
+ALTER TABLE transactions ADD COLUMN IF NOT EXISTS txn_hash VARCHAR(64);
+CREATE UNIQUE INDEX IF NOT EXISTS idx_transactions_user_id_txn_hash ON transactions(user_id, txn_hash) WHERE txn_hash IS NOT NULL;
+CREATE INDEX IF NOT EXISTS idx_transactions_user_id_date ON transactions(user_id, date);
+
+DO $$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM transactions WHERE user_id IS NULL) THEN
+    ALTER TABLE transactions ALTER COLUMN user_id SET NOT NULL;
+  END IF;
+END $$;
+
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_constraint WHERE conname = 'chk_transactions_amount_positive'
+  ) THEN
+    ALTER TABLE transactions ADD CONSTRAINT chk_transactions_amount_positive CHECK (amount > 0) NOT VALID;
+  END IF;
+END $$;
+
