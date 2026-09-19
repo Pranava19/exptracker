@@ -31,46 +31,73 @@ function autoCategory(desc, existingCat) {
   return result.category;
 }
 
+const MONTH_MAP = {
+  jan: 1, january: 1,
+  feb: 2, february: 2,
+  mar: 3, march: 3,
+  apr: 4, april: 4,
+  may: 5,
+  jun: 6, june: 6,
+  jul: 7, july: 7,
+  aug: 8, august: 8,
+  sep: 9, sept: 9, september: 9,
+  oct: 10, october: 10,
+  nov: 11, november: 11,
+  dec: 12, december: 12,
+};
+
+function formatUtcDate(y, m, d) {
+  if (isNaN(y) || isNaN(m) || isNaN(d)) return null;
+  if (y < 1000 || y > 9999 || m < 1 || m > 12 || d < 1 || d > 31) return null;
+  const dt = new Date(Date.UTC(y, m - 1, d));
+  if (dt.getUTCFullYear() !== y || dt.getUTCMonth() + 1 !== m || dt.getUTCDate() !== d) return null;
+  const mm = String(m).padStart(2, '0');
+  const dd = String(d).padStart(2, '0');
+  return `${y}-${mm}-${dd}`;
+}
+
 function parseDate(raw) {
   if (!raw) return null;
-  if (raw instanceof Date && !isNaN(raw)) {
-    return raw.toISOString().slice(0, 10);
+  if (raw instanceof Date) {
+    if (isNaN(raw.getTime())) return null;
+    return formatUtcDate(raw.getUTCFullYear(), raw.getUTCMonth() + 1, raw.getUTCDate());
   }
 
-  const s = String(raw).trim();
-  if (/^\d{4}-\d{2}-\d{2}$/.test(s)) return s;
+  let s = String(raw).trim();
+  s = s.replace(/[\sT]+\d{1,2}:\d{2}(:\d{2})?(\.\d+)?(Z|[+-]\d{2}:?\d{2})?$/i, '').trim();
 
-  // DD MMM YYYY or DD-MMM-YYYY (e.g., 15 Aug 2024, 15-Aug-2024)
-  const m1 = s.match(/^(\d{1,2})[\s\-]+([A-Za-z]{3})[\s\-]+(\d{4}|\d{2})$/);
+  // YYYY-MM-DD or YYYY/MM/DD or YYYY.MM.DD
+  const iso = s.match(/^(\d{4})[\/\-\.](\d{1,2})[\/\-\.](\d{1,2})$/);
+  if (iso) {
+    return formatUtcDate(parseInt(iso[1], 10), parseInt(iso[2], 10), parseInt(iso[3], 10));
+  }
+
+  // DD MMM YYYY or DD-MMM-YYYY or DD MMM YY
+  const m1 = s.match(/^(\d{1,2})[\s\-\.\/]+([A-Za-z]{3,9})[\s\-\.\/]+(\d{4}|\d{2})$/);
   if (m1) {
-    const yr = m1[3].length === 2 ? `20${m1[3]}` : m1[3];
-    const d = new Date(`${m1[2]} ${m1[1]} ${yr}`);
-    if (!isNaN(d)) return d.toISOString().slice(0, 10);
+    let yr = parseInt(m1[3], 10);
+    if (m1[3].length === 2) yr += 2000;
+    const monthStr = m1[2].toLowerCase();
+    const monthNum = MONTH_MAP[monthStr];
+    if (monthNum) {
+      return formatUtcDate(yr, monthNum, parseInt(m1[1], 10));
+    }
   }
 
   // DD/MM/YYYY or DD-MM-YYYY or DD.MM.YYYY
   const m2 = s.match(/^(\d{1,2})[\/\-\.](\d{1,2})[\/\-\.](\d{4}|\d{2})$/);
   if (m2) {
-    const yr = m2[3].length === 2 ? `20${m2[3]}` : m2[3];
-    const day = m2[1].padStart(2, '0');
-    const month = m2[2].padStart(2, '0');
-    const d = new Date(`${yr}-${month}-${day}`);
-    if (!isNaN(d)) return d.toISOString().slice(0, 10);
-  }
-
-  // YYYY/MM/DD or YYYY.MM.DD
-  const m3 = s.match(/^(\d{4})[\/\-\.](\d{1,2})[\/\-\.](\d{1,2})$/);
-  if (m3) {
-    const d = new Date(`${m3[1]}-${m3[2].padStart(2, '0')}-${m3[3].padStart(2, '0')}`);
-    if (!isNaN(d)) return d.toISOString().slice(0, 10);
+    let yr = parseInt(m2[3], 10);
+    if (m2[3].length === 2) yr += 2000;
+    return formatUtcDate(yr, parseInt(m2[2], 10), parseInt(m2[1], 10));
   }
 
   // Handle Excel Serial Number (e.g. 45231)
   const num = Number(s);
   if (!isNaN(num) && num > 30000 && num < 60000) {
-    const excelEpoch = new Date(1899, 11, 30);
-    const d = new Date(excelEpoch.getTime() + num * 86400000);
-    if (!isNaN(d)) return d.toISOString().slice(0, 10);
+    const utcMs = Date.UTC(1899, 11, 30) + Math.round(num * 86400000);
+    const dt = new Date(utcMs);
+    return formatUtcDate(dt.getUTCFullYear(), dt.getUTCMonth() + 1, dt.getUTCDate());
   }
 
   return null;
