@@ -5,7 +5,6 @@ import { ThemeProvider } from './context/ThemeContext';
 
 const Login = lazy(() => import('./pages/Login'));
 const Register = lazy(() => import('./pages/Register'));
-const VerifyEmail = lazy(() => import('./pages/VerifyEmail'));
 const DashboardHome = lazy(() => import('./pages/DashboardHome'));
 const Transactions = lazy(() => import('./pages/Transactions'));
 const Import = lazy(() => import('./pages/Import'));
@@ -38,7 +37,6 @@ function App() {
             <Routes>
               <Route path="/login" element={<Login />} />
               <Route path="/register" element={<Register />} />
-              <Route path="/verify-email" element={<VerifyEmail />} />
               <Route path="/privacy" element={<Privacy />} />
               <Route path="/terms" element={<Terms />} />
               <Route path="/dashboard" element={<PrivateRoute><DashboardHome /></PrivateRoute>} />
