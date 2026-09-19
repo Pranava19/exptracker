@@ -1,22 +1,29 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 import axios from '../api/axios';
 import SEO from '../components/SEO';
-import { User, Mail, Lock, Loader2, CheckCircle2, Eye, EyeOff } from 'lucide-react';
+import { User, Mail, Lock, Loader2, Eye, EyeOff } from 'lucide-react';
 
 const Register = () => {
+  const { login } = useAuth();
+  const navigate = useNavigate();
   const [form, setForm] = useState({ name: '', email: '', password: '' });
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const [registered, setRegistered] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError(''); setLoading(true);
     try {
-      await axios.post('/auth/register', form);
-      setRegistered(true);
+      const res = await axios.post('/auth/register', form);
+      if (res.data?.user) {
+        login(res.data.user);
+        navigate('/dashboard');
+      } else {
+        navigate('/login');
+      }
     } catch (err) {
       setError(err.response?.data?.message || 'Registration failed');
     } finally {
@@ -42,34 +49,11 @@ const Register = () => {
         </div>
 
         <div className="bg-white dark:bg-ink-900 border border-ink-100 dark:border-[#2C2C28] rounded-card p-6 shadow-sm">
-          {registered ? (
-            <div className="text-center py-4 space-y-4">
-              <div className="w-12 h-12 rounded-full bg-accent/10 text-accent mx-auto flex items-center justify-center">
-                <CheckCircle2 size={28} strokeWidth={1.5} />
-              </div>
-              <div>
-                <h2 className="text-base font-semibold text-ink-900 dark:text-ink-50">Check your inbox!</h2>
-                <p className="text-xs text-ink-700 dark:text-ink-200 opacity-80 mt-1">
-                  We've sent a verification link to <span className="font-mono font-semibold text-accent">{form.email}</span>.
-                </p>
-                <p className="text-[11px] text-ink-700 dark:text-ink-200 opacity-60 mt-2">
-                  Please click the link in your email to verify your account before logging in.
-                </p>
-              </div>
-              <Link
-                to="/login"
-                className="w-full inline-block bg-accent hover:bg-accent-dark text-white rounded-md py-2.5 text-xs font-semibold transition-colors mt-2"
-              >
-                Go to Sign In
-              </Link>
+          {error && (
+            <div className="mb-4 p-3 rounded-md bg-negative/10 border border-negative/20 text-negative text-xs">
+              {error}
             </div>
-          ) : (
-            <>
-              {error && (
-                <div className="mb-4 p-3 rounded-md bg-negative/10 border border-negative/20 text-negative text-xs">
-                  {error}
-                </div>
-              )}
+          )}
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div>
                   <label className="text-xs font-medium text-ink-900 dark:text-ink-50 block mb-1.5 flex items-center gap-1.5">
@@ -136,8 +120,6 @@ const Register = () => {
                 Already have an account?{' '}
                 <Link to="/login" className="text-accent font-semibold hover:underline">Sign in</Link>
               </p>
-            </>
-          )}
         </div>
       </main>
     </div>

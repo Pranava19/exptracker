@@ -9,21 +9,12 @@ const getResendClient = () => {
   return new Resend(apiKey);
 };
 
-const sendMail = async (emailPayload) => {
-  const resend = getResendClient();
-  const { data, error } = await resend.emails.send(emailPayload);
-  if (error) {
-    console.error('Resend email error:', error);
-    throw new Error(error.message || 'Email sending failed');
-  }
-  return data;
-};
-
 const sendVerificationEmail = async (toEmail, token) => {
+  const resend = getResendClient();
   const clientUrl = process.env.CLIENT_URL || 'http://localhost:3000';
   const verifyLink = `${clientUrl}/verify-email?token=${token}`;
 
-  return await sendMail({
+  return await resend.emails.send({
     from: process.env.EMAIL_FROM || 'ExpTracker <onboarding@resend.dev>',
     to: toEmail,
     subject: 'Verify your ExpTracker Account',
@@ -48,10 +39,11 @@ const sendVerificationEmail = async (toEmail, token) => {
 };
 
 const sendPasswordResetEmail = async (toEmail, token) => {
+  const resend = getResendClient();
   const clientUrl = process.env.CLIENT_URL || 'http://localhost:3000';
   const resetLink = `${clientUrl}/reset-password?token=${token}`;
 
-  return await sendMail({
+  return await resend.emails.send({
     from: process.env.EMAIL_FROM || 'ExpTracker <onboarding@resend.dev>',
     to: toEmail,
     subject: 'Reset your ExpTracker Password',
@@ -76,6 +68,7 @@ const sendPasswordResetEmail = async (toEmail, token) => {
 };
 
 const sendMonthlySummaryReportEmail = async (user, summaryData) => {
+  const resend = getResendClient();
   const clientUrl = process.env.CLIENT_URL || 'http://localhost:3000';
   const { monthName, totalIncome, totalExpenses, netSavings, topTransactions = [] } = summaryData;
 
@@ -87,7 +80,7 @@ const sendMonthlySummaryReportEmail = async (user, summaryData) => {
     </tr>
   `).join('');
 
-  return await sendMail({
+  return await resend.emails.send({
     from: process.env.EMAIL_FROM || 'ExpTracker <onboarding@resend.dev>',
     to: user.email,
     subject: `📊 Your ExpTracker Financial Summary - ${monthName}`,

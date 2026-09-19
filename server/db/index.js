@@ -6,9 +6,7 @@ const isNeon = process.env.DATABASE_URL?.includes('neon') || process.env.DATABAS
 
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
-  ssl: process.env.DATABASE_URL?.includes('neon.tech')
-    ? { rejectUnauthorized: true }
-    : (isProd || isNeon) ? { rejectUnauthorized: false } : false,
+  ssl: (isProd || isNeon) ? { rejectUnauthorized: false } : false,
   connectionTimeoutMillis: 10000,
   idleTimeoutMillis: 30000,
   max: 10,
@@ -20,12 +18,10 @@ pool.on('error', (err) => {
 
 process.on('uncaughtException', (err) => {
   console.error('Uncaught exception (kept process alive):', err.message);
-  process.exit(1);
 });
 
 process.on('unhandledRejection', (reason) => {
   console.error('Unhandled rejection (kept process alive):', reason);
-  process.exit(1);
 });
 
 const initSchema = async (client) => {

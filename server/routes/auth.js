@@ -77,26 +77,19 @@ router.post(
       const salt = await bcrypt.genSalt(10);
       const hashedPassword = await bcrypt.hash(password, salt);
 
-      const token = crypto.randomBytes(32).toString('hex');
-      const expires = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
-
       const result = await pool.query(
-        `INSERT INTO users (name, email, password, is_verified, verification_token, verification_token_expires) 
-         VALUES ($1, $2, $3, false, $4, $5) RETURNING id, name, email`,
-        [name, email, hashedPassword, token, expires]
+        `INSERT INTO users (name, email, password, is_verified) 
+         VALUES ($1, $2, $3, true) RETURNING id, name, email`,
+        [name, email, hashedPassword]
       );
 
       const user = result.rows[0];
 
-      try {
-        await sendVerificationEmail(email, token);
-      } catch (emailErr) {
-        console.error('Failed to send verification email:', emailErr.message);
-      }
+      setTokenCookies(res, user);
 
       res.status(201).json({
-        message: 'Registration successful! Please check your email to verify your account.',
-        email: user.email,
+        message: 'Registration successful!',
+        user: { id: user.id, name: user.name, email: user.email }
       });
     } catch (err) {
       console.error(err.message);
@@ -132,14 +125,6 @@ router.post(
         return res.status(400).json({ message: 'Invalid email or password' });
       }
 
-      if (user.is_verified === false) {
-        return res.status(403).json({
-          message: 'Please verify your email before logging in',
-          unverified: true,
-          email: user.email,
-        });
-      }
-
       setTokenCookies(res, user);
 
       res.json({
@@ -148,78 +133,6 @@ router.post(
     } catch (err) {
       console.error(err.message);
       res.status(500).json({ message: 'Server error' });
-    }
-  }
-);
-
-router.get('/verify-email', async (req, res) => {
-  const { token } = req.query;
-
-  if (!token) {
-    return res.status(400).json({ message: 'Verification token is required' });
-  }
-
-  try {
-    const result = await pool.query(
-      `SELECT * FROM users WHERE verification_token = $1 AND verification_token_expires > NOW()`,
-      [token]
-    );
-
-    if (result.rows.length === 0) {
-      return res.status(400).json({ message: 'Invalid or expired verification token' });
-    }
-
-    const user = result.rows[0];
-
-    await pool.query(
-      `UPDATE users SET is_verified = true, verification_token = NULL, verification_token_expires = NULL WHERE id = $1`,
-      [user.id]
-    );
-
-    res.json({ success: true, message: 'Email verified successfully! You can now log in.' });
-  } catch (err) {
-    console.error(err.message);
-    res.status(500).json({ message: 'Server error during verification' });
-  }
-});
-
-router.post(
-  '/resend-verification',
-  [body('email').isEmail().withMessage('Please enter a valid email address').normalizeEmail()],
-  handleValidationErrors,
-  async (req, res) => {
-    const { email } = req.body;
-
-    try {
-      const result = await pool.query(
-        'SELECT * FROM users WHERE email = $1',
-        [email]
-      );
-
-      if (result.rows.length === 0) {
-        return res.status(404).json({ message: 'User with this email does not exist' });
-      }
-
-      const user = result.rows[0];
-
-      if (user.is_verified) {
-        return res.status(400).json({ message: 'This account is already verified. Please log in.' });
-      }
-
-      const token = crypto.randomBytes(32).toString('hex');
-      const expires = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
-
-      await pool.query(
-        `UPDATE users SET verification_token = $1, verification_token_expires = $2 WHERE id = $3`,
-        [token, expires, user.id]
-      );
-
-      await sendVerificationEmail(email, token);
-
-      res.json({ message: 'Verification email sent! Please check your inbox.' });
-    } catch (err) {
-      console.error(err.message);
-      res.status(500).json({ message: 'Failed to resend verification email' });
     }
   }
 );
@@ -323,8 +236,8 @@ router.post('/refresh', async (req, res) => {
       [decoded.id]
     );
 
-    if (result.rows.length === 0 || result.rows[0].is_verified === false) {
-      return res.status(401).json({ message: 'User not found or unverified' });
+    if (result.rows.length === 0) {
+      return res.status(401).json({ message: 'User not found' });
     }
 
     const user = result.rows[0];
