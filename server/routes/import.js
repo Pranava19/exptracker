@@ -4,6 +4,7 @@ const multer = require('multer');
 const path = require('path');
 const pool = require('../db/index');
 const auth = require('../middleware/authMiddleware');
+const { importLimiter } = require('../middleware/rateLimiter');
 
 const upload = multer({
   storage: multer.memoryStorage(),
@@ -271,7 +272,7 @@ async function extractPDFText(buffer, password) {
   return text;
 }
 
-router.post(['/', '/import', '/api/import'], auth, (req, res, next) => {
+router.post(['/', '/import', '/api/import'], auth, importLimiter, (req, res, next) => {
   upload.single('file')(req, res, (err) => {
     if (err) {
       return res.status(400).json({ message: err.message || 'File upload error' });
@@ -307,6 +308,7 @@ router.post(['/', '/import', '/api/import'], auth, (req, res, next) => {
 
     client = await pool.connect();
     await client.query('BEGIN');
+    await client.query("SELECT set_config('app.user_id', $1, true)", [String(userId)]);
 
     let inserted = 0, skipped = 0;
     for (const tx of parsed) {

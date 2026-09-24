@@ -4,6 +4,7 @@ const request = require('supertest');
 jest.mock('../db/index', () => ({
   query: jest.fn(),
   on: jest.fn(),
+  withUserTransaction: jest.fn(async (userId, cb) => cb({ query: jest.fn() })),
 }));
 
 const pool = require('../db/index');

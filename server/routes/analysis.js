@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const pool = require('../db/index');
 const auth = require('../middleware/authMiddleware');
+const { transactionLimiter } = require('../middleware/rateLimiter');
 
 const parseBoundedInt = (val, defaultVal, min, max) => {
   if (val === undefined || val === null || val === '') return defaultVal;
@@ -48,7 +49,7 @@ const buildFilterClause = ({ year, month, from, to, type }, params) => {
   return clause;
 };
 
-router.get(['/monthly-summary', '/monthly_summary', '/monthly_breakdown'], auth, async (req, res) => {
+router.get(['/monthly-summary', '/monthly_summary', '/monthly_breakdown'], auth, transactionLimiter, async (req, res) => {
   const year = parseBoundedInt(req.query.year, new Date().getFullYear(), 2000, 2100);
   const from = parseDateString(req.query.from);
   const to = parseDateString(req.query.to);
@@ -61,19 +62,21 @@ router.get(['/monthly-summary', '/monthly_summary', '/monthly_breakdown'], auth,
     const params = [req.user.id];
     const filterClause = buildFilterClause({ year, from, to }, params);
 
-    const result = await pool.query(
-      `SELECT
-        EXTRACT(MONTH FROM date::date)::int AS month,
-        SUM(CASE WHEN type = 'income' THEN amount ELSE 0 END) AS income,
-        SUM(CASE WHEN type = 'expense' THEN amount ELSE 0 END) AS expense
-       FROM transactions
-       WHERE user_id = $1
-         AND date IS NOT NULL AND amount IS NOT NULL
-         ${filterClause}
-       GROUP BY EXTRACT(MONTH FROM date::date)
-       ORDER BY month ASC`,
-      params
-    );
+    const result = await pool.withUserTransaction(req.user.id, async (client) => {
+      return client.query(
+        `SELECT
+          EXTRACT(MONTH FROM date::date)::int AS month,
+          SUM(CASE WHEN type = 'income' THEN amount ELSE 0 END) AS income,
+          SUM(CASE WHEN type = 'expense' THEN amount ELSE 0 END) AS expense
+         FROM transactions
+         WHERE user_id = $1
+           AND date IS NOT NULL AND amount IS NOT NULL
+           ${filterClause}
+         GROUP BY EXTRACT(MONTH FROM date::date)
+         ORDER BY month ASC`,
+        params
+      );
+    });
 
     const monthsMap = {};
     result.rows.forEach(r => {
@@ -96,7 +99,7 @@ router.get(['/monthly-summary', '/monthly_summary', '/monthly_breakdown'], auth,
   }
 });
 
-router.get(['/net-cashflow', '/net_cashflow', '/cashflow'], auth, async (req, res) => {
+router.get(['/net-cashflow', '/net_cashflow', '/cashflow'], auth, transactionLimiter, async (req, res) => {
   const year = parseBoundedInt(req.query.year, new Date().getFullYear(), 2000, 2100);
   const from = parseDateString(req.query.from);
   const to = parseDateString(req.query.to);
@@ -109,18 +112,20 @@ router.get(['/net-cashflow', '/net_cashflow', '/cashflow'], auth, async (req, re
     const params = [req.user.id];
     const filterClause = buildFilterClause({ year, from, to }, params);
 
-    const result = await pool.query(
-      `SELECT
-        EXTRACT(MONTH FROM date::date)::int AS month,
-        SUM(CASE WHEN type = 'income' THEN amount WHEN type = 'expense' THEN -amount ELSE 0 END) AS net
-       FROM transactions
-       WHERE user_id = $1
-         AND date IS NOT NULL AND amount IS NOT NULL
-         ${filterClause}
-       GROUP BY EXTRACT(MONTH FROM date::date)
-       ORDER BY month ASC`,
-      params
-    );
+    const result = await pool.withUserTransaction(req.user.id, async (client) => {
+      return client.query(
+        `SELECT
+          EXTRACT(MONTH FROM date::date)::int AS month,
+          SUM(CASE WHEN type = 'income' THEN amount WHEN type = 'expense' THEN -amount ELSE 0 END) AS net
+         FROM transactions
+         WHERE user_id = $1
+           AND date IS NOT NULL AND amount IS NOT NULL
+           ${filterClause}
+         GROUP BY EXTRACT(MONTH FROM date::date)
+         ORDER BY month ASC`,
+        params
+      );
+    });
 
     const monthsMap = {};
     result.rows.forEach(r => {
@@ -139,7 +144,7 @@ router.get(['/net-cashflow', '/net_cashflow', '/cashflow'], auth, async (req, re
   }
 });
 
-router.get(['/daily-expenses', '/daily_expenses'], auth, async (req, res) => {
+router.get(['/daily-expenses', '/daily_expenses'], auth, transactionLimiter, async (req, res) => {
   const year = parseBoundedInt(req.query.year, new Date().getFullYear(), 2000, 2100);
   const month = parseBoundedInt(req.query.month, new Date().getMonth() + 1, 1, 12);
   const from = parseDateString(req.query.from);
@@ -153,18 +158,20 @@ router.get(['/daily-expenses', '/daily_expenses'], auth, async (req, res) => {
     const params = [req.user.id];
     const filterClause = buildFilterClause({ year, month, from, to, type: 'expense' }, params);
 
-    const result = await pool.query(
-      `SELECT
-        date::text AS date,
-        SUM(amount) AS total_expense
-       FROM transactions
-       WHERE user_id = $1
-         AND date IS NOT NULL AND amount IS NOT NULL
-         ${filterClause}
-       GROUP BY date::text
-       ORDER BY date ASC`,
-      params
-    );
+    const result = await pool.withUserTransaction(req.user.id, async (client) => {
+      return client.query(
+        `SELECT
+          date::text AS date,
+          SUM(amount) AS total_expense
+         FROM transactions
+         WHERE user_id = $1
+           AND date IS NOT NULL AND amount IS NOT NULL
+           ${filterClause}
+         GROUP BY date::text
+         ORDER BY date ASC`,
+        params
+      );
+    });
 
     const formatted = result.rows.map(r => ({
       date: r.date.slice(0, 10),
@@ -178,7 +185,7 @@ router.get(['/daily-expenses', '/daily_expenses'], auth, async (req, res) => {
   }
 });
 
-router.get(['/top-transactions', '/top_transactions', '/recent_transactions', '/recent-transactions'], auth, async (req, res) => {
+router.get(['/top-transactions', '/top_transactions', '/recent_transactions', '/recent-transactions'], auth, transactionLimiter, async (req, res) => {
   const year = parseBoundedInt(req.query.year, new Date().getFullYear(), 2000, 2100);
   const month = parseBoundedInt(req.query.month, undefined, 1, 12);
   const limit = parseBoundedInt(req.query.limit, 5, 1, 100);
@@ -196,21 +203,23 @@ router.get(['/top-transactions', '/top_transactions', '/recent_transactions', '/
     params.push(limit);
     const limitParamIndex = params.length;
 
-    const result = await pool.query(
-      `SELECT
-        date::text AS date,
-        COALESCE(description, '') AS description,
-        COALESCE(payee, '') AS payee,
-        COALESCE(NULLIF(payee, ''), description, 'Unknown') AS label,
-        amount
-       FROM transactions
-       WHERE user_id = $1
-         AND date IS NOT NULL AND amount IS NOT NULL
-         ${filterClause}
-       ORDER BY amount DESC
-       LIMIT $${limitParamIndex}`,
-      params
-    );
+    const result = await pool.withUserTransaction(req.user.id, async (client) => {
+      return client.query(
+        `SELECT
+          date::text AS date,
+          COALESCE(description, '') AS description,
+          COALESCE(payee, '') AS payee,
+          COALESCE(NULLIF(payee, ''), description, 'Unknown') AS label,
+          amount
+         FROM transactions
+         WHERE user_id = $1
+           AND date IS NOT NULL AND amount IS NOT NULL
+           ${filterClause}
+         ORDER BY amount DESC
+         LIMIT $${limitParamIndex}`,
+        params
+      );
+    });
 
     const formatted = result.rows.map(r => ({
       date: r.date.slice(0, 10),
@@ -227,7 +236,7 @@ router.get(['/top-transactions', '/top_transactions', '/recent_transactions', '/
   }
 });
 
-router.get(['/summary-cards', '/summary_cards'], auth, async (req, res) => {
+router.get(['/summary-cards', '/summary_cards'], auth, transactionLimiter, async (req, res) => {
   const year = parseBoundedInt(req.query.year, undefined, 2000, 2100);
   const month = parseBoundedInt(req.query.month, undefined, 1, 12);
   const from = parseDateString(req.query.from);
@@ -245,19 +254,21 @@ router.get(['/summary-cards', '/summary_cards'], auth, async (req, res) => {
     const params = [req.user.id];
     const filterClause = buildFilterClause({ year, month, from, to, type }, params);
 
-    const result = await pool.query(
-      `SELECT
-        SUM(CASE WHEN type = 'income' THEN amount ELSE 0 END) AS total_income,
-        SUM(CASE WHEN type = 'expense' THEN amount ELSE 0 END) AS total_expenses,
-        MAX(CASE WHEN type = 'expense' THEN amount ELSE NULL END) AS highest_expense,
-        COUNT(DISTINCT CASE WHEN type = 'expense' THEN date::date ELSE NULL END) AS distinct_expense_days,
-        COUNT(*)::int AS transaction_count
-       FROM transactions
-       WHERE user_id = $1
-         AND date IS NOT NULL AND amount IS NOT NULL
-         ${filterClause}`,
-      params
-    );
+    const result = await pool.withUserTransaction(req.user.id, async (client) => {
+      return client.query(
+        `SELECT
+          SUM(CASE WHEN type = 'income' THEN amount ELSE 0 END) AS total_income,
+          SUM(CASE WHEN type = 'expense' THEN amount ELSE 0 END) AS total_expenses,
+          MAX(CASE WHEN type = 'expense' THEN amount ELSE NULL END) AS highest_expense,
+          COUNT(DISTINCT CASE WHEN type = 'expense' THEN date::date ELSE NULL END) AS distinct_expense_days,
+          COUNT(*)::int AS transaction_count
+         FROM transactions
+         WHERE user_id = $1
+           AND date IS NOT NULL AND amount IS NOT NULL
+           ${filterClause}`,
+        params
+      );
+    });
 
     const row = result.rows[0] || {};
     const total_income = parseFloat(row.total_income || 0);

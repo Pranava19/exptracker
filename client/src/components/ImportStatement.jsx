@@ -4,7 +4,7 @@ import Toast from './Toast';
 import { useToast } from '../hooks/useToast';
 import { FileUp, Loader2, CheckCircle2, Lock } from 'lucide-react';
 
-const inputCls = 'w-full border border-ink-100 dark:border-[#2C2C28] rounded-md px-3 py-2 text-sm text-ink-900 dark:text-ink-50 bg-white dark:bg-[#252522] focus:outline-none focus:border-accent transition-colors';
+const inputCls = 'w-full glass-input px-3.5 py-2.5 text-xs text-ink-900 dark:text-ink-50 focus:outline-none transition-colors';
 
 const ImportStatement = ({ onImportDone }) => {
   const [file, setFile] = useState(null);
@@ -51,7 +51,7 @@ const ImportStatement = ({ onImportDone }) => {
   };
 
   return (
-    <div className="bg-white dark:bg-ink-900 border border-ink-100 dark:border-[#2C2C28] rounded-card p-6 shadow-sm">
+    <div className="glass-card p-6 rounded-2xl shadow-sm">
       {toast && <Toast message={toast.message} type={toast.type} onClose={hideToast} />}
       
       <div className="flex items-center gap-2 mb-4">
@@ -62,7 +62,7 @@ const ImportStatement = ({ onImportDone }) => {
       <div className="space-y-4">
         <div>
           <label className="text-xs font-medium text-ink-700 dark:text-ink-200 block mb-1.5">Statement File (.pdf, .xlsx)</label>
-          <div className="border border-dashed border-ink-200 dark:border-[#2C2C28] rounded-card p-4 text-center bg-ink-50/50 dark:bg-[#252522]/50 hover:bg-ink-50 transition-colors cursor-pointer relative">
+          <div className="border border-dashed border-ink-300/80 dark:border-white/20 rounded-2xl p-6 text-center glass-card-subtle hover:border-accent transition-all cursor-pointer relative">
             <input
               type="file"
               accept=".xlsx,.xls,.pdf"
@@ -70,11 +70,11 @@ const ImportStatement = ({ onImportDone }) => {
               onChange={e => setFile(e.target.files[0])}
               className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
             />
-            <FileUp size={24} strokeWidth={1.5} className="mx-auto text-ink-700 dark:text-ink-200 opacity-50 mb-1" />
-            <p className="text-xs font-medium text-ink-900 dark:text-ink-50">
+            <FileUp size={24} strokeWidth={1.5} className="mx-auto text-accent opacity-75 mb-2" />
+            <p className="text-xs font-semibold text-ink-900 dark:text-ink-50">
               {file ? file.name : 'Click or drag bank statement file here'}
             </p>
-            <p className="text-[10px] text-ink-700 dark:text-ink-200 opacity-60 mt-0.5">Supports SBI PDF & Excel statements (Max 10MB)</p>
+            <p className="text-[10px] text-ink-600 dark:text-ink-400 mt-1">Supports SBI PDF & Excel statements (Max 10MB)</p>
           </div>
         </div>
 
@@ -84,7 +84,7 @@ const ImportStatement = ({ onImportDone }) => {
               <Lock size={12} strokeWidth={1.5} />
               <span>Password Protection</span>
             </label>
-            <span className="text-[10px] text-ink-700 dark:text-ink-200 opacity-60">(Optional)</span>
+            <span className="text-[10px] text-ink-600 dark:text-ink-400">(Optional)</span>
           </div>
           <div className="relative">
             <input
@@ -97,7 +97,7 @@ const ImportStatement = ({ onImportDone }) => {
             <button
               type="button"
               onClick={() => setShowPassword(!showPassword)}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-mono text-ink-700 dark:text-ink-200 opacity-60 hover:opacity-100"
+              className="absolute right-3.5 top-1/2 -translate-y-1/2 text-xs font-mono text-ink-600 dark:text-ink-300 opacity-70 hover:opacity-100 cursor-pointer"
             >
               {showPassword ? 'Hide' : 'Show'}
             </button>
@@ -110,7 +110,7 @@ const ImportStatement = ({ onImportDone }) => {
               <span className="text-ink-900 dark:text-ink-50 font-medium">{stepText}</span>
               <span className="text-accent font-semibold">{progress}%</span>
             </div>
-            <div className="h-1.5 bg-ink-100 dark:bg-[#2C2C28] rounded-full overflow-hidden">
+            <div className="h-2 bg-black/5 dark:bg-white/10 rounded-full overflow-hidden">
               <div
                 className="h-full bg-accent transition-all duration-300"
                 style={{ width: `${progress}%` }}
@@ -122,7 +122,7 @@ const ImportStatement = ({ onImportDone }) => {
         <button
           onClick={handleImport}
           disabled={loading || !file}
-          className="w-full bg-accent hover:bg-accent-dark text-white py-2.5 rounded-md text-xs font-semibold disabled:opacity-40 flex items-center justify-center gap-2 transition-colors"
+          className="glass-btn-primary w-full py-2.5 text-xs font-semibold disabled:opacity-40 flex items-center justify-center gap-2 cursor-pointer shadow-sm"
         >
           {loading ? <Loader2 size={16} className="animate-spin" /> : <CheckCircle2 size={16} strokeWidth={1.5} />}
           <span>{loading ? 'Processing Statement...' : 'Import Statement'}</span>

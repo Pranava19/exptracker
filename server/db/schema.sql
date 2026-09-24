@@ -37,17 +37,47 @@ CREATE EXTENSION IF NOT EXISTS "pgcrypto";
 ALTER TABLE transactions ADD COLUMN IF NOT EXISTS uuid UUID DEFAULT gen_random_uuid() NOT NULL;
 CREATE UNIQUE INDEX IF NOT EXISTS idx_transactions_uuid ON transactions(uuid);
 
+-- Non-owner role for application isolation
+DO $$
+BEGIN
+    IF NOT EXISTS (SELECT FROM pg_roles WHERE rolname = 'app_user') THEN
+        CREATE ROLE app_user WITH NOSUPERUSER NOCREATEDB NOCREATEROLE NOBYPASSRLS;
+    END IF;
+EXCEPTION WHEN OTHERS THEN
+    NULL;
+END $$;
+
+DO $$
+BEGIN
+    GRANT USAGE ON SCHEMA public TO app_user;
+    GRANT ALL ON ALL TABLES IN SCHEMA public TO app_user;
+    GRANT ALL ON ALL SEQUENCES IN SCHEMA public TO app_user;
+EXCEPTION WHEN OTHERS THEN
+    NULL;
+END $$;
+
 -- Row-Level Security (RLS) Policy
 ALTER TABLE transactions ENABLE ROW LEVEL SECURITY;
+ALTER TABLE transactions FORCE ROW LEVEL SECURITY;
 
-DO $$ 
-BEGIN
-    IF NOT EXISTS (
-        SELECT 1 FROM pg_policies 
-        WHERE tablename = 'transactions' AND policyname = 'transactions_user_isolation'
-    ) THEN
-        CREATE POLICY transactions_user_isolation ON transactions
-            FOR ALL
-            USING (user_id = NULLIF(current_setting('app.current_user_id', true), '')::int OR current_setting('app.current_user_id', true) IS NULL);
-    END IF;
-END $$;
+DROP POLICY IF EXISTS transactions_user_isolation ON transactions;
+
+CREATE POLICY transactions_user_isolation ON transactions
+    FOR ALL
+    TO PUBLIC
+    USING (
+        user_id = (
+            CASE 
+                WHEN current_setting('app.user_id', true) ~ '^[0-9]+$' 
+                THEN current_setting('app.user_id', true)::int 
+                ELSE NULL 
+            END
+        )
+        OR (
+            CASE 
+                WHEN current_setting('app.user_id', true) ~ '^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$' 
+                THEN uuid = current_setting('app.user_id', true)::uuid 
+                ELSE FALSE 
+            END
+        )
+    );

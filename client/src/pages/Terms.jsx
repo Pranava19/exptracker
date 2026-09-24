@@ -17,7 +17,7 @@ const Terms = () => {
           <p className="text-xs text-ink-500 dark:text-ink-400 mt-1">Last updated: September 2026</p>
         </div>
 
-        <div className="bg-white dark:bg-ink-900 border border-ink-100 dark:border-[#2C2C28] rounded-2xl p-6 shadow-sm space-y-6 text-sm leading-relaxed">
+        <div className="glass-card p-6 sm:p-8 space-y-6 text-sm leading-relaxed">
           <section className="space-y-2">
             <h2 className="text-base font-bold text-ink-900 dark:text-ink-50 flex items-center gap-2">
               <FileText size={18} className="text-accent" />
@@ -33,7 +33,7 @@ const Terms = () => {
               <AlertTriangle size={18} className="text-amber-500" />
               2. Financial Advice Disclaimer
             </h2>
-            <div className="p-3.5 rounded-xl bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900/50 text-amber-900 dark:text-amber-200 text-xs leading-relaxed font-medium">
+            <div className="p-4 rounded-xl bg-amber-500/10 border border-amber-500/20 backdrop-blur-sm text-amber-900 dark:text-amber-200 text-xs leading-relaxed font-medium">
               ExpTracker is an informational, self-directed financial management and budgeting tool. ExpTracker does not provide certified financial, investment, legal, accounting, or tax advice. All calculations, categorizations, and summaries are generated for organizational convenience only. Consult a certified financial planner or tax professional before making significant financial decisions.
             </div>
           </section>

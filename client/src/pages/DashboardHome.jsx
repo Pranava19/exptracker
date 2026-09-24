@@ -256,45 +256,48 @@ const DashboardHome = () => {
             Here's your real-time financial snapshot for {now.toLocaleString('default', { month: 'long', year: 'numeric' })}.
           </p>
         </div>
-        <div className="hidden sm:flex items-center gap-1 text-xs font-semibold px-3 py-1.5 rounded-full bg-accent/10 text-accent">
+        <div className="hidden sm:flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-full bg-accent/10 text-accent glass-pill border-accent/20 select-none shadow-xs">
           <Sparkles size={14} /> Account Synchronized
         </div>
       </div>
 
       {/* Balance & Income/Expense Highlight Row */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-        <div className="md:col-span-2 p-6 sm:p-8 bg-gradient-to-br from-ink-900 via-ink-900 to-ink-800 text-white rounded-2xl flex flex-col justify-between shadow-md relative overflow-hidden border border-ink-800">
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-2">
-              <div className="p-2 rounded-xl bg-accent/20 text-accent-light backdrop-blur-md">
+        <div className="glass-card md:col-span-2 p-6 sm:p-8 rounded-2xl flex flex-col justify-between relative overflow-hidden text-white bg-gradient-to-br from-slate-900/95 via-slate-900/90 to-blue-950/80 border border-white/20 dark:border-white/10 shadow-lg">
+          {/* Subtle atmospheric light inside hero card */}
+          <div className="absolute top-0 right-0 w-80 h-80 bg-accent/15 rounded-full filter blur-3xl pointer-events-none" />
+
+          <div className="relative z-10 flex items-center justify-between mb-4">
+            <div className="flex items-center gap-2.5">
+              <div className="p-2 rounded-xl bg-accent/25 text-blue-300 backdrop-blur-md border border-white/10">
                 <Wallet size={20} strokeWidth={2} />
               </div>
-              <span className="text-xs font-bold uppercase tracking-wider text-ink-200 opacity-90 select-none">
+              <span className="text-xs font-bold uppercase tracking-wider text-slate-300 select-none">
                 Available Balance
               </span>
             </div>
-            <span className="text-[11px] font-semibold px-2.5 py-1 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+            <span className="text-[11px] font-semibold px-2.5 py-1 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 backdrop-blur-sm">
               Live Balance
             </span>
           </div>
 
-          <div className="my-4">
+          <div className="relative z-10 my-4">
             {loading ? (
-              <div className="h-12 w-64 bg-ink-800 animate-pulse rounded-xl" />
+              <div className="h-12 w-64 bg-slate-800/80 animate-pulse rounded-xl" />
             ) : (
-              <p className="font-mono text-4xl sm:text-5xl font-extrabold tracking-tight text-white">
+              <p className="font-mono text-4xl sm:text-5xl font-extrabold tracking-tight text-white drop-shadow-sm">
                 {fmt(summary.balance)}
               </p>
             )}
-            <p className="text-xs text-ink-300 mt-2 font-medium">Total liquid funds across your linked records</p>
+            <p className="text-xs text-slate-400 mt-2 font-medium">Total liquid funds across your linked records</p>
           </div>
 
-          <div className="pt-4 border-t border-ink-800 flex items-center justify-between text-xs">
-            <span className="text-ink-300 font-medium">Month-to-date summary</span>
+          <div className="relative z-10 pt-4 border-t border-white/10 flex items-center justify-between text-xs">
+            <span className="text-slate-400 font-medium">Month-to-date summary</span>
             <button
               onClick={handleExportPDF}
               disabled={exporting || monthTxs.length === 0}
-              className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold bg-accent hover:bg-accent-dark text-white transition-all shadow-sm cursor-pointer disabled:opacity-50 min-h-[44px]"
+              className="glass-btn-primary flex items-center gap-1.5 px-4 py-2 text-xs font-bold shadow-md cursor-pointer disabled:opacity-50 min-h-[44px]"
             >
               <Download size={14} strokeWidth={2} />
               <span>{exporting ? 'Generating PDF...' : 'Download PDF Summary'}</span>
@@ -303,7 +306,7 @@ const DashboardHome = () => {
         </div>
 
         <div className="flex flex-col gap-4">
-          <div className="flex-1 p-5 bg-white dark:bg-ink-900 border border-ink-100 dark:border-[#2C2C28] rounded-2xl flex flex-col justify-between shadow-sm">
+          <div className="glass-card flex-1 p-5 rounded-2xl flex flex-col justify-between">
             <div className="flex items-center justify-between mb-2">
               <span className="text-xs font-bold uppercase tracking-wider text-ink-600 dark:text-ink-300 select-none">
                 Money In
@@ -318,7 +321,7 @@ const DashboardHome = () => {
             <p className="text-[11px] text-ink-500 dark:text-ink-400 mt-1">Total received this month</p>
           </div>
 
-          <div className="flex-1 p-5 bg-white dark:bg-ink-900 border border-ink-100 dark:border-[#2C2C28] rounded-2xl flex flex-col justify-between shadow-sm">
+          <div className="glass-card flex-1 p-5 rounded-2xl flex flex-col justify-between">
             <div className="flex items-center justify-between mb-2">
               <span className="text-xs font-bold uppercase tracking-wider text-ink-600 dark:text-ink-300 select-none">
                 Money Out
@@ -337,7 +340,7 @@ const DashboardHome = () => {
 
       {!loading && (
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
-          <div className="p-5 bg-white dark:bg-ink-900 border border-ink-100 dark:border-[#2C2C28] rounded-2xl flex items-center justify-between shadow-sm">
+          <div className="glass-card p-5 rounded-2xl flex items-center justify-between">
             <div>
               <span className="text-xs font-bold uppercase tracking-wider text-ink-600 dark:text-ink-300 select-none">Daily Pace</span>
               <p className="font-mono text-xl font-bold text-ink-900 dark:text-ink-50 mt-1">{fmtShort(dailyAvg)}</p>
@@ -348,7 +351,7 @@ const DashboardHome = () => {
             </div>
           </div>
 
-          <div className="p-5 bg-white dark:bg-ink-900 border border-ink-100 dark:border-[#2C2C28] rounded-2xl flex items-center justify-between shadow-sm">
+          <div className="glass-card p-5 rounded-2xl flex items-center justify-between">
             <div className="min-w-0 flex-1 mr-3">
               <span className="text-xs font-bold uppercase tracking-wider text-ink-600 dark:text-ink-300 select-none">Biggest Splurge</span>
               {biggestTx ? (
@@ -372,8 +375,8 @@ const DashboardHome = () => {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Latest Activity Feed */}
         <div className="lg:col-span-2 space-y-6">
-          <div className="bg-white dark:bg-ink-900 border border-ink-100 dark:border-[#2C2C28] rounded-2xl overflow-hidden shadow-sm">
-            <div className="flex items-center justify-between px-6 py-4 border-b border-ink-100 dark:border-[#2C2C28]">
+          <div className="glass-card rounded-2xl overflow-hidden">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-ink-100/60 dark:border-white/10">
               <div>
                 <h2 className="text-sm font-bold text-ink-900 dark:text-ink-50">Latest Activity</h2>
                 <p className="text-[11px] text-ink-500 dark:text-ink-400">Your recent debit and credit entries</p>
@@ -389,10 +392,10 @@ const DashboardHome = () => {
                 {[...Array(4)].map((_, i) => (
                   <div key={i} className="animate-pulse flex justify-between">
                     <div className="space-y-1.5">
-                      <div className="h-3.5 bg-ink-100 dark:bg-ink-800 rounded-lg w-40" />
-                      <div className="h-2.5 bg-ink-100 dark:bg-ink-800 rounded-lg w-24" />
+                      <div className="h-3.5 bg-black/5 dark:bg-white/10 rounded-lg w-40" />
+                      <div className="h-2.5 bg-black/5 dark:bg-white/10 rounded-lg w-24" />
                     </div>
-                    <div className="h-4 bg-ink-100 dark:bg-ink-800 rounded-lg w-20" />
+                    <div className="h-4 bg-black/5 dark:bg-white/10 rounded-lg w-20" />
                   </div>
                 ))}
               </div>
@@ -406,7 +409,7 @@ const DashboardHome = () => {
                 .sort(([a], [b]) => b.localeCompare(a))
                 .map(([date, txs]) => (
                   <div key={date}>
-                    <div className="px-6 py-2.5 bg-ink-50/70 dark:bg-[#252522] border-y border-ink-100 dark:border-[#2C2C28]">
+                    <div className="px-6 py-2.5 glass-card-subtle border-y border-ink-100/60 dark:border-white/10">
                       <p className="text-[11px] font-bold uppercase tracking-wider text-ink-600 dark:text-ink-300">
                         {formatGroupLabel(date)}
                       </p>
@@ -414,14 +417,14 @@ const DashboardHome = () => {
                     {txs.map(tx => (
                       <div
                         key={tx.id}
-                        className="flex items-center justify-between px-6 py-3.5 border-b border-ink-100 dark:border-[#2C2C28] last:border-0 hover:bg-ink-50/50 dark:hover:bg-[#252522]/50 transition-colors"
+                        className="flex items-center justify-between px-6 py-3.5 border-b border-ink-100/50 dark:border-white/5 last:border-0 hover:bg-black/[0.02] dark:hover:bg-white/[0.04] transition-colors"
                       >
                         <div className="min-w-0 flex-1 mr-4">
                           <p className="text-sm font-semibold text-ink-900 dark:text-ink-50 truncate">{tx.payee || tx.description || tx.category}</p>
                           <p className="text-xs text-ink-500 dark:text-ink-400 mt-0.5">{tx.category} · {tx.mode || 'Other'}</p>
                         </div>
                         <div className="flex items-center gap-3">
-                          <span className={`text-[10px] font-bold px-2.5 py-1 rounded-full ${tx.type === 'income' ? 'bg-positive/10 text-positive' : 'bg-negative/10 text-negative'}`}>
+                          <span className={`text-[10px] font-bold px-2.5 py-1 rounded-full ${tx.type === 'income' ? 'bg-positive/10 text-positive border border-positive/20' : 'bg-negative/10 text-negative border border-negative/20'}`}>
                             {tx.type === 'income' ? 'Income' : 'Expense'}
                           </span>
                           <p className={`font-mono text-sm font-bold ${tx.type === 'income' ? 'text-positive' : 'text-negative'}`}>
@@ -437,8 +440,8 @@ const DashboardHome = () => {
 
           {/* Top Payees Card */}
           {!loading && top5Payees.length > 0 && (
-            <div className="bg-white dark:bg-ink-900 border border-ink-100 dark:border-[#2C2C28] rounded-2xl p-6 shadow-sm">
-              <div className="flex items-center justify-between pb-3 border-b border-ink-100 dark:border-[#2C2C28] mb-4">
+            <div className="glass-card rounded-2xl p-6">
+              <div className="flex items-center justify-between pb-3 border-b border-ink-100/60 dark:border-white/10 mb-4">
                 <div>
                   <h3 className="text-sm font-bold text-ink-900 dark:text-ink-50">Where Your Money Goes</h3>
                   <p className="text-[11px] text-ink-500 dark:text-ink-400">Top merchants by total spend</p>
@@ -455,9 +458,9 @@ const DashboardHome = () => {
                       </div>
                       <p className="font-mono text-xs font-bold text-negative">{fmtShort(amount)}</p>
                     </div>
-                    <div className="ml-6 h-2 rounded-full bg-ink-100 dark:bg-ink-800 overflow-hidden">
+                    <div className="ml-6 h-2 rounded-full bg-black/5 dark:bg-white/10 overflow-hidden">
                       <div
-                        className="h-full rounded-full bg-accent transition-all"
+                        className="h-full rounded-full bg-accent transition-all duration-300"
                         style={{ width: `${(amount / maxPayeeAmount) * 100}%` }}
                       />
                     </div>
@@ -470,16 +473,16 @@ const DashboardHome = () => {
 
         {/* Charts Column */}
         <div className="space-y-6">
-          <div className="bg-white dark:bg-ink-900 border border-ink-100 dark:border-[#2C2C28] rounded-2xl overflow-hidden p-5 shadow-sm">
-            <div className="pb-3 border-b border-ink-100 dark:border-[#2C2C28] mb-3">
+          <div className="glass-card rounded-2xl overflow-hidden p-5">
+            <div className="pb-3 border-b border-ink-100/60 dark:border-white/10 mb-3">
               <h3 className="text-sm font-bold text-ink-900 dark:text-ink-50">Monthly Cash Flow</h3>
               <p className="text-[11px] text-ink-500 dark:text-ink-400">Income vs Expenses trend</p>
             </div>
             {loading ? <SkeletonChart /> : <MonthlyChart transactions={transactions} />}
           </div>
 
-          <div className="bg-white dark:bg-ink-900 border border-ink-100 dark:border-[#2C2C28] rounded-2xl overflow-hidden p-5 shadow-sm">
-            <div className="pb-3 border-b border-ink-100 dark:border-[#2C2C28] mb-3">
+          <div className="glass-card rounded-2xl overflow-hidden p-5">
+            <div className="pb-3 border-b border-ink-100/60 dark:border-white/10 mb-3">
               <h3 className="text-sm font-bold text-ink-900 dark:text-ink-50">Spending by Category</h3>
               <p className="text-[11px] text-ink-500 dark:text-ink-400">Category breakdown</p>
             </div>

@@ -19,8 +19,8 @@ const fmtDecimal = (n) => '₹' + Number(n || 0).toLocaleString('en-IN', { minim
 const CustomTooltip = ({ active, payload, label }) => {
   if (!active || !payload?.length) return null;
   return (
-    <div className="bg-ink-900 text-white border border-ink-700 rounded-xl p-3.5 shadow-xl font-mono text-xs max-w-xs space-y-1.5 backdrop-blur-md">
-      <p className="font-sans font-semibold text-ink-200 text-xs border-b border-ink-700/60 pb-1">{label}</p>
+    <div className="glass-modal text-white p-3.5 shadow-xl font-mono text-xs max-w-xs space-y-1.5 bg-slate-900/90 border-white/15">
+      <p className="font-sans font-semibold text-slate-200 text-xs border-b border-white/10 pb-1">{label}</p>
       {payload.map((p, i) => (
         <div key={i} className="flex items-center justify-between gap-4 font-medium" style={{ color: p.color || p.fill }}>
           <span className="opacity-90">{p.name}:</span>
@@ -34,7 +34,7 @@ const CustomTooltip = ({ active, payload, label }) => {
 const SectionHeader = ({ title, subtitle, icon: Icon }) => (
   <div className="flex items-center gap-2.5 mb-4">
     {Icon && (
-      <div className="p-2 rounded-lg bg-accent/10 text-accent dark:bg-accent/20">
+      <div className="p-2 rounded-xl bg-accent/15 text-accent dark:bg-accent/25">
         <Icon size={18} strokeWidth={2} />
       </div>
     )}
@@ -46,7 +46,7 @@ const SectionHeader = ({ title, subtitle, icon: Icon }) => (
 );
 
 const Card = ({ children, className = '' }) => (
-  <div className={`bg-white dark:bg-ink-900 border border-ink-100 dark:border-[#2C2C28] rounded-2xl p-5 shadow-sm transition-all hover:shadow-md min-w-0 ${className}`}>
+  <div className={`glass-card rounded-2xl p-5 shadow-sm transition-all min-w-0 ${className}`}>
     {children}
   </div>
 );
@@ -195,7 +195,7 @@ const Analysis = () => {
             <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-ink-900 dark:text-ink-50">
               Financial Analysis
             </h1>
-            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-accent/10 text-accent">
+            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-accent/10 text-accent glass-pill border-accent/20">
               <Sparkles size={12} /> Insights
             </span>
           </div>
@@ -206,7 +206,7 @@ const Analysis = () => {
 
         <button
           onClick={handleResetFilters}
-          className="self-start sm:self-auto flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-ink-700 dark:text-ink-200 bg-ink-50 dark:bg-ink-800 hover:bg-ink-100 dark:hover:bg-ink-700 border border-ink-200 dark:border-ink-700 rounded-xl transition-all cursor-pointer min-h-[44px]"
+          className="glass-btn self-start sm:self-auto flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold cursor-pointer min-h-[44px]"
         >
           <RotateCcw size={14} />
           <span>Reset Filters</span>
@@ -214,7 +214,7 @@ const Analysis = () => {
       </div>
 
       {/* Easy Filter Controls */}
-      <Card className="mb-6 bg-gradient-to-r from-white to-ink-50/50 dark:from-ink-900 dark:to-ink-900/50">
+      <Card className="mb-6">
         <div className="flex items-center gap-2 text-xs font-bold text-ink-900 dark:text-ink-50 mb-3">
           <Filter size={16} className="text-accent" />
           <span>Quick Filters</span>
@@ -226,10 +226,10 @@ const Analysis = () => {
             <select
               value={year}
               onChange={e => setYear(Number(e.target.value))}
-              className="w-full border border-ink-200 dark:border-ink-700 rounded-xl px-3 py-2 bg-white dark:bg-ink-800 text-ink-900 dark:text-ink-50 focus:ring-2 focus:ring-accent focus:outline-none cursor-pointer text-xs min-h-[44px]"
+              className="w-full glass-input px-3 py-2 text-xs min-h-[44px] cursor-pointer"
             >
               {availableYears.map(y => (
-                <option key={y} value={y} className="bg-white dark:bg-ink-800 text-ink-900 dark:text-ink-50">
+                <option key={y} value={y} className="bg-white dark:bg-slate-900 text-ink-900 dark:text-ink-50">
                   {y}
                 </option>
               ))}
@@ -241,11 +241,11 @@ const Analysis = () => {
             <select
               value={month}
               onChange={e => setMonth(e.target.value ? Number(e.target.value) : '')}
-              className="w-full border border-ink-200 dark:border-ink-700 rounded-xl px-3 py-2 bg-white dark:bg-ink-800 text-ink-900 dark:text-ink-50 focus:ring-2 focus:ring-accent focus:outline-none cursor-pointer text-xs min-h-[44px]"
+              className="w-full glass-input px-3 py-2 text-xs min-h-[44px] cursor-pointer"
             >
-              <option value="" className="bg-white dark:bg-ink-800 text-ink-900 dark:text-ink-50">All Months</option>
+              <option value="" className="bg-white dark:bg-slate-900 text-ink-900 dark:text-ink-50">All Months</option>
               {MONTHS.map((m, idx) => (
-                <option key={m} value={idx + 1} className="bg-white dark:bg-ink-800 text-ink-900 dark:text-ink-50">
+                <option key={m} value={idx + 1} className="bg-white dark:bg-slate-900 text-ink-900 dark:text-ink-50">
                   {m}
                 </option>
               ))}
@@ -258,7 +258,7 @@ const Analysis = () => {
               type="date"
               value={fromDate}
               onChange={e => setFromDate(e.target.value)}
-              className="w-full border border-ink-200 dark:border-ink-700 rounded-xl px-3 py-2 bg-white dark:bg-ink-800 text-ink-900 dark:text-ink-50 focus:ring-2 focus:ring-accent focus:outline-none cursor-pointer text-xs min-h-[44px] dark:[color-scheme:dark]"
+              className="w-full glass-input px-3 py-2 text-xs min-h-[44px] cursor-pointer dark:[color-scheme:dark]"
             />
           </div>
 
@@ -268,18 +268,18 @@ const Analysis = () => {
               type="date"
               value={toDate}
               onChange={e => setToDate(e.target.value)}
-              className="w-full border border-ink-200 dark:border-ink-700 rounded-xl px-3 py-2 bg-white dark:bg-ink-800 text-ink-900 dark:text-ink-50 focus:ring-2 focus:ring-accent focus:outline-none cursor-pointer text-xs min-h-[44px] dark:[color-scheme:dark]"
+              className="w-full glass-input px-3 py-2 text-xs min-h-[44px] cursor-pointer dark:[color-scheme:dark]"
             />
           </div>
 
           <div>
             <label className="text-[11px] font-semibold text-ink-600 dark:text-ink-300 block mb-1">Transaction Type</label>
-            <div className="flex bg-ink-100 dark:bg-ink-800 p-1 rounded-xl border border-ink-200 dark:border-ink-700 min-h-[44px] items-center">
+            <div className="flex glass-card-subtle p-1 rounded-xl border border-ink-100/60 dark:border-white/10 min-h-[44px] items-center">
               {['all', 'income', 'expense'].map(t => (
                 <button
                   key={t}
                   onClick={() => setType(t)}
-                  className={`flex-1 py-1.5 text-xs font-semibold capitalize rounded-lg transition-all cursor-pointer ${type === t ? 'bg-accent text-white shadow-sm' : 'text-ink-700 dark:text-ink-200 hover:text-ink-900 dark:hover:text-white'}`}
+                  className={`flex-1 py-1.5 text-xs font-semibold capitalize rounded-lg transition-all cursor-pointer ${type === t ? 'glass-btn-primary' : 'text-ink-700 dark:text-ink-300 hover:text-ink-900 dark:hover:text-white'}`}
                 >
                   {t}
                 </button>
@@ -351,7 +351,7 @@ const Analysis = () => {
       </div>
 
       {loading ? (
-        <div className="flex flex-col items-center justify-center py-24 text-ink-600 dark:text-ink-300 bg-white dark:bg-ink-900 rounded-2xl border border-ink-100 dark:border-ink-800">
+        <div className="glass-card flex flex-col items-center justify-center py-24 text-ink-600 dark:text-ink-300 rounded-2xl">
           <span className="w-8 h-8 border-3 border-accent border-t-transparent rounded-full animate-spin mb-3" />
           <span className="text-sm font-semibold">Loading cash flow analysis...</span>
         </div>

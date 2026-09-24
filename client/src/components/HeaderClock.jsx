@@ -29,7 +29,7 @@ const HeaderClock = () => {
   }, []);
 
   return (
-    <span className="text-xs font-mono font-medium text-ink-700 dark:text-ink-200 opacity-75">
+    <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-mono font-medium text-ink-700 dark:text-ink-300 glass-card-subtle select-none shadow-xs">
       {timeStr}
     </span>
   );

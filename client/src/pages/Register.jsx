@@ -32,94 +32,101 @@ const Register = () => {
   };
 
   return (
-    <div className="min-h-screen bg-ink-50 dark:bg-ink-900 flex items-center justify-center p-4">
+    <div className="min-h-screen relative overflow-hidden flex items-center justify-center p-4">
+      {/* Ambient background mesh & glowing blobs */}
+      <div className="ambient-glow-wrapper" aria-hidden="true">
+        <div className="ambient-blob-1" />
+        <div className="ambient-blob-2" />
+        <div className="ambient-blob-3" />
+      </div>
+
       <SEO
         title="Create Free Account - Personal Expense Tracker"
         description="Create a free ExpTracker account today. Track your money, organize expenses, parse bank statements, and gain financial clarity."
         path="/register"
       />
-      <main className="w-full max-w-sm">
+      <main className="w-full max-w-sm relative z-10">
         <div className="text-center mb-8">
           <Link to="/login" className="inline-flex items-center">
-            <h1 className="font-bold text-2xl text-ink-900 dark:text-ink-50">
+            <h1 className="font-bold text-2xl tracking-tight text-ink-900 dark:text-ink-50">
               Exp<span className="text-accent">Tracker</span>
             </h1>
           </Link>
-          <p className="text-xs text-ink-700 dark:text-ink-200 opacity-60 mt-1">Create your personal account</p>
+          <p className="text-xs text-ink-600 dark:text-ink-300 mt-1">Create your personal account</p>
         </div>
 
-        <div className="bg-white dark:bg-ink-900 border border-ink-100 dark:border-[#2C2C28] rounded-card p-6 shadow-sm">
+        <div className="glass-card p-6 sm:p-7 rounded-2xl shadow-lg">
           {error && (
-            <div className="mb-4 p-3 rounded-md bg-negative/10 border border-negative/20 text-negative text-xs">
+            <div className="mb-4 p-3 rounded-xl bg-negative/10 border border-negative/20 text-negative text-xs">
               {error}
             </div>
           )}
-              <form onSubmit={handleSubmit} className="space-y-4">
-                <div>
-                  <label className="text-xs font-medium text-ink-900 dark:text-ink-50 block mb-1.5 flex items-center gap-1.5">
-                    <User size={14} strokeWidth={1.5} className="text-ink-700 dark:text-ink-200" />
-                    <span>Full Name</span>
-                  </label>
-                  <input
-                    type="text"
-                    value={form.name}
-                    onChange={e => setForm({ ...form, name: e.target.value })}
-                    required
-                    className="w-full rounded-md px-3 py-2 text-xs border border-ink-100 dark:border-[#2C2C28] bg-white dark:bg-[#252522] text-ink-900 dark:text-ink-50 focus:outline-none focus:border-accent"
-                    placeholder="Your full name"
-                  />
-                </div>
-                <div>
-                  <label className="text-xs font-medium text-ink-900 dark:text-ink-50 block mb-1.5 flex items-center gap-1.5">
-                    <Mail size={14} strokeWidth={1.5} className="text-ink-700 dark:text-ink-200" />
-                    <span>Email Address</span>
-                  </label>
-                  <input
-                    type="email"
-                    value={form.email}
-                    onChange={e => setForm({ ...form, email: e.target.value })}
-                    required
-                    className="w-full rounded-md px-3 py-2 text-xs border border-ink-100 dark:border-[#2C2C28] bg-white dark:bg-[#252522] text-ink-900 dark:text-ink-50 focus:outline-none focus:border-accent"
-                    placeholder="you@example.com"
-                  />
-                </div>
-                <div>
-                  <label className="text-xs font-medium text-ink-900 dark:text-ink-50 block mb-1.5 flex items-center gap-1.5">
-                    <Lock size={14} strokeWidth={1.5} className="text-ink-700 dark:text-ink-200" />
-                    <span>Password</span>
-                  </label>
-                  <div className="relative">
-                    <input
-                      type={showPassword ? 'text' : 'password'}
-                      value={form.password}
-                      onChange={e => setForm({ ...form, password: e.target.value })}
-                      required
-                      className="w-full rounded-md px-3 py-2 text-xs border border-ink-100 dark:border-[#2C2C28] bg-white dark:bg-[#252522] text-ink-900 dark:text-ink-50 focus:outline-none focus:border-accent pr-10"
-                      placeholder="••••••••"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-ink-700 dark:text-ink-200 opacity-60 hover:opacity-100 p-0.5 cursor-pointer"
-                      aria-label="Toggle password visibility"
-                    >
-                      {showPassword ? <EyeOff size={14} /> : <Eye size={14} />}
-                    </button>
-                  </div>
-                </div>
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div>
+              <label className="text-xs font-medium text-ink-900 dark:text-ink-50 block mb-1.5 flex items-center gap-1.5">
+                <User size={14} strokeWidth={1.5} className="text-ink-600 dark:text-ink-300" />
+                <span>Full Name</span>
+              </label>
+              <input
+                type="text"
+                value={form.name}
+                onChange={e => setForm({ ...form, name: e.target.value })}
+                required
+                className="w-full glass-input px-3.5 py-2.5 text-xs text-ink-900 dark:text-ink-50 focus:outline-none"
+                placeholder="Your full name"
+              />
+            </div>
+            <div>
+              <label className="text-xs font-medium text-ink-900 dark:text-ink-50 block mb-1.5 flex items-center gap-1.5">
+                <Mail size={14} strokeWidth={1.5} className="text-ink-600 dark:text-ink-300" />
+                <span>Email Address</span>
+              </label>
+              <input
+                type="email"
+                value={form.email}
+                onChange={e => setForm({ ...form, email: e.target.value })}
+                required
+                className="w-full glass-input px-3.5 py-2.5 text-xs text-ink-900 dark:text-ink-50 focus:outline-none"
+                placeholder="you@example.com"
+              />
+            </div>
+            <div>
+              <label className="text-xs font-medium text-ink-900 dark:text-ink-50 block mb-1.5 flex items-center gap-1.5">
+                <Lock size={14} strokeWidth={1.5} className="text-ink-600 dark:text-ink-300" />
+                <span>Password</span>
+              </label>
+              <div className="relative">
+                <input
+                  type={showPassword ? 'text' : 'password'}
+                  value={form.password}
+                  onChange={e => setForm({ ...form, password: e.target.value })}
+                  required
+                  className="w-full glass-input px-3.5 py-2.5 text-xs text-ink-900 dark:text-ink-50 focus:outline-none pr-10"
+                  placeholder="••••••••"
+                />
                 <button
-                  type="submit"
-                  disabled={loading}
-                  className="w-full bg-accent hover:bg-accent-dark text-white rounded-md py-2.5 text-xs font-semibold disabled:opacity-50 flex items-center justify-center gap-2 transition-colors mt-2"
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3.5 top-1/2 -translate-y-1/2 text-ink-600 dark:text-ink-300 opacity-70 hover:opacity-100 p-0.5 cursor-pointer"
+                  aria-label="Toggle password visibility"
                 >
-                  {loading ? <Loader2 size={16} className="animate-spin" /> : null}
-                  <span>{loading ? 'Creating account...' : 'Create account'}</span>
+                  {showPassword ? <EyeOff size={14} /> : <Eye size={14} />}
                 </button>
-              </form>
-              <p className="text-xs text-center mt-5 text-ink-700 dark:text-ink-200 opacity-70">
-                Already have an account?{' '}
-                <Link to="/login" className="text-accent font-semibold hover:underline">Sign in</Link>
-              </p>
+              </div>
+            </div>
+            <button
+              type="submit"
+              disabled={loading}
+              className="glass-btn-primary w-full py-2.5 text-xs font-semibold disabled:opacity-50 flex items-center justify-center gap-2 mt-2 shadow-sm cursor-pointer"
+            >
+              {loading ? <Loader2 size={16} className="animate-spin" /> : null}
+              <span>{loading ? 'Creating account...' : 'Create account'}</span>
+            </button>
+          </form>
+          <p className="text-xs text-center mt-5 text-ink-600 dark:text-ink-300">
+            Already have an account?{' '}
+            <Link to="/login" className="text-accent font-semibold hover:underline">Sign in</Link>
+          </p>
         </div>
       </main>
     </div>

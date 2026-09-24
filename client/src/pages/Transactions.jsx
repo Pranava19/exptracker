@@ -21,12 +21,10 @@ const CATEGORIES = ['Food', 'Transport', 'Shopping', 'Entertainment', 'Health', 
 const MODES = ['UPI', 'Card', 'Cash', 'Net Banking', 'Other'];
 
 const inputCls = [
-  'w-full rounded-md px-3 py-2 text-xs transition-colors',
-  'bg-white dark:bg-[#252522]',
-  'border border-ink-100 dark:border-[#2C2C28]',
+  'w-full glass-input px-3 py-2 text-xs transition-colors',
   'text-ink-900 dark:text-ink-50',
-  'placeholder-ink-700 dark:placeholder-ink-200',
-  'focus:outline-none focus:border-accent',
+  'placeholder-ink-500 dark:placeholder-ink-400',
+  'focus:outline-none',
   'dark:[color-scheme:dark]',
 ].join(' ');
 
@@ -61,14 +59,14 @@ const extractPayee = (desc) => {
 const TransactionCard = ({ tx, onEdit, onDelete, onInlineUpdate }) => {
   const payee = tx.payee || extractPayee(tx.description);
   return (
-    <div className="bg-white dark:bg-ink-900 border border-ink-100 dark:border-[#2C2C28] rounded-card p-4 space-y-3 shadow-xs">
+    <div className="glass-card p-4 space-y-3 rounded-xl shadow-xs">
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0 flex-1">
           <p className="text-sm font-semibold text-ink-900 dark:text-ink-50 truncate" title={payee !== '-' ? payee : (tx.description || tx.category)}>
             {payee !== '-' ? payee : (tx.description || tx.category)}
           </p>
           {tx.description && (
-            <p className="text-xs text-ink-700 dark:text-ink-200 opacity-65 mt-0.5 line-clamp-2 break-words">
+            <p className="text-xs text-ink-700 dark:text-ink-300 opacity-70 mt-0.5 line-clamp-2 break-words">
               {tx.description}
             </p>
           )}
@@ -77,31 +75,31 @@ const TransactionCard = ({ tx, onEdit, onDelete, onInlineUpdate }) => {
           <p className={`font-mono text-sm sm:text-base font-bold ${tx.type === 'income' ? 'text-positive' : 'text-negative'}`}>
             {tx.type === 'income' ? '+' : '−'}₹{Number(tx.amount).toLocaleString('en-IN', { minimumFractionDigits: 2 })}
           </p>
-          <span className="text-[10px] font-mono text-ink-700 dark:text-ink-200 opacity-60">
+          <span className="text-[10px] font-mono text-ink-600 dark:text-ink-400 opacity-70">
             {tx.date.slice(0, 10)}
           </span>
         </div>
       </div>
 
-      <div className="flex flex-wrap items-center gap-2 pt-2 border-t border-ink-100 dark:border-[#2C2C28] text-xs">
-        <span className={`text-[10px] font-mono font-semibold px-2 py-0.5 rounded-sharp ${tx.type === 'income' ? 'bg-positive/10 text-positive' : 'bg-negative/10 text-negative'}`}>
+      <div className="flex flex-wrap items-center gap-2 pt-2 border-t border-ink-100/60 dark:border-white/10 text-xs">
+        <span className={`text-[10px] font-mono font-semibold px-2 py-0.5 rounded-full ${tx.type === 'income' ? 'bg-positive/10 text-positive border border-positive/20' : 'bg-negative/10 text-negative border border-negative/20'}`}>
           {tx.type}
         </span>
         
         <select
           value={tx.category}
           onChange={e => onInlineUpdate(tx.id, 'category', e.target.value)}
-          className="text-[11px] font-sans border border-ink-100 dark:border-[#2C2C28] rounded-sharp px-2 py-1 bg-white dark:bg-[#252522] text-ink-900 dark:text-ink-50 focus:outline-none focus:border-accent cursor-pointer"
+          className="text-[11px] font-sans glass-input rounded-lg px-2 py-1 text-ink-900 dark:text-ink-50 focus:outline-none cursor-pointer"
         >
-          {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
+          {CATEGORIES.map(c => <option key={c} value={c} className="bg-white dark:bg-slate-900">{c}</option>)}
         </select>
 
         <select
           value={tx.mode || 'Other'}
           onChange={e => onInlineUpdate(tx.id, 'mode', e.target.value)}
-          className="text-[11px] font-sans border border-ink-100 dark:border-[#2C2C28] rounded-sharp px-2 py-1 bg-white dark:bg-[#252522] text-ink-900 dark:text-ink-50 focus:outline-none focus:border-accent cursor-pointer"
+          className="text-[11px] font-sans glass-input rounded-lg px-2 py-1 text-ink-900 dark:text-ink-50 focus:outline-none cursor-pointer"
         >
-          {MODES.map(m => <option key={m} value={m}>{m}</option>)}
+          {MODES.map(m => <option key={m} value={m} className="bg-white dark:bg-slate-900">{m}</option>)}
         </select>
 
         <div className="ml-auto flex items-center gap-2">
@@ -122,8 +120,8 @@ const TransactionCard = ({ tx, onEdit, onDelete, onInlineUpdate }) => {
 const TxRow = ({ tx, onEdit, onDelete, onInlineUpdate }) => {
   const payee = tx.payee || extractPayee(tx.description);
   return (
-    <tr className="border-b border-ink-100 dark:border-[#2C2C28] hover:bg-ink-50/50 dark:hover:bg-[#252522]/50 transition-colors group">
-      <td className="py-3 pl-5 pr-4 text-xs font-mono text-ink-700 dark:text-ink-200 opacity-75 whitespace-nowrap">{tx.date.slice(0, 10)}</td>
+    <tr className="border-b border-ink-100/60 dark:border-white/5 hover:bg-black/[0.02] dark:hover:bg-white/[0.04] transition-colors group">
+      <td className="py-3 pl-5 pr-4 text-xs font-mono text-ink-700 dark:text-ink-300 opacity-75 whitespace-nowrap">{tx.date.slice(0, 10)}</td>
       <td className="py-3 pr-4 text-xs text-ink-900 dark:text-ink-50 max-w-[260px]">
         <span className="block truncate" title={tx.description}>{tx.description || '-'}</span>
       </td>
@@ -132,22 +130,22 @@ const TxRow = ({ tx, onEdit, onDelete, onInlineUpdate }) => {
         <select
           value={tx.category}
           onChange={e => onInlineUpdate(tx.id, 'category', e.target.value)}
-          className="text-xs font-sans border border-ink-100 dark:border-[#2C2C28] rounded-sharp px-2 py-1 bg-white dark:bg-[#252522] text-ink-900 dark:text-ink-50 focus:outline-none focus:border-accent cursor-pointer"
+          className="text-xs font-sans glass-input rounded-lg px-2 py-1 text-ink-900 dark:text-ink-50 focus:outline-none cursor-pointer"
         >
-          {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
+          {CATEGORIES.map(c => <option key={c} value={c} className="bg-white dark:bg-slate-900">{c}</option>)}
         </select>
       </td>
       <td className="py-3 pr-4">
         <select
           value={tx.mode || 'Other'}
           onChange={e => onInlineUpdate(tx.id, 'mode', e.target.value)}
-          className="text-xs font-sans border border-ink-100 dark:border-[#2C2C28] rounded-sharp px-2 py-1 bg-white dark:bg-[#252522] text-ink-900 dark:text-ink-50 focus:outline-none focus:border-accent cursor-pointer"
+          className="text-xs font-sans glass-input rounded-lg px-2 py-1 text-ink-900 dark:text-ink-50 focus:outline-none cursor-pointer"
         >
-          {MODES.map(m => <option key={m} value={m}>{m}</option>)}
+          {MODES.map(m => <option key={m} value={m} className="bg-white dark:bg-slate-900">{m}</option>)}
         </select>
       </td>
       <td className="py-3 pr-4">
-        <span className={`text-[10px] font-mono font-semibold px-2 py-0.5 rounded-sharp ${tx.type === 'income' ? 'bg-positive/10 text-positive' : 'bg-negative/10 text-negative'}`}>
+        <span className={`text-[10px] font-mono font-semibold px-2 py-0.5 rounded-full ${tx.type === 'income' ? 'bg-positive/10 text-positive border border-positive/20' : 'bg-negative/10 text-negative border border-negative/20'}`}>
           {tx.type}
         </span>
       </td>
@@ -413,20 +411,20 @@ const Transactions = () => {
       {toast && <Toast message={toast.message} type={toast.type} onClose={hideToast} />}
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-6">
-        <div className="bg-white dark:bg-ink-900 border border-ink-100 dark:border-[#2C2C28] rounded-card p-4">
-          <p className="text-[10px] font-mono font-semibold uppercase tracking-wider text-ink-700 dark:text-ink-200 opacity-60 mb-1">{currentYear} Income</p>
+        <div className="glass-card p-4 rounded-xl">
+          <p className="text-[10px] font-mono font-semibold uppercase tracking-wider text-ink-700 dark:text-ink-300 opacity-60 mb-1">{currentYear} Income</p>
           <p className="font-mono text-base font-semibold text-positive">
             ₹{yearIncome.toLocaleString('en-IN', { maximumFractionDigits: 0 })}
           </p>
         </div>
-        <div className="bg-white dark:bg-ink-900 border border-ink-100 dark:border-[#2C2C28] rounded-card p-4">
-          <p className="text-[10px] font-mono font-semibold uppercase tracking-wider text-ink-700 dark:text-ink-200 opacity-60 mb-1">{currentYear} Expense</p>
+        <div className="glass-card p-4 rounded-xl">
+          <p className="text-[10px] font-mono font-semibold uppercase tracking-wider text-ink-700 dark:text-ink-300 opacity-60 mb-1">{currentYear} Expense</p>
           <p className="font-mono text-base font-semibold text-negative">
             ₹{yearExpense.toLocaleString('en-IN', { maximumFractionDigits: 0 })}
           </p>
         </div>
-        <div className="bg-white dark:bg-ink-900 border border-ink-100 dark:border-[#2C2C28] rounded-card p-4">
-          <p className="text-[10px] font-mono font-semibold uppercase tracking-wider text-ink-700 dark:text-ink-200 opacity-60 mb-1">Net Savings</p>
+        <div className="glass-card p-4 rounded-xl">
+          <p className="text-[10px] font-mono font-semibold uppercase tracking-wider text-ink-700 dark:text-ink-300 opacity-60 mb-1">Net Savings</p>
           <p className={`font-mono text-base font-semibold ${yearSavings >= 0 ? 'text-accent' : 'text-negative'}`}>
             ₹{Math.abs(yearSavings).toLocaleString('en-IN', { maximumFractionDigits: 0 })}
           </p>
@@ -436,13 +434,13 @@ const Transactions = () => {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-5">
         <h1 className="text-base font-semibold text-ink-900 dark:text-ink-50 tracking-tight flex items-center gap-2">
           All Transactions
-          <span className="text-xs font-mono font-normal text-ink-700 dark:text-ink-200 opacity-60">({sorted.length})</span>
+          <span className="text-xs font-mono font-normal text-ink-700 dark:text-ink-300 opacity-60">({sorted.length})</span>
         </h1>
         <div className="flex items-center gap-2">
           <button
             onClick={handleExport}
             disabled={exporting}
-            className="flex-1 sm:flex-none justify-center flex items-center gap-1.5 px-3 py-2 sm:py-1.5 rounded-md text-xs font-semibold border border-ink-100 dark:border-[#2C2C28] text-ink-900 dark:text-ink-50 hover:bg-ink-50 dark:hover:bg-[#252522] transition-colors cursor-pointer disabled:opacity-50"
+            className="glass-btn flex-1 sm:flex-none justify-center flex items-center gap-1.5 px-3.5 py-2 sm:py-1.5 text-xs font-semibold cursor-pointer disabled:opacity-50"
             title="Export all transactions from start date till today as an Excel (.xlsx) spreadsheet"
           >
             {exporting ? (
@@ -459,7 +457,7 @@ const Transactions = () => {
           </button>
           <button
             onClick={() => { setShowForm(f => !f); if (editId) cancelEdit(); }}
-            className="fixed sm:static bottom-[calc(5rem+env(safe-area-inset-bottom,0px))] sm:bottom-auto right-4 sm:right-auto z-40 sm:z-auto shadow-lg sm:shadow-none rounded-full sm:rounded-md px-4 sm:px-3 py-3 sm:py-1.5 flex items-center justify-center gap-1.5 text-xs font-semibold bg-accent hover:bg-accent-dark text-white transition-all cursor-pointer"
+            className="glass-btn-primary fixed sm:static bottom-[calc(5rem+env(safe-area-inset-bottom,0px))] sm:bottom-auto right-4 sm:right-auto z-40 sm:z-auto shadow-lg sm:shadow-sm rounded-full sm:rounded-xl px-4 sm:px-3.5 py-3 sm:py-1.5 flex items-center justify-center gap-1.5 text-xs font-semibold cursor-pointer"
           >
             <Plus size={15} strokeWidth={2} />
             <span>Add transaction</span>
@@ -468,7 +466,7 @@ const Transactions = () => {
       </div>
 
       {showForm && (
-        <div className="rounded-card bg-white dark:bg-ink-900 border border-ink-100 dark:border-[#2C2C28] p-4 sm:p-5 mb-6 shadow-sm">
+        <div className="glass-card p-4 sm:p-5 mb-6 rounded-2xl shadow-sm">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-xs font-mono font-semibold uppercase tracking-wider text-ink-900 dark:text-ink-50">
               {editId ? 'Edit transaction' : 'New transaction'}
@@ -480,14 +478,14 @@ const Transactions = () => {
           <form onSubmit={handleSubmit}>
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
               <select name="type" value={form.type} onChange={handleChange} className={inputCls}>
-                <option value="expense">Expense</option>
-                <option value="income">Income</option>
+                <option value="expense" className="bg-white dark:bg-slate-900">Expense</option>
+                <option value="income" className="bg-white dark:bg-slate-900">Income</option>
               </select>
               <select name="mode" value={form.mode} onChange={handleChange} className={inputCls}>
-                {MODES.map(m => <option key={m} value={m}>{m}</option>)}
+                {MODES.map(m => <option key={m} value={m} className="bg-white dark:bg-slate-900">{m}</option>)}
               </select>
               <select name="category" value={form.category} onChange={handleChange} className={inputCls}>
-                {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
+                {CATEGORIES.map(c => <option key={c} value={c} className="bg-white dark:bg-slate-900">{c}</option>)}
               </select>
               <input type="number" name="amount" placeholder="Amount" value={form.amount} onChange={handleChange} required className={inputCls} />
               <input type="text" name="description" placeholder="Description" value={form.description} onChange={handleChange} className={inputCls} />
@@ -497,7 +495,7 @@ const Transactions = () => {
               <button
                 type="submit"
                 disabled={submitting}
-                className="flex-1 sm:flex-none justify-center flex items-center gap-2 px-4 py-2 rounded-md text-xs font-semibold bg-accent hover:bg-accent-dark disabled:opacity-50 text-white transition-colors cursor-pointer"
+                className="glass-btn-primary flex-1 sm:flex-none justify-center flex items-center gap-2 px-5 py-2 text-xs font-semibold disabled:opacity-50 cursor-pointer"
               >
                 {submitting && <Loader2 size={14} className="animate-spin" />}
                 <span>{editId ? 'Update' : 'Add'}</span>
@@ -505,7 +503,7 @@ const Transactions = () => {
               <button
                 type="button"
                 onClick={cancelEdit}
-                className="flex-1 sm:flex-none justify-center px-4 py-2 rounded-md text-xs font-medium border border-ink-100 dark:border-[#2C2C28] text-ink-700 dark:text-ink-200 hover:bg-ink-50 transition-colors cursor-pointer"
+                className="glass-btn flex-1 sm:flex-none justify-center px-4 py-2 text-xs font-medium cursor-pointer"
               >
                 Cancel
               </button>
@@ -514,28 +512,28 @@ const Transactions = () => {
         </div>
       )}
 
-      <div className="rounded-card bg-white dark:bg-ink-900 border border-ink-100 dark:border-[#2C2C28] p-4 mb-6">
+      <div className="glass-card p-4 mb-6 rounded-xl">
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-3">
           <select value={filter.type} onChange={e => setFilter({ ...filter, type: e.target.value })} className={inputCls}>
-            <option value="" className="bg-white dark:bg-[#252522] text-ink-900 dark:text-ink-50">All types</option>
-            <option value="income" className="bg-white dark:bg-[#252522] text-ink-900 dark:text-ink-50">Income</option>
-            <option value="expense" className="bg-white dark:bg-[#252522] text-ink-900 dark:text-ink-50">Expense</option>
+            <option value="" className="bg-white dark:bg-slate-900 text-ink-900 dark:text-ink-50">All types</option>
+            <option value="income" className="bg-white dark:bg-slate-900 text-ink-900 dark:text-ink-50">Income</option>
+            <option value="expense" className="bg-white dark:bg-slate-900 text-ink-900 dark:text-ink-50">Expense</option>
           </select>
           <select value={filter.category} onChange={e => setFilter({ ...filter, category: e.target.value })} className={inputCls}>
-            <option value="" className="bg-white dark:bg-[#252522] text-ink-900 dark:text-ink-50">All categories</option>
-            {CATEGORIES.map(c => <option key={c} value={c} className="bg-white dark:bg-[#252522] text-ink-900 dark:text-ink-50">{c}</option>)}
+            <option value="" className="bg-white dark:bg-slate-900 text-ink-900 dark:text-ink-50">All categories</option>
+            {CATEGORIES.map(c => <option key={c} value={c} className="bg-white dark:bg-slate-900 text-ink-900 dark:text-ink-50">{c}</option>)}
           </select>
           <div className="flex flex-col">
-            <label className="text-[10px] font-mono text-ink-700 dark:text-ink-200 mb-1 select-none">From</label>
+            <label className="text-[10px] font-mono text-ink-700 dark:text-ink-300 mb-1 select-none">From</label>
             <input type="date" value={filter.start_date} onChange={e => setFilter({ ...filter, start_date: e.target.value })} className={inputCls} />
           </div>
           <div className="flex flex-col">
-            <label className="text-[10px] font-mono text-ink-700 dark:text-ink-200 mb-1 select-none">To</label>
+            <label className="text-[10px] font-mono text-ink-700 dark:text-ink-300 mb-1 select-none">To</label>
             <input type="date" value={filter.end_date} onChange={e => setFilter({ ...filter, end_date: e.target.value })} className={inputCls} />
           </div>
           <button
             onClick={() => setFilter({ type: '', category: '', start_date: '', end_date: '' })}
-            className="sm:col-span-2 md:col-span-1 self-end flex items-center justify-center gap-1.5 px-3 py-2 rounded-md text-xs font-medium border border-ink-100 dark:border-[#2C2C28] text-ink-700 dark:text-ink-200 hover:bg-ink-50 dark:hover:bg-[#252522] transition-colors cursor-pointer w-full"
+            className="glass-btn sm:col-span-2 md:col-span-1 self-end flex items-center justify-center gap-1.5 px-3 py-2 text-xs font-medium cursor-pointer w-full"
           >
             <X size={12} strokeWidth={1.5} />
             <span>Clear</span>
@@ -543,17 +541,17 @@ const Transactions = () => {
         </div>
       </div>
 
-      <div className="rounded-card bg-white dark:bg-ink-900 border border-ink-100 dark:border-[#2C2C28] overflow-hidden">
+      <div className="glass-card rounded-2xl overflow-hidden">
         <div className="md:hidden p-4 space-y-3">
           {loading ? (
             <div className="space-y-3">
               {[...Array(4)].map((_, i) => (
-                <div key={i} className="animate-pulse flex justify-between p-3 bg-ink-50 dark:bg-ink-700 rounded-card">
-                  <div className="space-y-1">
-                    <div className="h-3 bg-ink-200 dark:bg-ink-900 rounded w-32" />
-                    <div className="h-2 bg-ink-200 dark:bg-ink-900 rounded w-20" />
+                <div key={i} className="animate-pulse flex justify-between p-3.5 glass-card-subtle rounded-xl">
+                  <div className="space-y-1.5">
+                    <div className="h-3 bg-black/5 dark:bg-white/10 rounded w-32" />
+                    <div className="h-2 bg-black/5 dark:bg-white/10 rounded w-20" />
                   </div>
-                  <div className="h-3 bg-ink-200 dark:bg-ink-900 rounded w-14" />
+                  <div className="h-3 bg-black/5 dark:bg-white/10 rounded w-14" />
                 </div>
               ))}
             </div>
@@ -567,8 +565,8 @@ const Transactions = () => {
               .sort(([a], [b]) => sort.order === 'desc' ? b.localeCompare(a) : a.localeCompare(b))
               .map(([date, txs]) => (
                 <div key={date} className="space-y-2">
-                  <div className="pt-2 pb-1 border-b border-ink-100 dark:border-[#2C2C28]">
-                    <p className="text-[10px] font-mono font-semibold uppercase tracking-wider text-ink-700 dark:text-ink-200 opacity-75">
+                  <div className="pt-2 pb-1 border-b border-ink-100/60 dark:border-white/10">
+                    <p className="text-[10px] font-mono font-semibold uppercase tracking-wider text-ink-600 dark:text-ink-300 opacity-75">
                       {formatGroupLabel(date)}
                     </p>
                   </div>
@@ -585,7 +583,7 @@ const Transactions = () => {
           {loading ? (
             <table className="w-full">
               <thead>
-                <tr className="border-b border-ink-100 dark:border-[#2C2C28]">
+                <tr className="border-b border-ink-100/60 dark:border-white/10">
                   <th className={thCls}>Date</th>
                   <th className={thNoCls}>Description</th>
                   <th className={thNoCls}>Payee</th>
@@ -608,7 +606,7 @@ const Transactions = () => {
           ) : (
             <table className="w-full">
               <thead>
-                <tr className="border-b border-ink-100 dark:border-[#2C2C28]">
+                <tr className="border-b border-ink-100/60 dark:border-white/10">
                   <th className={thCls} onClick={() => toggleSort('date')}>Date <ArrowUpDown size={11} className="inline ml-1 opacity-60" /></th>
                   <th className={thNoCls} style={{ minWidth: 180 }}>Description</th>
                   <th className={thNoCls} style={{ minWidth: 100 }}>Payee</th>
@@ -627,8 +625,8 @@ const Transactions = () => {
                         <React.Fragment key={date}>
                           <tr>
                             <td colSpan={8} className="px-0 py-0">
-                              <div className="px-5 py-2 bg-ink-50 dark:bg-[#252522] border-y border-ink-100 dark:border-[#2C2C28]">
-                                <p className="text-[10px] font-mono font-semibold uppercase tracking-wider text-ink-700 dark:text-ink-200 opacity-75">
+                              <div className="px-5 py-2 glass-card-subtle border-y border-ink-100/60 dark:border-white/10">
+                                <p className="text-[10px] font-mono font-semibold uppercase tracking-wider text-ink-600 dark:text-ink-300 opacity-75">
                                   {formatGroupLabel(date)}
                                 </p>
                               </div>

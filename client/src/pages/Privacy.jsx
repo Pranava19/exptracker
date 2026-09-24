@@ -17,7 +17,7 @@ const Privacy = () => {
           <p className="text-xs text-ink-500 dark:text-ink-400 mt-1">Last updated: September 2026</p>
         </div>
 
-        <div className="bg-white dark:bg-ink-900 border border-ink-100 dark:border-[#2C2C28] rounded-2xl p-6 shadow-sm space-y-6 text-sm leading-relaxed">
+        <div className="glass-card p-6 sm:p-8 space-y-6 text-sm leading-relaxed">
           <section className="space-y-2">
             <h2 className="text-base font-bold text-ink-900 dark:text-ink-50 flex items-center gap-2">
               <Shield size={18} className="text-accent" />

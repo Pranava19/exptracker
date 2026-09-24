@@ -2,10 +2,11 @@ const express = require('express');
 const router = express.Router();
 const pool = require('../db/index');
 const auth = require('../middleware/authMiddleware');
+const { transactionLimiter } = require('../middleware/rateLimiter');
 const { sendMonthlySummaryReportEmail } = require('../utils/sendEmail');
 const logger = require('../utils/logger');
 
-router.post('/send-monthly-email', auth, async (req, res) => {
+router.post('/send-monthly-email', auth, transactionLimiter, async (req, res) => {
   const user_id = req.user.id;
   const now = new Date();
   const year = req.body.year ? parseInt(req.body.year, 10) : now.getFullYear();
@@ -22,46 +23,49 @@ router.post('/send-monthly-email', auth, async (req, res) => {
     }
     const user = userResult.rows[0];
 
-    // 2. Fetch Monthly Summary Totals
-    const summaryResult = await pool.query(
-      `SELECT
-        SUM(CASE WHEN type = 'income' THEN amount ELSE 0 END) AS total_income,
-        SUM(CASE WHEN type = 'expense' THEN amount ELSE 0 END) AS total_expenses
-       FROM transactions
-       WHERE user_id = $1
-         AND EXTRACT(YEAR FROM date::date) = $2
-         AND EXTRACT(MONTH FROM date::date) = $3`,
-      [user_id, year, month]
-    );
+    // 2. Fetch Monthly Summary & Top Expenses inside User RLS Transaction
+    const { totalIncome, totalExpenses, netSavings, topTransactions } = await pool.withUserTransaction(user_id, async (client) => {
+      const summaryResult = await client.query(
+        `SELECT
+          SUM(CASE WHEN type = 'income' THEN amount ELSE 0 END) AS total_income,
+          SUM(CASE WHEN type = 'expense' THEN amount ELSE 0 END) AS total_expenses
+         FROM transactions
+         WHERE user_id = $1
+           AND EXTRACT(YEAR FROM date::date) = $2
+           AND EXTRACT(MONTH FROM date::date) = $3`,
+        [user_id, year, month]
+      );
 
-    const row = summaryResult.rows[0] || {};
-    const totalIncome = parseFloat(row.total_income || 0);
-    const totalExpenses = parseFloat(row.total_expenses || 0);
-    const netSavings = totalIncome - totalExpenses;
+      const row = summaryResult.rows[0] || {};
+      const inc = parseFloat(row.total_income || 0);
+      const exp = parseFloat(row.total_expenses || 0);
+      const savings = inc - exp;
 
-    // 3. Fetch Top 5 Expenses
-    const topResult = await pool.query(
-      `SELECT
-        date::text AS date,
-        COALESCE(NULLIF(payee, ''), description, 'Expense') AS payee,
-        amount
-       FROM transactions
-       WHERE user_id = $1
-         AND type = 'expense'
-         AND EXTRACT(YEAR FROM date::date) = $2
-         AND EXTRACT(MONTH FROM date::date) = $3
-       ORDER BY amount DESC
-       LIMIT 5`,
-      [user_id, year, month]
-    );
+      const topResult = await client.query(
+        `SELECT
+          date::text AS date,
+          COALESCE(NULLIF(payee, ''), description, 'Expense') AS payee,
+          amount
+         FROM transactions
+         WHERE user_id = $1
+           AND type = 'expense'
+           AND EXTRACT(YEAR FROM date::date) = $2
+           AND EXTRACT(MONTH FROM date::date) = $3
+         ORDER BY amount DESC
+         LIMIT 5`,
+        [user_id, year, month]
+      );
 
-    const topTransactions = topResult.rows.map(r => ({
-      date: r.date.slice(0, 10),
-      payee: r.payee,
-      amount: parseFloat(r.amount || 0),
-    }));
+      const top = topResult.rows.map(r => ({
+        date: r.date.slice(0, 10),
+        payee: r.payee,
+        amount: parseFloat(r.amount || 0),
+      }));
 
-    // 4. Send Email
+      return { totalIncome: inc, totalExpenses: exp, netSavings: savings, topTransactions: top };
+    });
+
+    // 3. Send Email
     await sendMonthlySummaryReportEmail(user, {
       monthName,
       totalIncome,

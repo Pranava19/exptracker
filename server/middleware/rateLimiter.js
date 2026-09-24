@@ -42,4 +42,4 @@ const resendLimiter = rateLimit({
   legacyHeaders: false,
 });
 
-module.exports = { authLimiter, importLimiter, transactionLimiter, resendLimiter };
+module.exports = { authLimiter, importLimiter, transactionLimiter, resendLimiter, getUserOrIpKey };

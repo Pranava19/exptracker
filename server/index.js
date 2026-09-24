@@ -12,7 +12,7 @@ const importRoute = require('./routes/import');
 const analysisRoutes = require('./routes/analysis');
 const swaggerUi = require('swagger-ui-express');
 const swaggerSpec = require('./config/swagger');
-const { authLimiter, importLimiter, transactionLimiter, resendLimiter } = require('./middleware/rateLimiter');
+const { authLimiter, resendLimiter } = require('./middleware/rateLimiter');
 
 const app = express();
 
@@ -63,10 +63,10 @@ app.use(['/api-docs', '/docs'], swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 const reportRoutes = require('./routes/report');
 
 app.use(['/api/auth', '/auth'], authRoutes);
-app.use(['/api/transactions', '/transactions'], transactionLimiter, transactionRoutes);
-app.use(['/api/import', '/import'], importLimiter, importRoute);
-app.use(['/api/analysis', '/analysis'], transactionLimiter, analysisRoutes);
-app.use(['/api/reports', '/reports'], transactionLimiter, reportRoutes);
+app.use(['/api/transactions', '/transactions'], transactionRoutes);
+app.use(['/api/import', '/import'], importRoute);
+app.use(['/api/analysis', '/analysis'], analysisRoutes);
+app.use(['/api/reports', '/reports'], reportRoutes);
 
 // Serverless root POST fallback for /import
 app.post(['/', '/api'], (req, res, next) => {

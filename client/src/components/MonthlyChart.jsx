@@ -4,7 +4,7 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContaine
 const CustomTooltip = ({ active, payload, label }) => {
   if (active && payload && payload.length) {
     return (
-      <div className="bg-ink-900 text-ink-50 p-3 rounded-card border border-ink-700 shadow-lg text-xs font-mono">
+      <div className="glass-modal p-3 rounded-xl border border-white/20 dark:border-white/10 shadow-lg text-xs font-mono text-ink-900 dark:text-ink-50">
         <p className="font-sans font-semibold mb-1 opacity-80">{label}</p>
         {payload.map((entry, index) => (
           <p key={`item-${index}`} style={{ color: entry.color }} className="font-semibold flex items-center justify-between gap-4">

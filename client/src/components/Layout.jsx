@@ -21,8 +21,15 @@ const Layout = ({ children }) => {
   const title = PAGE_TITLES[pathname] || 'ExpTracker';
 
   return (
-    <div className={`min-h-screen ${dark ? 'dark' : ''}`}>
-      <div className="min-h-screen bg-ink-50 dark:bg-ink-900 text-ink-900 dark:text-ink-50">
+    <div className={`min-h-screen ${dark ? 'dark' : ''} relative overflow-x-hidden`}>
+      {/* Ambient background mesh & glowing blobs for glassmorphism refraction */}
+      <div className="ambient-glow-wrapper" aria-hidden="true">
+        <div className="ambient-blob-1" />
+        <div className="ambient-blob-2" />
+        <div className="ambient-blob-3" />
+      </div>
+
+      <div className="relative z-10 min-h-screen text-ink-900 dark:text-ink-50">
         <a
           href="#main-content"
           className="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-50 focus:px-4 focus:py-2 focus:bg-accent focus:text-white focus:rounded-md focus:shadow-md"
@@ -33,7 +40,7 @@ const Layout = ({ children }) => {
         <Navbar />
 
         <div className="hidden md:block md:ml-56">
-          <header className="sticky top-0 z-20 flex items-center justify-between px-8 h-14 bg-white/80 dark:bg-ink-900/80 backdrop-blur-md border-b border-ink-100 dark:border-[#2C2C28]">
+          <header className="sticky top-0 z-20 flex items-center justify-between px-8 h-14 glass-header">
             <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 text-xs text-ink-700 dark:text-ink-200">
               <Link to="/dashboard" className="hover:text-accent transition-colors font-medium">
                 Home

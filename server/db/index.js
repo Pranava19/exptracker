@@ -53,6 +53,11 @@ const initSchema = async (client) => {
           created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
       );
 
+      ALTER TABLE users ADD COLUMN IF NOT EXISTS verification_token VARCHAR(255);
+      ALTER TABLE users ADD COLUMN IF NOT EXISTS verification_token_expires TIMESTAMP WITH TIME ZONE;
+      ALTER TABLE users ADD COLUMN IF NOT EXISTS reset_token VARCHAR(255);
+      ALTER TABLE users ADD COLUMN IF NOT EXISTS reset_token_expires TIMESTAMP WITH TIME ZONE;
+
       CREATE INDEX IF NOT EXISTS idx_transactions_user_id ON transactions(user_id);
       CREATE INDEX IF NOT EXISTS idx_transactions_date ON transactions(date);
       CREATE INDEX IF NOT EXISTS idx_transactions_category ON transactions(category);
@@ -62,11 +67,72 @@ const initSchema = async (client) => {
       CREATE EXTENSION IF NOT EXISTS "pgcrypto";
       ALTER TABLE transactions ADD COLUMN IF NOT EXISTS uuid UUID DEFAULT gen_random_uuid() NOT NULL;
       CREATE UNIQUE INDEX IF NOT EXISTS idx_transactions_uuid ON transactions(uuid);
+
+      DO $$
+      BEGIN
+        IF NOT EXISTS (SELECT FROM pg_roles WHERE rolname = 'app_user') THEN
+          CREATE ROLE app_user WITH NOSUPERUSER NOCREATEDB NOCREATEROLE NOBYPASSRLS;
+        END IF;
+      EXCEPTION WHEN OTHERS THEN
+        NULL;
+      END $$;
+
+      DO $$
+      BEGIN
+        GRANT USAGE ON SCHEMA public TO app_user;
+        GRANT ALL ON ALL TABLES IN SCHEMA public TO app_user;
+        GRANT ALL ON ALL SEQUENCES IN SCHEMA public TO app_user;
+      EXCEPTION WHEN OTHERS THEN
+        NULL;
+      END $$;
+
       ALTER TABLE transactions ENABLE ROW LEVEL SECURITY;
+      ALTER TABLE transactions FORCE ROW LEVEL SECURITY;
+
+      DROP POLICY IF EXISTS transactions_user_isolation ON transactions;
+
+      CREATE POLICY transactions_user_isolation ON transactions
+      FOR ALL
+      TO PUBLIC
+      USING (
+        user_id = (
+          CASE 
+            WHEN current_setting('app.user_id', true) ~ '^[0-9]+$' 
+            THEN current_setting('app.user_id', true)::int 
+            ELSE NULL 
+          END
+        )
+        OR (
+          CASE 
+            WHEN current_setting('app.user_id', true) ~ '^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$' 
+            THEN uuid = current_setting('app.user_id', true)::uuid 
+            ELSE FALSE 
+          END
+        )
+      );
     `);
     console.log('PostgreSQL schema verified/initialized');
   } catch (err) {
     console.error('Schema initialization notice:', err.message);
+  }
+};
+
+pool.withUserTransaction = async (userId, callback) => {
+  if (typeof pool.connect !== 'function') {
+    return callback(pool);
+  }
+  const client = await pool.connect();
+  try {
+    await client.query('BEGIN');
+    await client.query("SELECT set_config('app.user_id', $1, true)", [String(userId)]);
+    const result = await callback(client);
+    await client.query('COMMIT');
+    return result;
+  } catch (err) {
+    try { await client.query('ROLLBACK'); } catch (_) {}
+    throw err;
+  } finally {
+    client.release();
   }
 };
 
