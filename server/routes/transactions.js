@@ -51,16 +51,48 @@ router.get('/summary', auth, transactionLimiter, async (req, res) => {
   const user_id = req.user.id;
   try {
     const result = await pool.withUserTransaction(user_id, async (client) => {
-      return client.query(
+      const userRes = await client.query(
+        'SELECT starting_balance, starting_balance_date FROM users WHERE id = $1',
+        [user_id]
+      );
+      const user = userRes.rows[0] || {};
+
+      const txRes = await client.query(
         `SELECT
-          SUM(CASE WHEN type = 'income' THEN amount ELSE 0 END) AS total_income,
-          SUM(CASE WHEN type = 'expense' THEN amount ELSE 0 END) AS total_expense,
-          SUM(CASE WHEN type = 'income' THEN amount ELSE -amount END) AS balance
+          COALESCE(SUM(CASE WHEN type = 'income' THEN amount ELSE 0 END), 0) AS total_income,
+          COALESCE(SUM(CASE WHEN type = 'expense' THEN amount ELSE 0 END), 0) AS total_expense,
+          COALESCE(SUM(CASE WHEN type = 'income' THEN amount ELSE -amount END), 0) AS all_time_balance
          FROM transactions WHERE user_id = $1`,
         [user_id]
       );
+
+      const txRow = txRes.rows[0] || {};
+      const total_income = parseFloat(txRow.total_income || 0);
+      const total_expense = parseFloat(txRow.total_expense || 0);
+      let balance = parseFloat(txRow.all_time_balance || 0);
+
+      // If starting_balance is set, Available Balance = starting_balance + SUM(where date >= starting_balance_date)
+      if (user.starting_balance !== null && user.starting_balance !== undefined) {
+        const baselineNetRes = await client.query(
+          `SELECT COALESCE(SUM(CASE WHEN type = 'income' THEN amount ELSE -amount END), 0) AS net_since_baseline
+           FROM transactions
+           WHERE user_id = $1
+             AND date >= $2::date`,
+          [user_id, user.starting_balance_date || new Date(0)]
+        );
+        const netSinceBaseline = parseFloat(baselineNetRes.rows[0]?.net_since_baseline || 0);
+        balance = parseFloat(user.starting_balance) + netSinceBaseline;
+      }
+
+      return {
+        total_income,
+        total_expense,
+        balance,
+        starting_balance: user.starting_balance !== null && user.starting_balance !== undefined ? parseFloat(user.starting_balance) : null,
+        starting_balance_date: user.starting_balance_date || null,
+      };
     });
-    res.json(result.rows[0]);
+    res.json(result);
   } catch (err) {
     console.error(err.message);
     res.status(500).json({ message: 'Server error' });

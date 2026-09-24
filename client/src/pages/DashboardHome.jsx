@@ -6,6 +6,8 @@ import MonthlyChart from '../components/MonthlyChart';
 import CategoryChart from '../components/CategoryChart';
 import Layout from '../components/Layout';
 import SEO from '../components/SEO';
+import Toast from '../components/Toast';
+import { useToast } from '../hooks/useToast';
 import { SkeletonChart } from '../components/Skeleton';
 import {
   Wallet,
@@ -15,7 +17,11 @@ import {
   ArrowUpRight,
   Download,
   ChevronRight,
-  Sparkles
+  Sparkles,
+  Edit3,
+  X,
+  Check,
+  Loader2
 } from 'lucide-react';
 
 const groupByDate = (txs) => {
@@ -49,25 +55,79 @@ const getGreeting = () => {
 
 const DashboardHome = () => {
   const { user } = useAuth();
+  const { toast, showToast, hideToast } = useToast();
   const [transactions, setTransactions] = useState([]);
   const [summary, setSummary] = useState({ total_income: 0, total_expense: 0, balance: 0 });
   const [loading, setLoading] = useState(true);
   const [exporting, setExporting] = useState(false);
 
+  // Balance adjustment modal state
+  const [isBalanceModalOpen, setIsBalanceModalOpen] = useState(false);
+  const [balanceInput, setBalanceInput] = useState('');
+  const [dateInput, setDateInput] = useState('');
+  const [savingBalance, setSavingBalance] = useState(false);
+  const [modalError, setModalError] = useState('');
+
+  const fetchDashboardData = async () => {
+    try {
+      const [txRes, sumRes] = await Promise.all([
+        axios.get('/transactions'),
+        axios.get('/transactions/summary'),
+      ]);
+      setTransactions(txRes.data);
+      setSummary(sumRes.data);
+    } catch (e) { console.error(e); }
+    finally { setLoading(false); }
+  };
+
   useEffect(() => {
-    const fetch = async () => {
-      try {
-        const [txRes, sumRes] = await Promise.all([
-          axios.get('/transactions'),
-          axios.get('/transactions/summary'),
-        ]);
-        setTransactions(txRes.data);
-        setSummary(sumRes.data);
-      } catch (e) { console.error(e); }
-      finally { setLoading(false); }
-    };
-    fetch();
+    fetchDashboardData();
   }, []);
+
+  const openBalanceModal = () => {
+    setBalanceInput(
+      summary.starting_balance !== null && summary.starting_balance !== undefined
+        ? String(summary.starting_balance)
+        : String(summary.balance || '')
+    );
+    const defaultDate = summary.starting_balance_date
+      ? new Date(summary.starting_balance_date).toISOString().slice(0, 10)
+      : new Date().toISOString().slice(0, 10);
+    setDateInput(defaultDate);
+    setModalError('');
+    setIsBalanceModalOpen(true);
+  };
+
+  const handleSaveBalance = async (e) => {
+    e.preventDefault();
+    setModalError('');
+
+    if (balanceInput === '' || isNaN(Number(balanceInput))) {
+      setModalError('Please enter a valid numeric balance amount.');
+      return;
+    }
+
+    if (!dateInput) {
+      setModalError('Please select the date this balance is accurate as of.');
+      return;
+    }
+
+    setSavingBalance(true);
+    try {
+      await axios.put('/profile/balance', {
+        balance: parseFloat(Number(balanceInput).toFixed(2)),
+        date: dateInput,
+      });
+      showToast('Available balance baseline updated successfully', 'success');
+      setIsBalanceModalOpen(false);
+      await fetchDashboardData();
+    } catch (err) {
+      console.error(err);
+      setModalError(err.response?.data?.message || 'Failed to update balance. Please try again.');
+    } finally {
+      setSavingBalance(false);
+    }
+  };
 
   const now = new Date();
   const thisMonth = now.getMonth();
@@ -246,6 +306,8 @@ const DashboardHome = () => {
         path="/dashboard"
       />
 
+      {toast && <Toast message={toast.message} type={toast.type} onClose={hideToast} />}
+
       {/* Human Dynamic Greeting Banner */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-6">
         <div>
@@ -276,9 +338,20 @@ const DashboardHome = () => {
                 Available Balance
               </span>
             </div>
-            <span className="text-[11px] font-semibold px-2.5 py-1 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 backdrop-blur-sm">
-              Live Balance
-            </span>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={openBalanceModal}
+                className="glass-btn flex items-center gap-1.5 px-2.5 py-1 rounded-xl text-xs font-medium text-slate-200 hover:text-white bg-white/10 hover:bg-white/20 border border-white/15 transition-all cursor-pointer"
+                title="Adjust your real-world bank balance baseline"
+              >
+                <Edit3 size={12} strokeWidth={2} />
+                <span>Adjust</span>
+              </button>
+              <span className="text-[11px] font-semibold px-2.5 py-1 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 backdrop-blur-sm">
+                Live Balance
+              </span>
+            </div>
           </div>
 
           <div className="relative z-10 my-4">
@@ -290,6 +363,12 @@ const DashboardHome = () => {
               </p>
             )}
             <p className="text-xs text-slate-400 mt-2 font-medium">Total liquid funds across your linked records</p>
+            {summary.starting_balance_date && (
+              <p className="text-[11px] text-slate-300/80 mt-1.5 flex items-center gap-1.5 font-mono">
+                <span className="inline-block w-1.5 h-1.5 rounded-full bg-blue-400" />
+                Adjusted as of {new Date(summary.starting_balance_date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
+              </p>
+            )}
           </div>
 
           <div className="relative z-10 pt-4 border-t border-white/10 flex items-center justify-between text-xs">
@@ -490,6 +569,117 @@ const DashboardHome = () => {
           </div>
         </div>
       </div>
+
+      {/* Manual Balance Adjustment Modal */}
+      {isBalanceModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-slide-in">
+          <div className="glass-modal max-w-md w-full p-6 sm:p-7 space-y-5 border border-white/20 dark:border-white/10 shadow-2xl relative text-ink-900 dark:text-ink-50">
+            <div className="flex items-center justify-between pb-3 border-b border-ink-100/60 dark:border-white/10">
+              <div className="flex items-center gap-2.5">
+                <div className="p-2 rounded-xl bg-accent/20 text-accent">
+                  <Wallet size={18} strokeWidth={2} />
+                </div>
+                <div>
+                  <h3 className="text-base font-bold text-ink-900 dark:text-ink-50">Adjust Available Balance</h3>
+                  <p className="text-xs text-ink-600 dark:text-ink-300">Calibrate against your actual real-world bank account</p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsBalanceModalOpen(false)}
+                className="text-ink-600 dark:text-ink-300 hover:text-ink-900 dark:hover:text-ink-50 p-1 rounded-lg transition-colors cursor-pointer"
+                aria-label="Close"
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            <form onSubmit={handleSaveBalance} className="space-y-4">
+              <div>
+                <label className="block text-xs font-semibold text-ink-700 dark:text-ink-300 mb-1.5">
+                  Actual Bank Balance (₹) *
+                </label>
+                <input
+                  type="number"
+                  step="0.01"
+                  value={balanceInput}
+                  onChange={(e) => setBalanceInput(e.target.value)}
+                  placeholder="e.g. 25000.00"
+                  required
+                  className="w-full glass-input px-3.5 py-2.5 text-sm font-mono text-ink-900 dark:text-ink-50"
+                  autoFocus
+                />
+                <p className="text-[11px] text-ink-600 dark:text-ink-300 mt-1">
+                  Accepts decimal amounts. Can be negative in case of credit overdraft.
+                </p>
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-ink-700 dark:text-ink-300 mb-1.5">
+                  As of Date *
+                </label>
+                <input
+                  type="date"
+                  value={dateInput}
+                  onChange={(e) => setDateInput(e.target.value)}
+                  required
+                  className="w-full glass-input px-3 py-2 text-xs font-mono text-ink-900 dark:text-ink-50 dark:[color-scheme:dark]"
+                />
+                <p className="text-[11px] text-ink-600 dark:text-ink-300 mt-1">
+                  Transactions recorded on or after this date will adjust from this baseline amount.
+                </p>
+              </div>
+
+              <div className="p-3.5 rounded-xl bg-accent/10 border border-accent/20 text-xs text-ink-800 dark:text-ink-200 space-y-1">
+                <p className="font-semibold text-accent flex items-center gap-1.5">
+                  <Sparkles size={14} /> Confirmation Summary
+                </p>
+                <p className="text-[11px] leading-relaxed">
+                  Your baseline balance will be set to{' '}
+                  <strong className="font-mono text-ink-900 dark:text-ink-50">
+                    {balanceInput && !isNaN(Number(balanceInput)) ? fmt(balanceInput) : '₹0.00'}
+                  </strong>{' '}
+                  as of <strong className="font-mono text-ink-900 dark:text-ink-50">{dateInput || 'today'}</strong>.
+                </p>
+              </div>
+
+              {modalError && (
+                <div className="p-2.5 rounded-xl bg-negative/10 border border-negative/20 text-negative text-xs font-medium">
+                  {modalError}
+                </div>
+              )}
+
+              <div className="flex items-center justify-end gap-2.5 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setIsBalanceModalOpen(false)}
+                  disabled={savingBalance}
+                  className="glass-btn px-4 py-2 text-xs font-semibold"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={savingBalance}
+                  className="glass-btn-primary px-5 py-2 text-xs font-bold flex items-center gap-1.5 disabled:opacity-50"
+                >
+                  {savingBalance ? (
+                    <>
+                      <Loader2 size={14} className="animate-spin" />
+                      <span>Saving...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Check size={14} strokeWidth={2.5} />
+                      <span>Confirm & Save</span>
+                    </>
+                  )}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </Layout>
   );
 };

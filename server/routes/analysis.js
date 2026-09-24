@@ -255,7 +255,13 @@ router.get(['/summary-cards', '/summary_cards'], auth, transactionLimiter, async
     const filterClause = buildFilterClause({ year, month, from, to, type }, params);
 
     const result = await pool.withUserTransaction(req.user.id, async (client) => {
-      return client.query(
+      const userRes = await client.query(
+        'SELECT starting_balance, starting_balance_date FROM users WHERE id = $1',
+        [req.user.id]
+      );
+      const user = userRes.rows[0] || {};
+
+      const txRes = await client.query(
         `SELECT
           SUM(CASE WHEN type = 'income' THEN amount ELSE 0 END) AS total_income,
           SUM(CASE WHEN type = 'expense' THEN amount ELSE 0 END) AS total_expenses,
@@ -268,12 +274,36 @@ router.get(['/summary-cards', '/summary_cards'], auth, transactionLimiter, async
            ${filterClause}`,
         params
       );
+
+      const row = txRes.rows[0] || {};
+      const total_income = parseFloat(row.total_income || 0);
+      const total_expenses = parseFloat(row.total_expenses || 0);
+      let current_balance = total_income - total_expenses;
+
+      // If starting_balance is set, Available Balance = starting_balance + SUM(where date >= starting_balance_date)
+      if (user.starting_balance !== null && user.starting_balance !== undefined) {
+        const baselineNetRes = await client.query(
+          `SELECT COALESCE(SUM(CASE WHEN type = 'income' THEN amount ELSE -amount END), 0) AS net_since_baseline
+           FROM transactions
+           WHERE user_id = $1
+             AND date >= $2::date`,
+          [req.user.id, user.starting_balance_date || new Date(0)]
+        );
+        const netSinceBaseline = parseFloat(baselineNetRes.rows[0]?.net_since_baseline || 0);
+        current_balance = parseFloat(user.starting_balance) + netSinceBaseline;
+      }
+
+      return {
+        row,
+        current_balance,
+        starting_balance: user.starting_balance !== null && user.starting_balance !== undefined ? parseFloat(user.starting_balance) : null,
+        starting_balance_date: user.starting_balance_date || null,
+      };
     });
 
-    const row = result.rows[0] || {};
+    const row = result.row;
     const total_income = parseFloat(row.total_income || 0);
     const total_expenses = parseFloat(row.total_expenses || 0);
-    const current_balance = total_income - total_expenses;
     const highest_expense = parseFloat(row.highest_expense || 0);
     const distinct_expense_days = parseInt(row.distinct_expense_days || 0, 10);
     const avg_daily_expense = distinct_expense_days > 0 ? total_expenses / distinct_expense_days : 0;
@@ -282,7 +312,9 @@ router.get(['/summary-cards', '/summary_cards'], auth, transactionLimiter, async
     res.json({
       total_income,
       total_expenses,
-      current_balance,
+      current_balance: result.current_balance,
+      starting_balance: result.starting_balance,
+      starting_balance_date: result.starting_balance_date,
       highest_expense,
       avg_daily_expense,
       transaction_count,

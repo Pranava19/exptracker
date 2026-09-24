@@ -258,7 +258,7 @@ router.post('/logout', (req, res) => {
 router.get('/me', auth, async (req, res) => {
   try {
     const result = await pool.query(
-      'SELECT id, name, email FROM users WHERE id = $1',
+      'SELECT id, name, email, starting_balance, starting_balance_date FROM users WHERE id = $1',
       [req.user.id]
     );
 
@@ -272,5 +272,8 @@ router.get('/me', auth, async (req, res) => {
     res.status(500).json({ message: 'Server error' });
   }
 });
+
+const profileRoutes = require('./profile');
+router.use('/balance', profileRoutes);
 
 module.exports = router;

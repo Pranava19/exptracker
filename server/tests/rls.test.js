@@ -61,5 +61,16 @@ describe('Rate Limiter Key & Row-Level Security (RLS) Tests', () => {
         client.release();
       }
     });
+
+    it('verifies that transactions table has active RLS policies in pg_policy', async () => {
+      if (!dbAvailable) {
+        console.log('Skipping RLS integration test: Database is not accessible');
+        return;
+      }
+
+      const res = await pool.query("SELECT count(*) FROM pg_policy WHERE polrelid = 'transactions'::regclass");
+      const count = parseInt(res.rows[0]?.count || '0', 10);
+      expect(count).toBeGreaterThan(0);
+    });
   });
 });
