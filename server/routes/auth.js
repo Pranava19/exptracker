@@ -49,7 +49,7 @@ const setTokenCookies = (res, user) => {
     secure: isProd,
     sameSite: isProd ? 'none' : 'lax',
     maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
-    path: '/api/auth/refresh',
+    path: '/',
   });
 };
 
@@ -250,8 +250,15 @@ router.post('/refresh', async (req, res) => {
 });
 
 router.post('/logout', (req, res) => {
-  res.clearCookie('token');
-  res.clearCookie('refreshToken', { path: '/api/auth/refresh' });
+  const isProd = process.env.NODE_ENV === 'production';
+  const cookieOpts = {
+    httpOnly: true,
+    secure: isProd,
+    sameSite: isProd ? 'none' : 'lax',
+  };
+  res.clearCookie('token', cookieOpts);
+  res.clearCookie('refreshToken', { ...cookieOpts, path: '/' });
+  res.clearCookie('refreshToken', { ...cookieOpts, path: '/api/auth/refresh' });
   res.json({ message: 'Logged out successfully' });
 });
 
