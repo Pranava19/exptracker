@@ -19,7 +19,11 @@ const validatePatch = [
 
 const { cleanPayeeAndCategory } = require('../utils/payeeCleaner');
 
-router.post('/', auth, transactionLimiter, validateTransaction, async (req, res) => {
+// Ensure authentication runs first so rateLimiter can identify the user by req.user.id
+router.use(auth);
+router.use(transactionLimiter);
+
+router.post('/', validateTransaction, async (req, res) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
     return res.status(400).json({ message: errors.array()[0].msg, errors: errors.array() });

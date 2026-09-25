@@ -1,7 +1,10 @@
 const rateLimit = require('express-rate-limit');
 
 const getUserOrIpKey = (req) => {
-  return req.user?.id ? `user_${req.user.id}` : req.ip;
+  if (req.user && req.user.id !== undefined && req.user.id !== null) {
+    return `user_${req.user.id}`;
+  }
+  return req.ip;
 };
 
 const authLimiter = rateLimit({

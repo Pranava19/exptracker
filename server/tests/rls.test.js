@@ -3,14 +3,24 @@ require('dotenv').config();
 
 describe('Rate Limiter Key & Row-Level Security (RLS) Tests', () => {
   describe('Rate Limiter Key Generator', () => {
-    it('uses user_id when user is authenticated', () => {
+    it('uses user_id when user is authenticated with numeric id', () => {
       const req = { user: { id: 42 }, ip: '127.0.0.1' };
       expect(getUserOrIpKey(req)).toBe('user_42');
+    });
+
+    it('uses user_id when user is authenticated with string id', () => {
+      const req = { user: { id: '99' }, ip: '127.0.0.1' };
+      expect(getUserOrIpKey(req)).toBe('user_99');
     });
 
     it('falls back to IP address when unauthenticated', () => {
       const req = { user: null, ip: '192.168.1.1' };
       expect(getUserOrIpKey(req)).toBe('192.168.1.1');
+    });
+
+    it('falls back to IP address when req.user exists but lacks id', () => {
+      const req = { user: {}, ip: '10.0.0.1' };
+      expect(getUserOrIpKey(req)).toBe('10.0.0.1');
     });
   });
 
