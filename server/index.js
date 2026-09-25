@@ -65,6 +65,7 @@ const profileRoutes = require('./routes/profile');
 
 app.use(['/api/auth', '/auth'], authRoutes);
 app.use(['/api/profile', '/profile'], profileRoutes);
+app.use(['/api/balance', '/balance'], profileRoutes);
 app.use(['/api/transactions', '/transactions'], transactionRoutes);
 app.use(['/api/import', '/import'], importRoute);
 app.use(['/api/analysis', '/analysis'], analysisRoutes);

@@ -61,6 +61,23 @@ describe('Manual Current Balance Adjustment Tests', () => {
       expect(res.body.starting_balance).toBe(25000);
       expect(res.body.message).toMatch(/updated successfully/i);
     });
+
+    it('handles /profile/balance, /api/balance, /balance, and /api/profile cleanly without 404', async () => {
+      const paths = ['/profile/balance', '/api/balance', '/balance', '/api/profile'];
+      for (const p of paths) {
+        pool.query.mockResolvedValueOnce({
+          rows: [
+            { id: 1, starting_balance: '10000.00', starting_balance_date: new Date('2026-09-25T00:00:00Z') },
+          ],
+        });
+        const res = await request(app)
+          .put(p)
+          .set('Authorization', `Bearer ${token}`)
+          .send({ balance: 10000, date: '2026-09-25' });
+
+        expect(res.statusCode).toBe(200);
+      }
+    });
   });
 
   describe('GET /api/profile/balance', () => {

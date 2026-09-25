@@ -4,8 +4,8 @@ const pool = require('../db/index');
 const auth = require('../middleware/authMiddleware');
 const { transactionLimiter } = require('../middleware/rateLimiter');
 
-// GET /api/profile/balance - Retrieve current balance baseline
-router.get('/balance', auth, transactionLimiter, async (req, res) => {
+// GET /api/profile/balance or /api/profile - Retrieve current balance baseline
+router.get(['/', '/balance'], auth, transactionLimiter, async (req, res) => {
   try {
     const result = await pool.query(
       'SELECT id, starting_balance, starting_balance_date FROM users WHERE id = $1',
@@ -27,8 +27,8 @@ router.get('/balance', auth, transactionLimiter, async (req, res) => {
   }
 });
 
-// PUT /api/profile/balance - Update baseline balance and as of date
-router.put('/balance', auth, transactionLimiter, async (req, res) => {
+// PUT /api/profile/balance or /api/profile - Update baseline balance and as of date
+router.put(['/', '/balance'], auth, transactionLimiter, async (req, res) => {
   const { balance, date } = req.body;
 
   if (balance === undefined || balance === null || balance === '' || isNaN(Number(balance))) {

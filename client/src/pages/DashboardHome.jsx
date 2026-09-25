@@ -15,7 +15,6 @@ import {
   TrendingDown,
   Calendar,
   ArrowUpRight,
-  Download,
   ChevronRight,
   Sparkles,
   Edit3,
@@ -59,7 +58,6 @@ const DashboardHome = () => {
   const [transactions, setTransactions] = useState([]);
   const [summary, setSummary] = useState({ total_income: 0, total_expense: 0, balance: 0 });
   const [loading, setLoading] = useState(true);
-  const [exporting, setExporting] = useState(false);
 
   // Balance adjustment modal state
   const [isBalanceModalOpen, setIsBalanceModalOpen] = useState(false);
@@ -165,137 +163,6 @@ const DashboardHome = () => {
 
   const maxPayeeAmount = top5Payees[0]?.[1] || 1;
 
-  const escapeHtml = (str) => {
-    if (str === null || str === undefined) return '';
-    return String(str)
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;')
-      .replace(/"/g, '&quot;')
-      .replace(/'/g, '&#039;');
-  };
-
-  const handleExportPDF = async () => {
-    setExporting(true);
-    try {
-      const monthName = now.toLocaleString('en-IN', { month: 'long', year: 'numeric' });
-      const monthStr = `${String(thisMonth + 1).padStart(2, '0')}-${thisYear}`;
-
-      const income  = monthTxs.filter(tx => tx.type === 'income').reduce((s, tx) => s + Number(tx.amount), 0);
-      const expense = monthTxs.filter(tx => tx.type === 'expense').reduce((s, tx) => s + Number(tx.amount), 0);
-      const savings = income - expense;
-
-      const rows = [...monthTxs]
-        .sort((a, b) => new Date(b.date) - new Date(a.date))
-        .map(tx => `
-          <tr>
-            <td>${escapeHtml(tx.date ? tx.date.slice(0, 10) : '')}</td>
-            <td>${escapeHtml((tx.payee || tx.description || '').slice(0, 40))}</td>
-            <td>${escapeHtml(tx.category || '')}</td>
-            <td>${escapeHtml(tx.mode || 'Other')}</td>
-            <td style="color:${tx.type === 'income' ? '#2563EB' : '#B5473B'}; font-weight:600; text-align:right;">
-              ${tx.type === 'income' ? '+' : '−'}${fmt(tx.amount)}
-            </td>
-          </tr>
-        `).join('');
-
-      const html = `
-        <!DOCTYPE html>
-        <html>
-        <head>
-          <meta charset="utf-8" />
-          <title>Statement ${monthStr}</title>
-          <style>
-            * { margin: 0; padding: 0; box-sizing: border-box; }
-            body { font-family: 'Instrument Sans', 'Segoe UI', sans-serif; font-size: 12px; color: #1C1C1A; padding: 32px; background: #FFF; }
-            .header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 28px; border-bottom: 2px solid #EDECE8; padding-bottom: 16px; }
-            .brand { font-size: 22px; font-weight: 800; }
-            .brand span { color: #2A5C8A; }
-            .period { font-size: 11px; color: #6E6E6B; margin-top: 3px; }
-            .summary { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 24px; }
-            .summary-card { background: #F7F7F5; border: 1px solid #EDECE8; border-radius: 6px; padding: 12px 16px; }
-            .summary-card .label { font-size: 10px; text-transform: uppercase; font-family: monospace; color: #6E6E6B; margin-bottom: 4px; }
-            .summary-card .val { font-size: 18px; font-weight: 700; font-family: monospace; }
-            .income  { color: #2563EB; }
-            .expense { color: #B5473B; }
-            .savings { color: #2A5C8A; }
-            h2 { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: #6E6E6B; margin-bottom: 10px; font-family: monospace; }
-            table { width: 100%; border-collapse: collapse; }
-            th { text-align: left; font-size: 10px; text-transform: uppercase; font-family: monospace; color: #6E6E6B; padding: 8px 10px; border-bottom: 1px solid #EDECE8; }
-            td { padding: 8px 10px; border-bottom: 1px solid #F7F7F5; font-size: 11px; }
-            .footer { margin-top: 24px; font-size: 10px; color: #6E6E6B; text-align: center; font-family: monospace; }
-          </style>
-        </head>
-        <body>
-          <div class="header">
-            <div>
-              <div class="brand">Exp<span>Tracker</span></div>
-              <div class="period">Monthly Statement: ${monthName}</div>
-            </div>
-            <div style="text-align:right; font-size:11px; color:#6E6E6B;">
-              Generated: ${new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' })}
-            </div>
-          </div>
-          <div class="summary">
-            <div class="summary-card">
-              <div class="label">Income</div>
-              <div class="val income">${fmt(income)}</div>
-            </div>
-            <div class="summary-card">
-              <div class="label">Expense</div>
-              <div class="val expense">${fmt(expense)}</div>
-            </div>
-            <div class="summary-card">
-              <div class="label">Net Savings</div>
-              <div class="val savings">${fmt(savings)}</div>
-            </div>
-          </div>
-          <h2>Transactions (${monthTxs.length})</h2>
-          <table>
-            <thead>
-              <tr>
-                <th>Date</th>
-                <th>Description</th>
-                <th>Category</th>
-                <th>Mode</th>
-                <th style="text-align:right;">Amount</th>
-              </tr>
-            </thead>
-            <tbody>${rows}</tbody>
-          </table>
-          <div class="footer">ExpTracker · Personal Finance · ${monthStr}</div>
-        </body>
-        </html>
-      `;
-
-      const iframe = document.createElement('iframe');
-      iframe.style.position = 'fixed';
-      iframe.style.right = '0';
-      iframe.style.bottom = '0';
-      iframe.style.width = '0';
-      iframe.style.height = '0';
-      iframe.style.border = '0';
-      document.body.appendChild(iframe);
-
-      const doc = iframe.contentWindow.document;
-      doc.open();
-      doc.write(html);
-      doc.close();
-
-      setTimeout(() => {
-        iframe.contentWindow.focus();
-        iframe.contentWindow.print();
-        setTimeout(() => {
-          if (document.body.contains(iframe)) document.body.removeChild(iframe);
-        }, 2000);
-      }, 250);
-    } catch (e) {
-      console.error(e);
-    } finally {
-      setExporting(false);
-    }
-  };
-
   const grouped = groupByDate(transactions);
 
   return (
@@ -312,7 +179,7 @@ const DashboardHome = () => {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-6">
         <div>
           <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-ink-900 dark:text-ink-50">
-            {getGreeting()}, {firstName} 👋
+            {getGreeting()}, {firstName}
           </h1>
           <p className="text-xs text-ink-600 dark:text-ink-300 mt-1">
             Here's your real-time financial snapshot for {now.toLocaleString('default', { month: 'long', year: 'numeric' })}.
@@ -325,16 +192,16 @@ const DashboardHome = () => {
 
       {/* Balance & Income/Expense Highlight Row */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-        <div className="glass-card md:col-span-2 p-6 sm:p-8 rounded-2xl flex flex-col justify-between relative overflow-hidden text-white bg-gradient-to-br from-slate-900/95 via-slate-900/90 to-blue-950/80 border border-white/20 dark:border-white/10 shadow-lg">
+        <div className="glass-card md:col-span-2 p-6 sm:p-8 rounded-2xl flex flex-col justify-between relative overflow-hidden text-ink-900 dark:text-white border border-black/5 dark:border-white/10 shadow-lg">
           {/* Subtle atmospheric light inside hero card */}
-          <div className="absolute top-0 right-0 w-80 h-80 bg-accent/15 rounded-full filter blur-3xl pointer-events-none" />
+          <div className="absolute top-0 right-0 w-80 h-80 bg-accent/10 dark:bg-accent/15 rounded-full filter blur-3xl pointer-events-none" />
 
           <div className="relative z-10 flex items-center justify-between mb-4">
             <div className="flex items-center gap-2.5">
-              <div className="p-2 rounded-xl bg-accent/25 text-blue-300 backdrop-blur-md border border-white/10">
+              <div className="p-2 rounded-xl bg-accent/10 dark:bg-accent/25 text-accent dark:text-blue-300 backdrop-blur-md border border-accent/20 dark:border-white/10">
                 <Wallet size={20} strokeWidth={2} />
               </div>
-              <span className="text-xs font-bold uppercase tracking-wider text-slate-300 select-none">
+              <span className="text-xs font-bold uppercase tracking-wider text-ink-600 dark:text-slate-300 select-none">
                 Available Balance
               </span>
             </div>
@@ -342,13 +209,13 @@ const DashboardHome = () => {
               <button
                 type="button"
                 onClick={openBalanceModal}
-                className="glass-btn flex items-center gap-1.5 px-2.5 py-1 rounded-xl text-xs font-medium text-slate-200 hover:text-white bg-white/10 hover:bg-white/20 border border-white/15 transition-all cursor-pointer"
+                className="glass-btn flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold text-ink-800 dark:text-slate-200 hover:text-ink-900 dark:hover:text-white bg-black/5 hover:bg-black/10 dark:bg-white/10 dark:hover:bg-white/20 border border-black/10 dark:border-white/15 transition-all cursor-pointer shadow-xs"
                 title="Adjust your real-world bank balance baseline"
               >
-                <Edit3 size={12} strokeWidth={2} />
+                <Edit3 size={13} strokeWidth={2} />
                 <span>Adjust</span>
               </button>
-              <span className="text-[11px] font-semibold px-2.5 py-1 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 backdrop-blur-sm">
+              <span className="text-[11px] font-semibold px-2.5 py-1 rounded-full bg-emerald-500/15 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-300 border border-emerald-500/30 backdrop-blur-sm">
                 Live Balance
               </span>
             </div>
@@ -356,31 +223,19 @@ const DashboardHome = () => {
 
           <div className="relative z-10 my-4">
             {loading ? (
-              <div className="h-12 w-64 bg-slate-800/80 animate-pulse rounded-xl" />
+              <div className="h-12 w-64 bg-ink-200/60 dark:bg-slate-800/80 animate-pulse rounded-xl" />
             ) : (
-              <p className="font-mono text-4xl sm:text-5xl font-extrabold tracking-tight text-white drop-shadow-sm">
+              <p className="font-mono text-4xl sm:text-5xl font-extrabold tracking-tight text-ink-900 dark:text-white drop-shadow-xs">
                 {fmt(summary.balance)}
               </p>
             )}
-            <p className="text-xs text-slate-400 mt-2 font-medium">Total liquid funds across your linked records</p>
+            <p className="text-xs text-ink-600 dark:text-slate-400 mt-2 font-medium">Total liquid funds across your linked records</p>
             {summary.starting_balance_date && (
-              <p className="text-[11px] text-slate-300/80 mt-1.5 flex items-center gap-1.5 font-mono">
-                <span className="inline-block w-1.5 h-1.5 rounded-full bg-blue-400" />
+              <p className="text-[11px] text-ink-500 dark:text-slate-300/80 mt-1.5 flex items-center gap-1.5 font-mono">
+                <span className="inline-block w-1.5 h-1.5 rounded-full bg-accent" />
                 Adjusted as of {new Date(summary.starting_balance_date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
               </p>
             )}
-          </div>
-
-          <div className="relative z-10 pt-4 border-t border-white/10 flex items-center justify-between text-xs">
-            <span className="text-slate-400 font-medium">Month-to-date summary</span>
-            <button
-              onClick={handleExportPDF}
-              disabled={exporting || monthTxs.length === 0}
-              className="glass-btn-primary flex items-center gap-1.5 px-4 py-2 text-xs font-bold shadow-md cursor-pointer disabled:opacity-50 min-h-[44px]"
-            >
-              <Download size={14} strokeWidth={2} />
-              <span>{exporting ? 'Generating PDF...' : 'Download PDF Summary'}</span>
-            </button>
           </div>
         </div>
 
@@ -480,7 +335,7 @@ const DashboardHome = () => {
               </div>
             ) : Object.keys(grouped).length === 0 ? (
               <div className="p-12 text-center">
-                <p className="text-xs font-semibold text-ink-600 dark:text-ink-300">All clear! No spend or income logged yet. 🎉</p>
+                <p className="text-xs font-semibold text-ink-600 dark:text-ink-300">All clear! No spend or income logged yet.</p>
                 <Link to="/transactions" className="text-xs text-accent font-bold mt-2 inline-block">Add your first transaction</Link>
               </div>
             ) : (
