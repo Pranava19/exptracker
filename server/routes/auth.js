@@ -6,7 +6,6 @@ const crypto = require('crypto');
 const { body, validationResult } = require('express-validator');
 const pool = require('../db/index');
 const auth = require('../middleware/authMiddleware');
-const { sendVerificationEmail, sendPasswordResetEmail } = require('../utils/sendEmail');
 require('dotenv').config();
 
 const handleValidationErrors = (req, res, next) => {
@@ -162,12 +161,6 @@ router.post(
         `UPDATE users SET reset_token = $1, reset_token_expires = $2 WHERE id = $3`,
         [hashedToken, expires, user.id]
       );
-
-      try {
-        await sendPasswordResetEmail(email, rawToken);
-      } catch (emailErr) {
-        console.error('Failed to send password reset email:', emailErr.message);
-      }
 
       res.json({
         message: 'If an account exists with that email, a password reset link has been sent.',
