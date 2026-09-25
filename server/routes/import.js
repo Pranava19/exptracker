@@ -311,18 +311,31 @@ router.post(['/', '/import', '/api/import'], auth, importLimiter, (req, res, nex
     await client.query("SELECT set_config('app.user_id', $1, true)", [String(userId)]);
 
     let inserted = 0, skipped = 0;
-    for (const tx of parsed) {
-      const dup = await client.query(
-        `SELECT id FROM transactions WHERE user_id=$1 AND date=$2 AND amount=$3 AND type=$4`,
-        [userId, tx.date, tx.amount, tx.type]
-      );
-      if (dup.rows.length > 0) { skipped++; continue; }
-      await client.query(
-        `INSERT INTO transactions (user_id, date, amount, description, payee, type, category, mode)
-         VALUES ($1,$2,$3,$4,$5,$6,$7,$8)`,
-        [userId, tx.date, tx.amount, tx.description, tx.payee || '', tx.type, tx.category, tx.mode]
-      );
-      inserted++;
+    for (let i = 0; i < parsed.length; i++) {
+      const tx = parsed[i];
+      const spName = `sp_${i}`;
+      await client.query(`SAVEPOINT ${spName}`);
+      try {
+        await client.query(
+          `INSERT INTO transactions (user_id, date, amount, description, payee, type, category, mode)
+           VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`,
+          [userId, tx.date, tx.amount, tx.description, tx.payee || '', tx.type, tx.category, tx.mode]
+        );
+        await client.query(`RELEASE SAVEPOINT ${spName}`);
+        inserted++;
+      } catch (insertErr) {
+        await client.query(`ROLLBACK TO SAVEPOINT ${spName}`);
+        if (
+          insertErr.code === '23505' ||
+          insertErr.message?.includes('duplicate key') ||
+          insertErr.message?.includes('unique constraint') ||
+          insertErr.constraint?.includes('idx_transactions_dedup_hash')
+        ) {
+          skipped++;
+        } else {
+          throw insertErr;
+        }
+      }
     }
 
     await client.query('COMMIT');

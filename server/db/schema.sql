@@ -34,6 +34,19 @@ CREATE INDEX IF NOT EXISTS idx_transactions_category ON transactions(category);
 CREATE INDEX IF NOT EXISTS idx_users_verification_token ON users(verification_token);
 CREATE INDEX IF NOT EXISTS idx_users_reset_token ON users(reset_token);
 
+-- Deduplicate pre-existing transactions before unique index
+DELETE FROM transactions
+WHERE id NOT IN (
+  SELECT MIN(id)
+  FROM transactions
+  GROUP BY user_id, date, amount, type, LOWER(TRIM(COALESCE(description, ''))), LOWER(TRIM(COALESCE(payee, '')))
+);
+
+-- Unique index to prevent duplicate transaction insertions
+CREATE UNIQUE INDEX IF NOT EXISTS idx_transactions_dedup_hash ON transactions (
+  md5(user_id::text || '|' || date::text || '|' || amount::text || '|' || type || '|' || LOWER(TRIM(COALESCE(description, ''))) || '|' || LOWER(TRIM(COALESCE(payee, ''))))
+);
+
 -- Baseline Balance Adjustment Migration
 ALTER TABLE users ADD COLUMN IF NOT EXISTS starting_balance NUMERIC(12, 2) DEFAULT NULL;
 ALTER TABLE users ADD COLUMN IF NOT EXISTS starting_balance_date TIMESTAMP WITH TIME ZONE DEFAULT NULL;

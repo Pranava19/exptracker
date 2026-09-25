@@ -95,7 +95,17 @@ const initSchema = async (client) => {
       ALTER TABLE users ADD COLUMN IF NOT EXISTS starting_balance_date TIMESTAMP WITH TIME ZONE DEFAULT NULL;
     `);
 
-    // 3. Create indexes
+    // 3. Deduplicate pre-existing duplicate rows before applying unique constraint
+    await client.query(`
+      DELETE FROM transactions
+      WHERE id NOT IN (
+        SELECT MIN(id)
+        FROM transactions
+        GROUP BY user_id, date, amount, type, LOWER(TRIM(COALESCE(description, ''))), LOWER(TRIM(COALESCE(payee, '')))
+      );
+    `);
+
+    // 4. Create indexes & unique dedup constraint
     await client.query(`
       CREATE INDEX IF NOT EXISTS idx_transactions_user_id ON transactions(user_id);
       CREATE INDEX IF NOT EXISTS idx_transactions_date ON transactions(date);
@@ -103,6 +113,10 @@ const initSchema = async (client) => {
       CREATE INDEX IF NOT EXISTS idx_subscriptions_user_id ON subscriptions(user_id);
       CREATE INDEX IF NOT EXISTS idx_users_verification_token ON users(verification_token);
       CREATE INDEX IF NOT EXISTS idx_users_reset_token ON users(reset_token);
+
+      CREATE UNIQUE INDEX IF NOT EXISTS idx_transactions_dedup_hash ON transactions (
+        md5(user_id::text || '|' || date::text || '|' || amount::text || '|' || type || '|' || LOWER(TRIM(COALESCE(description, ''))) || '|' || LOWER(TRIM(COALESCE(payee, ''))))
+      );
     `);
 
     // 4. Row-Level Security (RLS) enforcement

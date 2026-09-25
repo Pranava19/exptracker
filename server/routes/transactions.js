@@ -46,6 +46,14 @@ router.post('/', validateTransaction, async (req, res) => {
     });
     res.status(201).json(result.rows[0]);
   } catch (err) {
+    if (
+      err.code === '23505' ||
+      err.message?.includes('duplicate key') ||
+      err.message?.includes('unique constraint') ||
+      err.constraint?.includes('idx_transactions_dedup_hash')
+    ) {
+      return res.status(409).json({ message: 'Duplicate transaction already exists' });
+    }
     console.error(err.message);
     res.status(500).json({ message: 'Server error' });
   }
@@ -282,21 +290,40 @@ router.post('/import', auth, transactionLimiter, async (req, res) => {
     await client.query('BEGIN');
     await client.query("SELECT set_config('app.user_id', $1, true)", [String(user_id)]);
     const inserted = [];
-    for (const tx of transactions) {
+    let skipped = 0;
+    for (let i = 0; i < transactions.length; i++) {
+      const tx = transactions[i];
       const cleaned = cleanPayeeAndCategory(tx.description || tx.payee, tx.category);
       const payee = tx.payee || cleaned.payee;
       const category = tx.category || cleaned.category;
       const type = tx.type || cleaned.type || 'expense';
 
-      const result = await client.query(
-        `INSERT INTO transactions (user_id, type, category, amount, description, payee, date, mode)
-         VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *`,
-        [user_id, type, category, tx.amount, tx.description, payee, tx.date, tx.mode || 'Other']
-      );
-      inserted.push(result.rows[0]);
+      const spName = `tx_sp_${i}`;
+      await client.query(`SAVEPOINT ${spName}`);
+      try {
+        const result = await client.query(
+          `INSERT INTO transactions (user_id, type, category, amount, description, payee, date, mode)
+           VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *`,
+          [user_id, type, category, tx.amount, tx.description, payee, tx.date, tx.mode || 'Other']
+        );
+        await client.query(`RELEASE SAVEPOINT ${spName}`);
+        inserted.push(result.rows[0]);
+      } catch (insertErr) {
+        await client.query(`ROLLBACK TO SAVEPOINT ${spName}`);
+        if (
+          insertErr.code === '23505' ||
+          insertErr.message?.includes('duplicate key') ||
+          insertErr.message?.includes('unique constraint') ||
+          insertErr.constraint?.includes('idx_transactions_dedup_hash')
+        ) {
+          skipped++;
+        } else {
+          throw insertErr;
+        }
+      }
     }
     await client.query('COMMIT');
-    res.status(201).json({ count: inserted.length, transactions: inserted });
+    res.status(201).json({ count: inserted.length, skipped, transactions: inserted });
   } catch (err) {
     if (client) {
       try { await client.query('ROLLBACK'); } catch (rbErr) { console.error('Rollback error:', rbErr.message); }
