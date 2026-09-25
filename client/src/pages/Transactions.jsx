@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import axios from '../api/axios';
-import * as XLSX from 'xlsx';
 import Layout from '../components/Layout';
 import SEO from '../components/SEO';
 import Toast from '../components/Toast';
@@ -340,6 +339,7 @@ const Transactions = () => {
         'Amount (INR)': Number(Number(tx.amount || 0).toFixed(2)),
       }));
 
+      const XLSX = await import('xlsx');
       const worksheet = XLSX.utils.json_to_sheet(sheetData);
 
       // Format clean, comfortable column widths

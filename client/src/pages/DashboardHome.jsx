@@ -209,16 +209,16 @@ const DashboardHome = () => {
 
       {/* Balance & Income/Expense Highlight Row */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-        <div className="glass-card md:col-span-2 p-6 sm:p-8 rounded-2xl flex flex-col justify-between relative overflow-hidden text-ink-900 dark:text-white border border-black/5 dark:border-white/10 shadow-lg">
+        <div className="glass-card md:col-span-2 p-6 sm:p-8 rounded-2xl flex flex-col justify-between relative overflow-hidden text-ink-900 dark:text-ink-50 border border-ink-200/80 dark:border-white/10 shadow-lg">
           {/* Subtle atmospheric light inside hero card */}
           <div className="absolute top-0 right-0 w-80 h-80 bg-accent/10 dark:bg-accent/15 rounded-full filter blur-3xl pointer-events-none" />
 
           <div className="relative z-10 flex items-center justify-between mb-4">
             <div className="flex items-center gap-2.5">
-              <div className="p-2 rounded-xl bg-accent/10 dark:bg-accent/25 text-accent dark:text-blue-300 backdrop-blur-md border border-accent/20 dark:border-white/10">
+              <div className="p-2 rounded-xl bg-accent/10 dark:bg-accent/20 text-accent dark:text-accent-light border border-accent/20 dark:border-accent/30">
                 <Wallet size={20} strokeWidth={2} />
               </div>
-              <span className="text-xs font-bold uppercase tracking-wider text-ink-600 dark:text-slate-300 select-none">
+              <span className="text-xs font-bold uppercase tracking-wider text-ink-700 dark:text-ink-200 select-none">
                 Available Balance
               </span>
             </div>
@@ -226,13 +226,13 @@ const DashboardHome = () => {
               <button
                 type="button"
                 onClick={openBalanceModal}
-                className="glass-btn flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold text-ink-800 dark:text-slate-200 hover:text-ink-900 dark:hover:text-white bg-black/5 hover:bg-black/10 dark:bg-white/10 dark:hover:bg-white/20 border border-black/10 dark:border-white/15 transition-all cursor-pointer shadow-xs"
+                className="glass-btn flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold text-ink-900 dark:text-ink-50 hover:text-accent border border-ink-200 dark:border-white/15 transition-all cursor-pointer shadow-sm"
                 title="Adjust your real-world bank balance baseline"
               >
                 <Edit3 size={13} strokeWidth={2} />
                 <span>Adjust</span>
               </button>
-              <span className="text-[11px] font-semibold px-2.5 py-1 rounded-full bg-emerald-500/15 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-300 border border-emerald-500/30 backdrop-blur-sm">
+              <span className="text-[11px] font-semibold px-2.5 py-1 rounded-full bg-emerald-500/15 text-emerald-700 dark:bg-emerald-500/25 dark:text-emerald-300 border border-emerald-500/30 select-none">
                 Live Balance
               </span>
             </div>
@@ -240,15 +240,15 @@ const DashboardHome = () => {
 
           <div className="relative z-10 my-4">
             {loading ? (
-              <div className="h-12 w-64 bg-ink-200/60 dark:bg-slate-800/80 animate-pulse rounded-xl" />
+              <div className="h-12 w-64 bg-ink-200/60 dark:bg-ink-800 animate-pulse rounded-xl" />
             ) : (
-              <p className="font-mono text-4xl sm:text-5xl font-extrabold tracking-tight text-ink-900 dark:text-white drop-shadow-xs">
+              <p className="font-mono text-4xl sm:text-5xl font-extrabold tracking-tight text-ink-900 dark:text-ink-50">
                 {fmt(summary.balance)}
               </p>
             )}
-            <p className="text-xs text-ink-600 dark:text-slate-400 mt-2 font-medium">Total liquid funds across your linked records</p>
+            <p className="text-xs text-ink-600 dark:text-ink-300 mt-2 font-medium">Total liquid funds across your linked records</p>
             {summary.starting_balance_date && (
-              <p className="text-[11px] text-ink-500 dark:text-slate-300/80 mt-1.5 flex items-center gap-1.5 font-mono">
+              <p className="text-[11px] text-ink-600 dark:text-ink-300 mt-1.5 flex items-center gap-1.5 font-mono">
                 <span className="inline-block w-1.5 h-1.5 rounded-full bg-accent" />
                 Adjusted as of {new Date(summary.starting_balance_date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
               </p>
@@ -343,10 +343,10 @@ const DashboardHome = () => {
                 {[...Array(4)].map((_, i) => (
                   <div key={i} className="animate-pulse flex justify-between">
                     <div className="space-y-1.5">
-                      <div className="h-3.5 bg-black/5 dark:bg-white/10 rounded-lg w-40" />
-                      <div className="h-2.5 bg-black/5 dark:bg-white/10 rounded-lg w-24" />
+                      <div className="h-3.5 bg-ink-100 dark:bg-ink-800 rounded-lg w-40" />
+                      <div className="h-2.5 bg-ink-100 dark:bg-ink-800 rounded-lg w-24" />
                     </div>
-                    <div className="h-4 bg-black/5 dark:bg-white/10 rounded-lg w-20" />
+                    <div className="h-4 bg-ink-100 dark:bg-ink-800 rounded-lg w-20" />
                   </div>
                 ))}
               </div>
@@ -409,7 +409,7 @@ const DashboardHome = () => {
                       </div>
                       <p className="font-mono text-xs font-bold text-negative">{fmtShort(amount)}</p>
                     </div>
-                    <div className="ml-6 h-2 rounded-full bg-black/5 dark:bg-white/10 overflow-hidden">
+                    <div className="ml-6 h-2 rounded-full bg-ink-100 dark:bg-ink-800 overflow-hidden">
                       <div
                         className="h-full rounded-full bg-accent transition-all duration-300"
                         style={{ width: `${(amount / maxPayeeAmount) * 100}%` }}

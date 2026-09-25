@@ -25,7 +25,15 @@ const PrivateRoute = ({ children }) => {
   if (loading) {
     return <LoadingFallback />;
   }
-  return user ? children : <Navigate to="/login" />;
+  return user ? children : <Navigate to="/login" replace />;
+};
+
+const PublicRoute = ({ children }) => {
+  const { user, loading } = useAuth();
+  if (loading) {
+    return <LoadingFallback />;
+  }
+  return user ? <Navigate to="/dashboard" replace /> : children;
 };
 
 function App() {
@@ -35,8 +43,9 @@ function App() {
         <BrowserRouter>
           <Suspense fallback={<LoadingFallback />}>
             <Routes>
-              <Route path="/login" element={<Login />} />
-              <Route path="/register" element={<Register />} />
+              <Route path="/" element={<Navigate to="/dashboard" replace />} />
+              <Route path="/login" element={<PublicRoute><Login /></PublicRoute>} />
+              <Route path="/register" element={<PublicRoute><Register /></PublicRoute>} />
               <Route path="/privacy" element={<Privacy />} />
               <Route path="/terms" element={<Terms />} />
               <Route path="/dashboard" element={<PrivateRoute><DashboardHome /></PrivateRoute>} />

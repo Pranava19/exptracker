@@ -1,5 +1,6 @@
 import React from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { useTheme } from '../context/ThemeContext';
 
 const CATEGORY_COLORS = {
   Food: '#2A5C8A',
@@ -15,7 +16,7 @@ const CATEGORY_COLORS = {
 const CustomTooltip = ({ active, payload, label }) => {
   if (active && payload && payload.length) {
     return (
-      <div className="glass-modal p-3 rounded-xl border border-white/20 dark:border-white/10 shadow-lg text-xs font-mono text-ink-900 dark:text-ink-50">
+      <div className="glass-modal p-3 rounded-xl border border-ink-100 dark:border-white/10 shadow-lg text-xs font-mono text-ink-900 dark:text-ink-50">
         <p className="font-sans font-semibold mb-1 opacity-80">{label}</p>
         {payload.filter(p => p.value > 0).map((entry, index) => (
           <p key={`item-${index}`} style={{ color: entry.color }} className="font-semibold flex items-center justify-between gap-4">
@@ -30,6 +31,7 @@ const CustomTooltip = ({ active, payload, label }) => {
 };
 
 const CategoryChart = ({ transactions }) => {
+  const { dark } = useTheme();
   const monthMap = {};
 
   transactions
@@ -65,12 +67,15 @@ const CategoryChart = ({ transactions }) => {
     );
   }
 
+  const gridColor = dark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.06)';
+  const tickColor = dark ? '#94a3b8' : '#64748b';
+
   return (
     <ResponsiveContainer width="100%" height={260}>
       <BarChart data={data} barCategoryGap="20%" margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-        <CartesianGrid strokeDasharray="0" stroke="#EDECE8" vertical={false} />
-        <XAxis dataKey="month" tick={{ fontSize: 11, fontFamily: 'IBM Plex Mono' }} stroke="#888" />
-        <YAxis tick={{ fontSize: 11, fontFamily: 'IBM Plex Mono' }} stroke="#888" tickFormatter={v => `₹${v >= 1000 ? (v / 1000).toFixed(0) + 'k' : v}`} />
+        <CartesianGrid strokeDasharray="0" stroke={gridColor} vertical={false} />
+        <XAxis dataKey="month" tick={{ fontSize: 11, fontFamily: 'IBM Plex Mono', fill: tickColor }} stroke={tickColor} />
+        <YAxis tick={{ fontSize: 11, fontFamily: 'IBM Plex Mono', fill: tickColor }} stroke={tickColor} tickFormatter={v => `₹${v >= 1000 ? (v / 1000).toFixed(0) + 'k' : v}`} />
         <Tooltip content={<CustomTooltip />} />
         {allCategories.map(cat => (
           <Bar

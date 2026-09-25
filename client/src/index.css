@@ -14,21 +14,21 @@
   --font-mono: 'IBM Plex Mono', monospace;
 
   /* Glassmorphism Light Mode Tokens */
-  --glass-bg: rgba(255, 255, 255, 0.72);
-  --glass-bg-subtle: rgba(255, 255, 255, 0.52);
-  --glass-bg-hover: rgba(255, 255, 255, 0.88);
-  --glass-header-bg: rgba(255, 255, 255, 0.78);
-  --glass-nav-bg: rgba(255, 255, 255, 0.80);
-  --glass-input-bg: rgba(255, 255, 255, 0.65);
-  --glass-btn-bg: rgba(255, 255, 255, 0.70);
-  --glass-btn-hover: rgba(255, 255, 255, 0.95);
+  --glass-bg: rgba(255, 255, 255, 0.85);
+  --glass-bg-subtle: rgba(248, 250, 252, 0.75);
+  --glass-bg-hover: rgba(255, 255, 255, 0.95);
+  --glass-header-bg: rgba(255, 255, 255, 0.88);
+  --glass-nav-bg: rgba(255, 255, 255, 0.90);
+  --glass-input-bg: rgba(255, 255, 255, 0.80);
+  --glass-btn-bg: rgba(255, 255, 255, 0.80);
+  --glass-btn-hover: rgba(255, 255, 255, 1);
 
-  --glass-border: rgba(255, 255, 255, 0.7);
-  --glass-border-subtle: rgba(226, 232, 240, 0.8);
-  --glass-border-hover: rgba(59, 130, 246, 0.4);
+  --glass-border: rgba(203, 213, 225, 0.75);
+  --glass-border-subtle: rgba(226, 232, 240, 0.85);
+  --glass-border-hover: rgba(37, 99, 235, 0.5);
 
-  --glass-shadow: 0 10px 30px -5px rgba(15, 23, 42, 0.05), 0 4px 12px -2px rgba(15, 23, 42, 0.02);
-  --glass-shadow-lg: 0 20px 40px -10px rgba(15, 23, 42, 0.08), 0 8px 16px -4px rgba(15, 23, 42, 0.03);
+  --glass-shadow: 0 10px 30px -5px rgba(15, 23, 42, 0.06), 0 4px 12px -2px rgba(15, 23, 42, 0.03);
+  --glass-shadow-lg: 0 20px 40px -10px rgba(15, 23, 42, 0.10), 0 8px 16px -4px rgba(15, 23, 42, 0.04);
   --glass-shadow-glow: 0 0 20px -3px rgba(37, 99, 235, 0.2);
 
   --glass-blur: blur(16px);
@@ -36,8 +36,8 @@
   --glass-blur-lg: blur(24px);
 
   --text-main: #0f172a;
-  --text-muted: #64748b;
-  --text-subtle: #94a3b8;
+  --text-muted: #475569;
+  --text-subtle: #64748b;
 
   --color-accent: #2563eb;
   --color-accent-hover: #1d4ed8;
@@ -307,4 +307,288 @@ body {
 .glass-table tr:hover {
   background-color: var(--glass-bg-hover) !important;
 }
+
+/* ==========================================================================
+   Comprehensive Light & Night Mode Visibility & Cross-Browser Consistency
+   ========================================================================== */
+
+/* Solid background fallbacks for browsers without backdrop-filter support */
+.glass-panel,
+.glass-card,
+.glass-card-static {
+  background-color: #ffffff;
+}
+.dark .glass-panel,
+.dark .glass-card,
+.dark .glass-card-static,
+html.dark .glass-panel,
+html.dark .glass-card,
+html.dark .glass-card-static {
+  background-color: #0f172a !important;
+}
+
+.glass-modal {
+  background-color: #ffffff;
+}
+.dark .glass-modal,
+html.dark .glass-modal {
+  background-color: #0f172a !important;
+}
+
+.glass-nav,
+.glass-header,
+.glass-mobile-bar {
+  background-color: #ffffff;
+}
+.dark .glass-nav,
+.dark .glass-header,
+.dark .glass-mobile-bar,
+html.dark .glass-nav,
+html.dark .glass-header,
+html.dark .glass-mobile-bar {
+  background-color: #0f172a !important;
+}
+
+/* Explicit Light & Dark Text Visibility Classes */
+.text-ink-900 { color: #0f172a !important; }
+.text-ink-800 { color: #1e293b !important; }
+.text-ink-700 { color: #334155 !important; }
+.text-ink-600 { color: #475569 !important; }
+.text-ink-500 { color: #64748b !important; }
+.text-ink-400 { color: #94a3b8 !important; }
+.text-ink-300 { color: #cbd5e1 !important; }
+.text-ink-200 { color: #e2e8f0 !important; }
+.text-ink-50  { color: #f8fafc !important; }
+
+/* Dark text overrides: support both standard and nested selectors */
+.dark .dark\:text-white,
+html.dark .dark\:text-white,
+.dark\:text-white:is(.dark *) {
+  color: #ffffff !important;
+}
+
+.dark .dark\:text-ink-50,
+html.dark .dark\:text-ink-50,
+.dark\:text-ink-50:is(.dark *) {
+  color: #f8fafc !important;
+}
+
+.dark .dark\:text-ink-200,
+html.dark .dark\:text-ink-200,
+.dark\:text-ink-200:is(.dark *) {
+  color: #e2e8f0 !important;
+}
+
+.dark .dark\:text-ink-300,
+html.dark .dark\:text-ink-300,
+.dark\:text-ink-300:is(.dark *) {
+  color: #cbd5e1 !important;
+}
+
+.dark .dark\:text-ink-400,
+html.dark .dark\:text-ink-400,
+.dark\:text-ink-400:is(.dark *) {
+  color: #94a3b8 !important;
+}
+
+.dark .dark\:text-slate-100,
+html.dark .dark\:text-slate-100,
+.dark\:text-slate-100:is(.dark *) {
+  color: #f1f5f9 !important;
+}
+
+.dark .dark\:text-slate-200,
+html.dark .dark\:text-slate-200,
+.dark\:text-slate-200:is(.dark *) {
+  color: #e2e8f0 !important;
+}
+
+.dark .dark\:text-slate-300,
+html.dark .dark\:text-slate-300,
+.dark\:text-slate-300:is(.dark *) {
+  color: #cbd5e1 !important;
+}
+
+.dark .dark\:text-slate-400,
+html.dark .dark\:text-slate-400,
+.dark\:text-slate-400:is(.dark *) {
+  color: #94a3b8 !important;
+}
+
+.dark .dark\:text-blue-300,
+html.dark .dark\:text-blue-300,
+.dark\:text-blue-300:is(.dark *) {
+  color: #93c5fd !important;
+}
+
+.dark .dark\:text-accent-light,
+html.dark .dark\:text-accent-light,
+.dark\:text-accent-light:is(.dark *) {
+  color: #60a5fa !important;
+}
+
+.dark .dark\:text-emerald-300,
+html.dark .dark\:text-emerald-300,
+.dark\:text-emerald-300:is(.dark *) {
+  color: #6ee7b7 !important;
+}
+
+.dark .dark\:hover\:text-white:hover,
+html.dark .dark\:hover\:text-white:hover,
+.dark\:hover\:text-white:hover:is(.dark *) {
+  color: #ffffff !important;
+}
+
+/* Emerald Color Suite */
+.text-emerald-700 { color: #047857 !important; }
+.text-emerald-600 { color: #059669 !important; }
+.text-emerald-500 { color: #10b981 !important; }
+.bg-emerald-500\/15 { background-color: rgba(16, 185, 129, 0.15) !important; }
+.bg-emerald-500\/20 { background-color: rgba(16, 185, 129, 0.20) !important; }
+.bg-emerald-500\/25 { background-color: rgba(16, 185, 129, 0.25) !important; }
+.border-emerald-500\/30 { border-color: rgba(16, 185, 129, 0.30) !important; }
+
+/* Alpha Backgrounds */
+.bg-black\/5 { background-color: rgba(15, 23, 42, 0.05) !important; }
+.bg-black\/10 { background-color: rgba(15, 23, 42, 0.10) !important; }
+.bg-black\/50 { background-color: rgba(0, 0, 0, 0.50) !important; }
+.hover\:bg-black\/5:hover { background-color: rgba(15, 23, 42, 0.05) !important; }
+.hover\:bg-black\/10:hover { background-color: rgba(15, 23, 42, 0.10) !important; }
+.hover\:bg-black\/\[0\.02\]:hover { background-color: rgba(15, 23, 42, 0.02) !important; }
+
+.dark .dark\:bg-white\/10,
+html.dark .dark\:bg-white\/10,
+.dark\:bg-white\/10:is(.dark *) {
+  background-color: rgba(255, 255, 255, 0.10) !important;
+}
+
+.dark .dark\:bg-white\/15,
+html.dark .dark\:bg-white\/15,
+.dark\:bg-white\/15:is(.dark *) {
+  background-color: rgba(255, 255, 255, 0.15) !important;
+}
+
+.dark .dark\:bg-white\/20,
+html.dark .dark\:bg-white\/20,
+.dark\:bg-white\/20:is(.dark *) {
+  background-color: rgba(255, 255, 255, 0.20) !important;
+}
+
+.dark .dark\:hover\:bg-white\/10:hover,
+html.dark .dark\:hover\:bg-white\/10:hover,
+.dark\:hover\:bg-white\/10:hover:is(.dark *) {
+  background-color: rgba(255, 255, 255, 0.10) !important;
+}
+
+.dark .dark\:hover\:bg-white\/20:hover,
+html.dark .dark\:hover\:bg-white\/20:hover,
+.dark\:hover\:bg-white\/20:hover:is(.dark *) {
+  background-color: rgba(255, 255, 255, 0.20) !important;
+}
+
+.dark .dark\:hover\:bg-white\/\[0\.04\]:hover,
+html.dark .dark\:hover\:bg-white\/\[0\.04\]:hover,
+.dark\:hover\:bg-white\/\[0\.04\]:hover:is(.dark *) {
+  background-color: rgba(255, 255, 255, 0.04) !important;
+}
+
+/* Alpha Borders */
+.border-black\/5 { border-color: rgba(15, 23, 42, 0.06) !important; }
+.border-black\/10 { border-color: rgba(15, 23, 42, 0.12) !important; }
+.border-ink-100\/50 { border-color: rgba(226, 232, 240, 0.50) !important; }
+.border-ink-100\/60 { border-color: rgba(226, 232, 240, 0.70) !important; }
+.border-ink-200\/80 { border-color: rgba(203, 213, 225, 0.80) !important; }
+
+.dark .dark\:border-white\/5,
+html.dark .dark\:border-white\/5,
+.dark\:border-white\/5:is(.dark *) {
+  border-color: rgba(255, 255, 255, 0.05) !important;
+}
+
+.dark .dark\:border-white\/10,
+html.dark .dark\:border-white\/10,
+.dark\:border-white\/10:is(.dark *) {
+  border-color: rgba(255, 255, 255, 0.10) !important;
+}
+
+.dark .dark\:border-white\/15,
+html.dark .dark\:border-white\/15,
+.dark\:border-white\/15:is(.dark *) {
+  border-color: rgba(255, 255, 255, 0.15) !important;
+}
+
+.dark .dark\:border-white\/20,
+html.dark .dark\:border-white\/20,
+.dark\:border-white\/20:is(.dark *) {
+  border-color: rgba(255, 255, 255, 0.20) !important;
+}
+
+/* Slate backgrounds for dropdown options & skeletons */
+.dark .dark\:bg-slate-900,
+html.dark .dark\:bg-slate-900,
+.dark\:bg-slate-900:is(.dark *) {
+  background-color: #0f172a !important;
+  color: #f8fafc !important;
+}
+
+.dark .dark\:bg-slate-800,
+html.dark .dark\:bg-slate-800,
+.dark\:bg-slate-800:is(.dark *) {
+  background-color: #1e293b !important;
+}
+
+.dark .dark\:bg-slate-800\/80,
+html.dark .dark\:bg-slate-800\/80,
+.dark\:bg-slate-800\/80:is(.dark *) {
+  background-color: rgba(30, 41, 59, 0.80) !important;
+}
+
+/* Shadows */
+.shadow-xs { box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05) !important; }
+.drop-shadow-xs { filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.05)) !important; }
+
+/* Cross-Browser Select & Option Consistency */
+select {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+  background-repeat: no-repeat;
+  background-position: right 0.75rem center;
+  background-size: 1em;
+  padding-right: 2rem !important;
+}
+
+.dark select,
+html.dark select {
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+}
+
+select option {
+  background-color: #ffffff !important;
+  color: #0f172a !important;
+}
+
+.dark select option,
+html.dark select option {
+  background-color: #0f172a !important;
+  color: #f8fafc !important;
+}
+
+/* Mobile & Touch Optimizations */
+@media screen and (max-width: 768px) {
+  input, select, textarea {
+    font-size: 16px !important; /* Prevents auto-zoom in iOS Safari */
+    min-height: 42px;
+  }
+
+  .overflow-x-auto {
+    -webkit-overflow-scrolling: touch; /* Smooth momentum scrolling */
+  }
+
+  button, a {
+    min-height: 38px; /* Accessible touch targets */
+  }
+}
+
 
