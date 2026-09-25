@@ -18,6 +18,19 @@ const app = express();
 
 app.set('trust proxy', 1);
 
+// URL normalization for Vercel Serverless Function rewrites & catch-all routes
+app.use((req, res, next) => {
+  if (req.query && req.query.slug) {
+    const slug = Array.isArray(req.query.slug) ? req.query.slug.join('/') : req.query.slug;
+    const urlParts = (req.url || '').split('?');
+    const searchParams = new URLSearchParams(urlParts[1] || '');
+    searchParams.delete('slug');
+    const qs = searchParams.toString();
+    req.url = '/' + slug + (qs ? '?' + qs : '');
+  }
+  next();
+});
+
 app.use(helmet());
 app.use(cookieParser());
 app.use(cors({
@@ -74,6 +87,11 @@ app.use(['/api/reports', '/reports'], reportRoutes);
 // Serverless root POST fallback for /import
 app.post(['/', '/api'], (req, res, next) => {
   return importRoute(req, res, next);
+});
+
+// Serverless root PUT fallback for /profile /balance
+app.put(['/', '/api'], (req, res, next) => {
+  return profileRoutes(req, res, next);
 });
 
 app.get(['/', '/api'], (req, res) => {

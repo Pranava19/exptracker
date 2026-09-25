@@ -112,10 +112,27 @@ const DashboardHome = () => {
 
     setSavingBalance(true);
     try {
-      await axios.put('/profile/balance', {
+      const payload = {
         balance: parseFloat(Number(balanceInput).toFixed(2)),
         date: dateInput,
-      });
+      };
+      try {
+        await axios.put('/profile/balance', payload);
+      } catch (firstErr) {
+        if (firstErr.response?.status === 404) {
+          try {
+            await axios.put('/balance', payload);
+          } catch (secondErr) {
+            if (secondErr.response?.status === 404) {
+              await axios.put('/profile', payload);
+            } else {
+              throw secondErr;
+            }
+          }
+        } else {
+          throw firstErr;
+        }
+      }
       showToast('Available balance baseline updated successfully', 'success');
       setIsBalanceModalOpen(false);
       await fetchDashboardData();
