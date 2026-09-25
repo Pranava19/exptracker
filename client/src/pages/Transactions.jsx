@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import axios from '../api/axios';
 import Layout from '../components/Layout';
 import SEO from '../components/SEO';
@@ -173,7 +173,7 @@ const Transactions = () => {
   const [exporting, setExporting] = useState(false);
   const { toast, showToast, hideToast } = useToast();
 
-  const fetchAll = async () => {
+  const fetchAll = useCallback(async () => {
     setLoading(true);
     try {
       const params = {};
@@ -188,15 +188,14 @@ const Transactions = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [filter, showToast]);
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     fetchAll();
     const handleTxAdded = () => { fetchAll(); };
     window.addEventListener('tx-added', handleTxAdded);
     return () => window.removeEventListener('tx-added', handleTxAdded);
-  }, [filter]);
+  }, [fetchAll]);
 
   const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
 

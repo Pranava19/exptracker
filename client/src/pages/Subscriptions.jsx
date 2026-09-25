@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import axios from '../api/axios';
 import Layout from '../components/Layout';
 import SEO from '../components/SEO';
@@ -48,7 +48,7 @@ const Subscriptions = () => {
     status: 'active',
   });
 
-  const fetchSubscriptions = async () => {
+  const fetchSubscriptions = useCallback(async () => {
     try {
       const res = await axios.get('/subscriptions');
       setSubscriptions(Array.isArray(res.data) ? res.data : []);
@@ -58,12 +58,11 @@ const Subscriptions = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [showToast]);
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     fetchSubscriptions();
-  }, []);
+  }, [fetchSubscriptions]);
 
   const openAddModal = () => {
     setEditId(null);
