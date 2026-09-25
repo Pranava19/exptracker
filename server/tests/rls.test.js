@@ -24,6 +24,32 @@ describe('Rate Limiter Key & Row-Level Security (RLS) Tests', () => {
     });
   });
 
+  describe('Neon SSL Verification Config', () => {
+    const pool = require('../db/index');
+    const getSSLConfig = pool.getSSLConfig;
+
+    it('enforces rejectUnauthorized: true for Neon database URLs', () => {
+      const config = getSSLConfig('postgres://user:pass@ep-cool-project-123456.us-east-2.aws.neon.tech/dbname?sslmode=require', 'production');
+      expect(config).toEqual({ rejectUnauthorized: true });
+    });
+
+    it('enforces rejectUnauthorized: true when sslmode=require is present in URL', () => {
+      const config = getSSLConfig('postgresql://user:pass@remote-db.example.com/dbname?sslmode=require', 'production');
+      expect(config).toEqual({ rejectUnauthorized: true });
+    });
+
+    it('keeps SSL disabled (false) for local development URLs', () => {
+      const config = getSSLConfig('postgres://postgres:postgres@localhost:5432/exptracker', 'development');
+      expect(config).toBe(false);
+    });
+
+    it('attaches custom CA cert if NEON_CA_CERT is provided', () => {
+      const customCa = '-----BEGIN CERTIFICATE-----\nTEST\n-----END CERTIFICATE-----';
+      const config = getSSLConfig('postgres://user:pass@neon.tech/dbname?sslmode=require', 'production', customCa);
+      expect(config).toEqual({ rejectUnauthorized: true, ca: customCa });
+    });
+  });
+
   describe('Row-Level Security (RLS) Isolation', () => {
     let pool;
     let dbAvailable = false;

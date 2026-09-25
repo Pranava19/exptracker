@@ -1,16 +1,31 @@
 const { Pool } = require('pg');
 require('dotenv').config();
 
-const isProd = process.env.NODE_ENV === 'production';
-const isNeon = process.env.DATABASE_URL?.includes('neon') || process.env.DATABASE_URL?.includes('sslmode=require');
+function getSSLConfig(dbUrl = process.env.DATABASE_URL || '', nodeEnv = process.env.NODE_ENV, customCa = process.env.NEON_CA_CERT) {
+  const isNeon = dbUrl.includes('neon.tech') || dbUrl.includes('neon') || dbUrl.includes('sslmode=require') || dbUrl.includes('sslmode=verify-full');
+  const isLocal = dbUrl.includes('localhost') || dbUrl.includes('127.0.0.1') || (!isNeon && nodeEnv !== 'production');
+
+  // Neon PostgreSQL uses standard publicly-trusted CAs (Let's Encrypt / ISRG Root X1).
+  // We strictly enforce certificate validation with rejectUnauthorized: true for Neon & production.
+  // Local development connections (e.g. localhost) remain unaffected without SSL (false).
+  if (isNeon || (nodeEnv === 'production' && !isLocal)) {
+    const config = { rejectUnauthorized: true };
+    if (customCa) {
+      config.ca = customCa;
+    }
+    return config;
+  }
+  return false;
+}
 
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
-  ssl: (isProd || isNeon) ? { rejectUnauthorized: false } : false,
+  ssl: getSSLConfig(),
   connectionTimeoutMillis: 10000,
   idleTimeoutMillis: 30000,
   max: 10,
 });
+pool.getSSLConfig = getSSLConfig;
 
 pool.on('error', (err) => {
   console.error('Unexpected error on idle PostgreSQL client:', err.message);
@@ -190,15 +205,17 @@ pool.withUserTransaction = async (userId, callback) => {
   }
 };
 
-pool.connect()
-  .then(async (client) => {
-    console.log('PostgreSQL connected');
-    try {
-      await initSchema(client);
-    } finally {
-      client.release();
-    }
-  })
-  .catch((err) => console.error('DB connection/initialization error:', err.message));
+if (process.env.NODE_ENV !== 'test') {
+  pool.connect()
+    .then(async (client) => {
+      console.log('PostgreSQL connected');
+      try {
+        await initSchema(client);
+      } finally {
+        client.release();
+      }
+    })
+    .catch((err) => console.error('DB connection/initialization error:', err.message));
+}
 
 module.exports = pool;
