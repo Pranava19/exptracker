@@ -26,6 +26,7 @@ process.on('unhandledRejection', (reason) => {
 
 const initSchema = async (client) => {
   try {
+    // 1. Create tables
     await client.query(`
       CREATE TABLE IF NOT EXISTS users (
           id SERIAL PRIMARY KEY,
@@ -37,6 +38,8 @@ const initSchema = async (client) => {
           verification_token_expires TIMESTAMP WITH TIME ZONE,
           reset_token VARCHAR(255),
           reset_token_expires TIMESTAMP WITH TIME ZONE,
+          starting_balance NUMERIC(12, 2) DEFAULT NULL,
+          starting_balance_date TIMESTAMP WITH TIME ZONE DEFAULT NULL,
           created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
       );
 
@@ -52,38 +55,29 @@ const initSchema = async (client) => {
           mode VARCHAR(50) DEFAULT 'Other',
           created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
       );
+    `);
 
+    // 2. Ensure schema columns exist on existing databases
+    await client.query(`
       ALTER TABLE users ADD COLUMN IF NOT EXISTS verification_token VARCHAR(255);
       ALTER TABLE users ADD COLUMN IF NOT EXISTS verification_token_expires TIMESTAMP WITH TIME ZONE;
       ALTER TABLE users ADD COLUMN IF NOT EXISTS reset_token VARCHAR(255);
       ALTER TABLE users ADD COLUMN IF NOT EXISTS reset_token_expires TIMESTAMP WITH TIME ZONE;
       ALTER TABLE users ADD COLUMN IF NOT EXISTS starting_balance NUMERIC(12, 2) DEFAULT NULL;
       ALTER TABLE users ADD COLUMN IF NOT EXISTS starting_balance_date TIMESTAMP WITH TIME ZONE DEFAULT NULL;
+    `);
 
+    // 3. Create indexes
+    await client.query(`
       CREATE INDEX IF NOT EXISTS idx_transactions_user_id ON transactions(user_id);
       CREATE INDEX IF NOT EXISTS idx_transactions_date ON transactions(date);
       CREATE INDEX IF NOT EXISTS idx_transactions_category ON transactions(category);
       CREATE INDEX IF NOT EXISTS idx_users_verification_token ON users(verification_token);
       CREATE INDEX IF NOT EXISTS idx_users_reset_token ON users(reset_token);
+    `);
 
-      DO $$
-      BEGIN
-        IF NOT EXISTS (SELECT FROM pg_roles WHERE rolname = 'app_user') THEN
-          CREATE ROLE app_user WITH NOSUPERUSER NOCREATEDB NOCREATEROLE NOBYPASSRLS;
-        END IF;
-      EXCEPTION WHEN OTHERS THEN
-        NULL;
-      END $$;
-
-      DO $$
-      BEGIN
-        GRANT USAGE ON SCHEMA public TO app_user;
-        GRANT ALL ON ALL TABLES IN SCHEMA public TO app_user;
-        GRANT ALL ON ALL SEQUENCES IN SCHEMA public TO app_user;
-      EXCEPTION WHEN OTHERS THEN
-        NULL;
-      END $$;
-
+    // 4. Row-Level Security (RLS) enforcement on transactions
+    await client.query(`
       ALTER TABLE transactions ENABLE ROW LEVEL SECURITY;
       ALTER TABLE transactions FORCE ROW LEVEL SECURITY;
 
@@ -102,13 +96,40 @@ const initSchema = async (client) => {
         )
       );
     `);
+
+    // 5. Optional local dev role (isolated in try/catch so cloud databases like Neon never fail)
+    try {
+      await client.query(`
+        DO $$
+        BEGIN
+          IF NOT EXISTS (SELECT FROM pg_roles WHERE rolname = 'app_user') THEN
+            CREATE ROLE app_user WITH NOSUPERUSER NOCREATEDB NOCREATEROLE NOBYPASSRLS;
+          END IF;
+        EXCEPTION WHEN OTHERS THEN
+          NULL;
+        END $$;
+      `);
+      await client.query(`
+        DO $$
+        BEGIN
+          GRANT USAGE ON SCHEMA public TO app_user;
+          GRANT ALL ON ALL TABLES IN SCHEMA public TO app_user;
+          GRANT ALL ON ALL SEQUENCES IN SCHEMA public TO app_user;
+        EXCEPTION WHEN OTHERS THEN
+          NULL;
+        END $$;
+      `);
+    } catch (roleErr) {
+      console.warn('Notice: app_user role creation/grants skipped (non-fatal on managed DB):', roleErr.message);
+    }
+
     console.log('PostgreSQL schema verified/initialized');
 
     // Startup safety check: verify transactions RLS policy exists
     const policyRes = await client.query("SELECT count(*) FROM pg_policy WHERE polrelid = 'transactions'::regclass");
     const policyCount = parseInt(policyRes.rows[0]?.count || '0', 10);
     if (policyCount === 0) {
-      const errMsg = 'FATAL RLS ERROR: 0 Row-Level Security policies found on transactions table! Zero policies with FORCE ROW LEVEL SECURITY will block all data access for app_user.';
+      const errMsg = 'FATAL RLS ERROR: 0 Row-Level Security policies found on transactions table! Zero policies with FORCE ROW LEVEL SECURITY will block all data access.';
       console.error(errMsg);
       throw new Error(errMsg);
     }
