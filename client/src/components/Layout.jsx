@@ -2,6 +2,7 @@ import React from 'react';
 import { useLocation, Link } from 'react-router-dom';
 import Navbar from './Navbar';
 import HeaderClock from './HeaderClock';
+import QuickAddFAB from './QuickAddFAB';
 import { useTheme } from '../context/ThemeContext';
 import { ChevronRight } from 'lucide-react';
 
@@ -9,6 +10,7 @@ const PAGE_TITLES = {
   '/dashboard': 'Dashboard',
   '/transactions': 'Transactions',
   '/analysis': 'Analysis',
+  '/subscriptions': 'Subscriptions',
   '/import': 'Import statement',
   '/profile': 'Profile',
   '/privacy': 'Privacy Policy',
@@ -60,6 +62,8 @@ const Layout = ({ children }) => {
             {children}
           </main>
         </div>
+
+        <QuickAddFAB />
       </div>
     </div>
   );

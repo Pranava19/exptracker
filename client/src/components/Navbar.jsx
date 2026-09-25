@@ -6,6 +6,7 @@ import {
   LayoutDashboard,
   ArrowLeftRight,
   BarChart3,
+  CalendarClock,
   FileInput,
   User,
   Sun,
@@ -25,6 +26,7 @@ const NAV_SECTIONS = [
   {
     label: 'Manage',
     items: [
+      { to: '/subscriptions', label: 'Subscriptions', icon: CalendarClock },
       { to: '/import', label: 'Import', icon: FileInput },
     ],
   },
@@ -34,6 +36,14 @@ const NAV_SECTIONS = [
       { to: '/profile', label: 'Profile', icon: User },
     ],
   },
+];
+
+const MOBILE_NAV_ITEMS = [
+  { to: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
+  { to: '/transactions', label: 'History', icon: ArrowLeftRight },
+  { to: '/subscriptions', label: 'Recurring', icon: CalendarClock },
+  { to: '/analysis', label: 'Insights', icon: BarChart3 },
+  { to: '/import', label: 'Import', icon: FileInput },
 ];
 
 const Navbar = () => {
@@ -135,7 +145,7 @@ const Navbar = () => {
 
       <div className="md:hidden fixed bottom-0 left-0 right-0 z-30 glass-mobile-bar border-t border-ink-100/60 dark:border-white/10 pb-[env(safe-area-inset-bottom,0px)]">
         <div className="flex items-center justify-around px-2 py-1">
-          {NAV_SECTIONS.flatMap(s => s.items).map(({ to, label: l, icon: Icon }) => (
+          {MOBILE_NAV_ITEMS.map(({ to, label: l, icon: Icon }) => (
             <NavLink
               key={to}
               to={to}

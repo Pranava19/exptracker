@@ -1,6 +1,7 @@
 {
   "short_name": "ExpTracker",
   "name": "ExpTracker - Personal Expense & Cash Flow Manager",
+  "description": "Track income, expenses, subscriptions, and cash flow securely on any device.",
   "icons": [
     {
       "src": "favicon.ico",
@@ -10,16 +11,24 @@
     {
       "src": "logo192.png",
       "type": "image/png",
-      "sizes": "192x192"
+      "sizes": "192x192",
+      "purpose": "any maskable"
     },
     {
       "src": "logo512.png",
       "type": "image/png",
-      "sizes": "512x512"
+      "sizes": "512x512",
+      "purpose": "any maskable"
     }
   ],
-  "start_url": ".",
+  "start_url": "/dashboard",
+  "scope": "/",
   "display": "standalone",
-  "theme_color": "#2563EB",
-  "background_color": "#ffffff"
+  "orientation": "portrait-primary",
+  "theme_color": "#18181b",
+  "background_color": "#09090b",
+  "categories": [
+    "finance",
+    "productivity"
+  ]
 }

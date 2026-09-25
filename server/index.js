@@ -75,11 +75,13 @@ app.use(['/api-docs', '/docs'], swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 const reportRoutes = require('./routes/report');
 const profileRoutes = require('./routes/profile');
+const subscriptionRoutes = require('./routes/subscriptions');
 
 app.use(['/api/auth', '/auth'], authRoutes);
 app.use(['/api/profile', '/profile'], profileRoutes);
 app.use(['/api/balance', '/balance'], profileRoutes);
 app.use(['/api/transactions', '/transactions'], transactionRoutes);
+app.use(['/api/subscriptions', '/subscriptions'], subscriptionRoutes);
 app.use(['/api/import', '/import'], importRoute);
 app.use(['/api/analysis', '/analysis'], analysisRoutes);
 app.use(['/api/reports', '/reports'], reportRoutes);

@@ -191,7 +191,12 @@ const Transactions = () => {
   };
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  useEffect(() => { fetchAll(); }, [filter]);
+  useEffect(() => {
+    fetchAll();
+    const handleTxAdded = () => { fetchAll(); };
+    window.addEventListener('tx-added', handleTxAdded);
+    return () => window.removeEventListener('tx-added', handleTxAdded);
+  }, [filter]);
 
   const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
 

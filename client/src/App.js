@@ -7,6 +7,7 @@ const Login = lazy(() => import('./pages/Login'));
 const Register = lazy(() => import('./pages/Register'));
 const DashboardHome = lazy(() => import('./pages/DashboardHome'));
 const Transactions = lazy(() => import('./pages/Transactions'));
+const Subscriptions = lazy(() => import('./pages/Subscriptions'));
 const Import = lazy(() => import('./pages/Import'));
 const Profile = lazy(() => import('./pages/Profile'));
 const Analysis = lazy(() => import('./pages/Analysis'));
@@ -50,6 +51,7 @@ function App() {
               <Route path="/terms" element={<Terms />} />
               <Route path="/dashboard" element={<PrivateRoute><DashboardHome /></PrivateRoute>} />
               <Route path="/transactions" element={<PrivateRoute><Transactions /></PrivateRoute>} />
+              <Route path="/subscriptions" element={<PrivateRoute><Subscriptions /></PrivateRoute>} />
               <Route path="/analysis" element={<PrivateRoute><Analysis /></PrivateRoute>} />
               <Route path="/import" element={<PrivateRoute><Import /></PrivateRoute>} />
               <Route path="/profile" element={<PrivateRoute><Profile /></PrivateRoute>} />

@@ -80,6 +80,11 @@ const DashboardHome = () => {
 
   useEffect(() => {
     fetchDashboardData();
+    const handleTxAdded = () => {
+      fetchDashboardData();
+    };
+    window.addEventListener('tx-added', handleTxAdded);
+    return () => window.removeEventListener('tx-added', handleTxAdded);
   }, []);
 
   const openBalanceModal = () => {
