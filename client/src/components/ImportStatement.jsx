@@ -61,11 +61,11 @@ const ImportStatement = ({ onImportDone }) => {
 
       <div className="space-y-4">
         <div>
-          <label className="text-xs font-medium text-ink-700 dark:text-ink-200 block mb-1.5">Statement File (.pdf, .xlsx)</label>
+          <label className="text-xs font-medium text-ink-700 dark:text-ink-200 block mb-1.5">Statement File (.xlsx, .xls, .csv)</label>
           <div className="border border-dashed border-ink-300/80 dark:border-white/20 rounded-2xl p-6 text-center glass-card-subtle hover:border-accent transition-all cursor-pointer relative">
             <input
               type="file"
-              accept=".xlsx,.xls,.pdf"
+              accept=".xlsx,.xls,.csv"
               tabIndex={-1}
               onChange={e => setFile(e.target.files[0])}
               className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
@@ -74,7 +74,7 @@ const ImportStatement = ({ onImportDone }) => {
             <p className="text-xs font-semibold text-ink-900 dark:text-ink-50">
               {file ? file.name : 'Click or drag bank statement file here'}
             </p>
-            <p className="text-[10px] text-ink-600 dark:text-ink-400 mt-1">Supports SBI PDF & Excel statements (Max 10MB)</p>
+            <p className="text-[10px] text-ink-600 dark:text-ink-400 mt-1">Supports Excel statements (.xlsx, .xls, .csv) (Max 10MB)</p>
           </div>
         </div>
 

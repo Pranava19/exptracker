@@ -12,15 +12,15 @@ const upload = multer({
   fileFilter: (req, file, cb) => {
     const ext = path.extname(file.originalname).toLowerCase();
     const allowedMime = [
-      'application/pdf',
       'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
       'application/vnd.ms-excel',
       'application/octet-stream',
+      'text/csv',
     ];
-    if (allowedMime.includes(file.mimetype) || ['.pdf', '.xlsx', '.xls', '.csv'].includes(ext)) {
+    if (allowedMime.includes(file.mimetype) || ['.xlsx', '.xls', '.csv'].includes(ext)) {
       cb(null, true);
     } else {
-      cb(new Error('Invalid file type. Only PDF and Excel files (.xlsx, .xls) are allowed.'));
+      cb(new Error('Invalid file type. Only Excel files (.xlsx, .xls) and CSV are allowed.'));
     }
   },
 });
@@ -75,73 +75,6 @@ function parseDate(raw) {
   }
 
   return null;
-}
-
-function parseSBIPDF(text) {
-  const transactions = [];
-  const lines = text.split('\n');
-  const seen = new Set();
-
-  for (const line of lines) {
-    const trimmed = line.trim();
-    if (!trimmed) continue;
-
-    // Match DD/MM/YYYY or DD-MM-YYYY date at start of line
-    const dateMatch = trimmed.match(/^(\d{2}[\/\-]\d{2}[\/\-]\d{4})/);
-    if (!dateMatch) continue;
-
-    const date = parseDate(dateMatch[1]);
-    if (!date) continue;
-
-    // Extract numbers with 2 decimal places from the line
-    const amountMatches = [...trimmed.matchAll(/([\d,]+\.\d{2})/g)].map(m => parseFloat(m[1].replace(/,/g, '')));
-    if (amountMatches.length === 0) continue;
-
-    let amount = 0;
-    let type = 'expense';
-
-    if (/CR|CREDIT|\+/i.test(trimmed) && !/DR|DEBIT/i.test(trimmed)) {
-      type = 'income';
-      amount = amountMatches[0];
-    } else if (/DR|DEBIT|\-/i.test(trimmed)) {
-      type = 'expense';
-      amount = amountMatches[0];
-    } else if (amountMatches.length >= 2) {
-      // Multiple amounts: description balance amount or debit/credit
-      amount = amountMatches[0];
-    } else {
-      amount = amountMatches[0];
-    }
-
-    if (!amount || amount <= 0) continue;
-
-    const desc = trimmed.replace(/^\d{2}[\/\-]\d{2}[\/\-]\d{4}/, '').trim();
-
-    let payee = '';
-    const upiMatch = desc.match(/UPI\/(?:DR|CR)\/\d+\/([^\/]+)\//);
-    if (upiMatch) payee = upiMatch[1].trim();
-
-    const mode = /UPI/i.test(desc) ? 'UPI'
-      : /ATM|CASH/i.test(desc) ? 'Cash'
-      : /NEFT|RTGS|IMPS/i.test(desc) ? 'Net Banking'
-      : 'Other';
-
-    const key = `${date}|${amount}|${type}|${desc.slice(0, 20)}`;
-    if (seen.has(key)) continue;
-    seen.add(key);
-
-    transactions.push({
-      date,
-      description: desc || 'Bank Transaction',
-      payee,
-      amount,
-      type,
-      category: autoCategory(payee || desc),
-      mode,
-    });
-  }
-
-  return transactions;
 }
 
 async function parseExcel(buffer, password) {
@@ -256,22 +189,6 @@ async function parseExcel(buffer, password) {
   return transactions;
 }
 
-async function extractPDFText(buffer, password) {
-  const pdfjsLib = require('pdfjs-dist/legacy/build/pdf.js');
-  const loadingTask = pdfjsLib.getDocument({
-    data: new Uint8Array(buffer),
-    password: password || '',
-  });
-  const pdf = await loadingTask.promise;
-  let text = '';
-  for (let i = 1; i <= pdf.numPages; i++) {
-    const page = await pdf.getPage(i);
-    const content = await page.getTextContent();
-    text += content.items.map(item => item.str).join(' ') + '\n';
-  }
-  return text;
-}
-
 router.post(['/', '/import', '/api/import'], auth, importLimiter, (req, res, next) => {
   upload.single('file')(req, res, (err) => {
     if (err) {
@@ -293,13 +210,10 @@ router.post(['/', '/import', '/api/import'], auth, importLimiter, (req, res, nex
 
     let parsed = [];
 
-    if (ext === '.pdf') {
-      const text = await extractPDFText(buffer, password);
-      parsed = parseSBIPDF(text);
-    } else if (ext === '.xlsx' || ext === '.xls' || ext === '.csv') {
+    if (ext === '.xlsx' || ext === '.xls' || ext === '.csv') {
       parsed = await parseExcel(buffer, password);
     } else {
-      return res.status(400).json({ message: 'Unsupported file format. Please upload .xlsx, .xls, or .pdf' });
+      return res.status(400).json({ message: 'Unsupported file format. Please upload an Excel file (.xlsx, .xls) or .csv' });
     }
 
     if (parsed.length === 0) {
