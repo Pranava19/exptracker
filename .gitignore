@@ -33,3 +33,4 @@ Thumbs.db
 *.csv
 EXPTRACKER_COMPLETE_CODEBASE.txt
 server/tests/fixtures/
+scratch/

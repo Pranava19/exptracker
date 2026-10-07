@@ -81,6 +81,15 @@ const initSchema = async (client) => {
           status VARCHAR(50) DEFAULT 'active',
           created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
       );
+
+      CREATE TABLE IF NOT EXISTS payee_rules (
+          id SERIAL PRIMARY KEY,
+          user_id INT REFERENCES users(id) ON DELETE CASCADE,
+          pattern VARCHAR(255) NOT NULL,
+          display_name VARCHAR(255) NOT NULL,
+          category VARCHAR(100) NOT NULL,
+          created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+      );
     `);
 
     // 2. Ensure schema columns exist on existing databases
@@ -101,6 +110,7 @@ const initSchema = async (client) => {
       CREATE INDEX IF NOT EXISTS idx_subscriptions_user_id ON subscriptions(user_id);
       CREATE INDEX IF NOT EXISTS idx_users_verification_token ON users(verification_token);
       CREATE INDEX IF NOT EXISTS idx_users_reset_token ON users(reset_token);
+      CREATE INDEX IF NOT EXISTS idx_payee_rules_user_id ON payee_rules(user_id);
 
       CREATE UNIQUE INDEX IF NOT EXISTS idx_transactions_dedup_hash ON transactions (
         user_id,
@@ -138,6 +148,24 @@ const initSchema = async (client) => {
       DROP POLICY IF EXISTS subscriptions_user_isolation ON subscriptions;
 
       CREATE POLICY subscriptions_user_isolation ON subscriptions
+      FOR ALL
+      TO PUBLIC
+      USING (
+        user_id = (
+          CASE 
+            WHEN current_setting('app.user_id', true) ~ '^[0-9]+$' 
+            THEN current_setting('app.user_id', true)::int 
+            ELSE NULL 
+          END
+        )
+      );
+
+      ALTER TABLE payee_rules ENABLE ROW LEVEL SECURITY;
+      ALTER TABLE payee_rules FORCE ROW LEVEL SECURITY;
+
+      DROP POLICY IF EXISTS payee_rules_user_isolation ON payee_rules;
+
+      CREATE POLICY payee_rules_user_isolation ON payee_rules
       FOR ALL
       TO PUBLIC
       USING (

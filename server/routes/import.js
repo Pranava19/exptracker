@@ -5,10 +5,11 @@ const path = require('path');
 const pool = require('../db/index');
 const auth = require('../middleware/authMiddleware');
 const { importLimiter } = require('../middleware/rateLimiter');
+const { cleanPayeeAndCategory, normalizeDescription, getDedupKey } = require('../utils/payeeCleaner');
 
 const upload = multer({
   storage: multer.memoryStorage(),
-  limits: { fileSize: 10 * 1024 * 1024 }, // 10MB limit
+  limits: { fileSize: 15 * 1024 * 1024 }, // 15MB limit
   fileFilter: (req, file, cb) => {
     const ext = path.extname(file.originalname).toLowerCase();
     const allowedMime = [
@@ -24,13 +25,6 @@ const upload = multer({
     }
   },
 });
-
-const { cleanPayeeAndCategory } = require('../utils/payeeCleaner');
-
-function autoCategory(desc, existingCat) {
-  const result = cleanPayeeAndCategory(desc, existingCat);
-  return result.category;
-}
 
 function parseDate(raw) {
   if (!raw) return null;
@@ -66,7 +60,7 @@ function parseDate(raw) {
     if (!isNaN(d)) return d.toISOString().slice(0, 10);
   }
 
-  // Handle Excel Serial Number (e.g. 45231) using UTC epoch
+  // Handle Excel Serial Number using UTC epoch
   const num = Number(s);
   if (!isNaN(num) && num > 30000 && num < 60000) {
     const excelEpochUtc = Date.UTC(1899, 11, 30);
@@ -77,7 +71,7 @@ function parseDate(raw) {
   return null;
 }
 
-async function parseExcel(buffer, password) {
+async function parseStatementFile(buffer, password, customRules = []) {
   const XLSX = require('xlsx');
   let buf = buffer;
 
@@ -102,23 +96,20 @@ async function parseExcel(buffer, password) {
     const hasDescCol = row.some(c =>
       c.includes('narration') || c.includes('description') || c.includes('particulars') || c.includes('details')
     );
-    // Require date column AND at least one of (amount-type column OR description column) in separate cells
     if (hasDate && (hasAmountCol || hasDescCol)) {
       headerIdx = i;
       break;
     }
   }
 
-  if (headerIdx === -1) {
-    headerIdx = 0; // Fallback to first row
-  }
+  if (headerIdx === -1) headerIdx = 0;
 
   const headers = rows[headerIdx].map(c => String(c || '').trim().toLowerCase());
-  
   let dateCol = headers.findIndex(h => h.includes('txn date') || h.includes('transaction date') || h.includes('value date') || h.includes('date'));
   let descCol = headers.findIndex(h => h.includes('description') || h.includes('narration') || h.includes('particulars') || h.includes('details') || h.includes('remarks') || h.includes('summary'));
   let debitCol = headers.findIndex(h => h.includes('debit') || h.includes('withdrawal') || h.includes('spent') || h.includes('outflow') || h.includes('paid out'));
   let creditCol = headers.findIndex(h => h.includes('credit') || h.includes('deposit') || h.includes('received') || h.includes('inflow') || h.includes('paid in'));
+  let balanceCol = headers.findIndex(h => h.includes('balance'));
   let amountCol = headers.findIndex(h => h === 'amount' || h.includes('txn amount') || h.includes('transaction amount'));
   let typeCol = headers.findIndex(h => h.includes('type') || h.includes('cr/dr') || h.includes('d/c'));
 
@@ -127,19 +118,22 @@ async function parseExcel(buffer, password) {
 
   const transactions = [];
   const seen = new Set();
+  let totalDebit = 0;
+  let totalCredit = 0;
+  let runningBalance = 0;
+  let balanceMismatches = 0;
+  let lastRowBalance = null;
 
   for (let i = headerIdx + 1; i < rows.length; i++) {
     const row = rows[i];
     if (!row || !row[dateCol]) continue;
 
-    const dateRaw = row[dateCol];
-    const date = parseDate(dateRaw);
+    const date = parseDate(row[dateCol]);
     if (!date) continue;
 
-    const desc = descCol !== -1 && row[descCol] ? String(row[descCol]).trim() : 'Bank Transaction';
+    const rawDesc = descCol !== -1 && row[descCol] ? String(row[descCol]) : 'Bank Transaction';
 
     let debit = 0, credit = 0;
-
     if (debitCol !== -1 && row[debitCol] !== undefined && row[debitCol] !== null && row[debitCol] !== '') {
       debit = Math.abs(parseFloat(String(row[debitCol]).replace(/,/g, ''))) || 0;
     }
@@ -150,7 +144,6 @@ async function parseExcel(buffer, password) {
     if (debit === 0 && credit === 0 && amountCol !== -1 && row[amountCol]) {
       const amtVal = parseFloat(String(row[amountCol]).replace(/,/g, '')) || 0;
       const typeVal = typeCol !== -1 && row[typeCol] ? String(row[typeCol]).toUpperCase() : '';
-
       if (typeVal.includes('CR') || typeVal.includes('CREDIT') || amtVal > 0) {
         credit = Math.abs(amtVal);
       } else {
@@ -160,40 +153,124 @@ async function parseExcel(buffer, password) {
 
     if (debit <= 0 && credit <= 0) continue;
 
-    let payee = '';
-    const upiMatch = desc.match(/UPI\/(?:DR|CR)\/\d+\/([^\/]+)\//);
-    if (upiMatch) payee = upiMatch[1].trim();
+    totalDebit += debit;
+    totalCredit += credit;
 
-    const mode = /UPI/i.test(desc) ? 'UPI'
-      : /ATM|CASH/i.test(desc) ? 'Cash'
-      : /NEFT|RTGS|IMPS/i.test(desc) ? 'Net Banking'
-      : 'Other';
+    const type = debit > 0 ? 'expense' : 'income';
+    const amount = debit > 0 ? debit : credit;
 
-    if (debit > 0) {
-      const key = `${date}|${debit}|expense|${desc.slice(0, 20)}`;
-      if (!seen.has(key)) {
-        seen.add(key);
-        transactions.push({ date, description: desc, payee, amount: debit, type: 'expense', category: autoCategory(payee || desc), mode });
+    if (balanceCol !== -1 && row[balanceCol] !== undefined && row[balanceCol] !== null && row[balanceCol] !== '') {
+      const rowBal = parseFloat(String(row[balanceCol]).replace(/,/g, ''));
+      if (!isNaN(rowBal)) {
+        lastRowBalance = rowBal;
+        const expected = Math.round((runningBalance + credit - debit) * 100) / 100;
+        if (Math.abs(expected - rowBal) > 0.01) {
+          balanceMismatches++;
+        }
+        runningBalance = rowBal;
       }
+    } else {
+      runningBalance = Math.round((runningBalance + credit - debit) * 100) / 100;
     }
 
-    if (credit > 0) {
-      const key = `${date}|${credit}|income|${desc.slice(0, 20)}`;
-      if (!seen.has(key)) {
-        seen.add(key);
-        transactions.push({ date, description: desc, payee, amount: credit, type: 'income', category: autoCategory(payee || desc), mode });
-      }
+    const cleaned = cleanPayeeAndCategory(rawDesc, null, customRules, type);
+    const dedupKey = getDedupKey(date, amount, type, rawDesc);
+
+    if (!seen.has(dedupKey)) {
+      seen.add(dedupKey);
+      transactions.push({
+        date,
+        description: cleaned.cleanDescription,
+        payee: cleaned.payee,
+        amount,
+        type,
+        category: cleaned.category,
+        mode: cleaned.mode,
+        balance: runningBalance,
+        dedupKey,
+      });
     }
   }
 
-  return transactions;
+  return {
+    totalRows: transactions.length,
+    totalDebit: Math.round(totalDebit * 100) / 100,
+    totalCredit: Math.round(totalCredit * 100) / 100,
+    closingBalance: lastRowBalance !== null ? lastRowBalance : runningBalance,
+    reconciled: balanceMismatches === 0,
+    balanceMismatches,
+    transactions,
+  };
 }
 
+// POST /api/import/preview - Inspect parsed records before importing
+router.post(['/preview', '/api/import/preview'], auth, importLimiter, (req, res, next) => {
+  upload.single('file')(req, res, (err) => {
+    if (err) return res.status(400).json({ message: err.message || 'File upload error' });
+    next();
+  });
+}, async (req, res) => {
+  try {
+    if (!req.file) return res.status(400).json({ message: 'No file uploaded' });
+
+    const userId = req.user.id;
+    const { password } = req.body;
+    const buffer = req.file.buffer;
+
+    // Fetch custom user rules if any
+    const rulesRes = await pool.query('SELECT pattern, display_name, category FROM payee_rules WHERE user_id = $1', [userId]);
+    const customRules = rulesRes.rows || [];
+
+    const parsedData = await parseStatementFile(buffer, password, customRules);
+    if (parsedData.totalRows === 0) {
+      return res.status(400).json({ message: 'No valid transactions found in statement file' });
+    }
+
+    // Query existing transactions to flag duplicates
+    const existingRes = await pool.query(
+      `SELECT date::text as date, amount, type, LOWER(TRIM(COALESCE(description, ''))) as description, LOWER(TRIM(COALESCE(payee, ''))) as payee 
+       FROM transactions WHERE user_id = $1`,
+      [userId]
+    );
+
+    const existingSet = new Set(
+      existingRes.rows.map(r => `${r.date}|${parseFloat(r.amount)}|${r.type}|${r.description}|${r.payee}`)
+    );
+
+    let duplicateCount = 0;
+    const previewList = parsedData.transactions.map(tx => {
+      const matchKey = `${tx.date}|${tx.amount}|${tx.type}|${tx.description.toLowerCase().trim()}|${(tx.payee || '').toLowerCase().trim()}`;
+      const isDuplicate = existingSet.has(matchKey);
+      if (isDuplicate) duplicateCount++;
+      return {
+        ...tx,
+        is_duplicate: isDuplicate,
+      };
+    });
+
+    res.json({
+      totalRows: parsedData.totalRows,
+      newCount: parsedData.totalRows - duplicateCount,
+      duplicateCount,
+      totalDebit: parsedData.totalDebit,
+      totalCredit: parsedData.totalCredit,
+      closingBalance: parsedData.closingBalance,
+      reconciled: parsedData.reconciled,
+      transactions: previewList,
+    });
+  } catch (err) {
+    console.error('Import preview error:', err.message);
+    if (err.name === 'PasswordException' || err.message?.includes('password')) {
+      return res.status(400).json({ message: 'File is password protected. Please provide the correct password.' });
+    }
+    res.status(500).json({ message: err.message || 'Failed to preview statement file' });
+  }
+});
+
+// POST /api/import - Execute statement import
 router.post(['/', '/import', '/api/import'], auth, importLimiter, (req, res, next) => {
   upload.single('file')(req, res, (err) => {
-    if (err) {
-      return res.status(400).json({ message: err.message || 'File upload error' });
-    }
+    if (err) return res.status(400).json({ message: err.message || 'File upload error' });
     next();
   });
 }, async (req, res) => {
@@ -208,15 +285,18 @@ router.post(['/', '/import', '/api/import'], auth, importLimiter, (req, res, nex
     const ext = path.extname(req.file.originalname).toLowerCase();
     const userId = req.user.id;
 
-    let parsed = [];
-
-    if (ext === '.xlsx' || ext === '.xls' || ext === '.csv') {
-      parsed = await parseExcel(buffer, password);
-    } else {
+    if (!['.xlsx', '.xls', '.csv'].includes(ext)) {
       return res.status(400).json({ message: 'Unsupported file format. Please upload an Excel file (.xlsx, .xls) or .csv' });
     }
 
-    if (parsed.length === 0) {
+    // Fetch user rules if any
+    const rulesRes = await pool.query('SELECT pattern, display_name, category FROM payee_rules WHERE user_id = $1', [userId]);
+    const customRules = rulesRes.rows || [];
+
+    const parsedData = await parseStatementFile(buffer, password, customRules);
+    const transactions = parsedData.transactions;
+
+    if (transactions.length === 0) {
       return res.status(400).json({ message: 'No transactions found in file. Please ensure it is a valid bank statement.' });
     }
 
@@ -224,36 +304,56 @@ router.post(['/', '/import', '/api/import'], auth, importLimiter, (req, res, nex
     await client.query('BEGIN');
     await client.query("SELECT set_config('app.user_id', $1, true)", [String(userId)]);
 
-    let inserted = 0, skipped = 0;
-    for (let i = 0; i < parsed.length; i++) {
-      const tx = parsed[i];
-      const spName = `sp_${i}`;
-      await client.query(`SAVEPOINT ${spName}`);
-      try {
-        await client.query(
-          `INSERT INTO transactions (user_id, date, amount, description, payee, type, category, mode)
-           VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`,
-          [userId, tx.date, tx.amount, tx.description, tx.payee || '', tx.type, tx.category, tx.mode]
+    let inserted = 0;
+    const BATCH_SIZE = 500;
+
+    for (let i = 0; i < transactions.length; i += BATCH_SIZE) {
+      const batch = transactions.slice(i, i + BATCH_SIZE);
+      const valueClauses = [];
+      const params = [userId];
+      let pIdx = 2;
+
+      for (const tx of batch) {
+        valueClauses.push(
+          `($1, $${pIdx}, $${pIdx + 1}, $${pIdx + 2}, $${pIdx + 3}, $${pIdx + 4}, $${pIdx + 5}, $${pIdx + 6})`
         );
-        await client.query(`RELEASE SAVEPOINT ${spName}`);
-        inserted++;
-      } catch (insertErr) {
-        await client.query(`ROLLBACK TO SAVEPOINT ${spName}`);
-        if (
-          insertErr.code === '23505' ||
-          insertErr.message?.includes('duplicate key') ||
-          insertErr.message?.includes('unique constraint') ||
-          insertErr.constraint?.includes('idx_transactions_dedup_hash')
-        ) {
-          skipped++;
-        } else {
-          throw insertErr;
-        }
+        params.push(
+          tx.date,
+          tx.amount,
+          tx.description,
+          tx.payee || '',
+          tx.type,
+          tx.category,
+          tx.mode || 'Other'
+        );
+        pIdx += 7;
       }
+
+      const query = `
+        INSERT INTO transactions (user_id, date, amount, description, payee, type, category, mode)
+        VALUES ${valueClauses.join(', ')}
+        ON CONFLICT (user_id, date, amount, type, (LOWER(TRIM(COALESCE(description, '')))), (LOWER(TRIM(COALESCE(payee, '')))))
+        DO NOTHING
+        RETURNING id;
+      `;
+
+      const result = await client.query(query, params);
+      inserted += result.rowCount;
     }
 
     await client.query('COMMIT');
-    res.json({ count: inserted, skipped });
+
+    const skipped = transactions.length - inserted;
+
+    res.json({
+      count: inserted,
+      skipped,
+      totalRows: transactions.length,
+      totalDebit: parsedData.totalDebit,
+      totalCredit: parsedData.totalCredit,
+      closingBalance: parsedData.closingBalance,
+      reconciled: parsedData.reconciled,
+    });
   } catch (err) {
     if (client) {
       try { await client.query('ROLLBACK'); } catch (rbErr) { console.error('Rollback error:', rbErr.message); }
@@ -271,3 +371,5 @@ router.post(['/', '/import', '/api/import'], auth, importLimiter, (req, res, nex
 });
 
 module.exports = router;
+module.exports.parseStatementFile = parseStatementFile;
+module.exports.parseDate = parseDate;

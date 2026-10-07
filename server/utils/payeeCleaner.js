@@ -1,14 +1,14 @@
 /**
  * Smart UPI & Bank Statement Payee Cleaner & Auto-Categorizer
- * Parses raw transaction strings and normalizes merchant names & categories.
+ * Specially designed for Indian Bank Statements (SBI UPI, ATM, Cash, Charges).
  */
 
 const MERCHANT_MAP = [
   // Food & Dining
   { keywords: ['SWIGGY', 'SWIGGY_FOOD', 'BUNDL TECHNOLOGIES'], payee: 'Swiggy', category: 'Food & Dining' },
   { keywords: ['ZOMATO', 'ZOMATO MEDIA', 'FOODPANDA'], payee: 'Zomato', category: 'Food & Dining' },
-  { keywords: ['DOMINOS', 'JUBILANT FOODWORKS'], payee: 'Domino\'s Pizza', category: 'Food & Dining' },
-  { keywords: ['MCDONALDS', 'HARDCASTLE RESTAURANTS'], payee: 'McDonald\'s', category: 'Food & Dining' },
+  { keywords: ['DOMINOS', 'JUBILANT FOODWORKS'], payee: "Domino's Pizza", category: 'Food & Dining' },
+  { keywords: ['MCDONALDS', 'HARDCASTLE RESTAURANTS'], payee: "McDonald's", category: 'Food & Dining' },
   { keywords: ['STARBUCKS', 'TATA STARBUCKS'], payee: 'Starbucks', category: 'Food & Dining' },
   { keywords: ['KFC', 'DEVYANI INTERNATIONAL'], payee: 'KFC', category: 'Food & Dining' },
   { keywords: ['BURGER KING'], payee: 'Burger King', category: 'Food & Dining' },
@@ -37,7 +37,7 @@ const MERCHANT_MAP = [
   { keywords: ['HINDUSTAN PETROLEUM', 'HPCL'], payee: 'HP Fuel Station', category: 'Fuel & Gas' },
   { keywords: ['SHELL'], payee: 'Shell Fuel', category: 'Fuel & Gas' },
 
-  // Bills & Subscriptions & Entertainment
+  // Bills, Subscriptions & Entertainment
   { keywords: ['CRED', 'DREAMPLUG'], payee: 'CRED Bill Pay', category: 'Bills & Utilities' },
   { keywords: ['AIRTEL', 'BHARTI AIRTEL'], payee: 'Airtel Bill', category: 'Bills & Utilities' },
   { keywords: ['JIO', 'RELIANCE JIO'], payee: 'Jio Recharge', category: 'Bills & Utilities' },
@@ -47,65 +47,238 @@ const MERCHANT_MAP = [
   { keywords: ['HOTSTAR', 'DISNEY HOTSTAR', 'NOVI DIGITAL'], payee: 'Disney+ Hotstar', category: 'Entertainment' },
   { keywords: ['BOOKMYSHOW', 'BIGTREE'], payee: 'BookMyShow', category: 'Entertainment' },
   { keywords: ['STEAM', 'VALVE'], payee: 'Steam Games', category: 'Entertainment' },
+  { keywords: ['SAAVN', 'JIOSAAVN'], payee: 'JioSaavn', category: 'Entertainment' },
+
+  // Education / College & Medical
+  { keywords: ['PSG COLLEGE OF TECHNOL', 'PSG TECH'], payee: 'PSG College of Technology', category: 'Education' },
+  { keywords: ['PSG INSTITUTE OF MEDIC', 'PSG HOSPITALS'], payee: 'PSG Institute of Medical Sciences', category: 'Healthcare' },
 
   // Income / Salary
   { keywords: ['SALARY', 'PAYROLL', 'NEFT SALARY'], payee: 'Employer Salary', category: 'Salary', type: 'income' },
 ];
 
 /**
- * Cleans a raw transaction description or UPI string into clean payee & category.
+ * Normalizes description: removes line breaks, multiple spaces, and masks/removes CIF digits.
+ */
+function normalizeDescription(desc) {
+  if (!desc || typeof desc !== 'string') return '';
+  return desc
+    .replace(/\r?\n/g, ' ')
+    .replace(/\s+/g, ' ')
+    .replace(/CIF:\s*\d+/gi, '')
+    .trim();
+}
+
+/**
+ * Computes deterministic deduplication key for transactions.
+ */
+function getDedupKey(date, amount, type, rawDesc) {
+  const norm = normalizeDescription(rawDesc);
+  const upiMatch = norm.match(/UPI\/(?:DR|CR|REF|REVERSAL)\/(\d+)/i);
+  const upiRef = upiMatch ? upiMatch[1] : '';
+  return `${date}|${amount}|${type}|${upiRef || norm}`;
+}
+
+/**
+ * Cleans a raw transaction description into payee, category, type, and payment mode.
  * @param {string} rawDescription 
  * @param {string} [existingCategory]
- * @returns {{ payee: string, category: string, cleanDescription: string, type?: string }}
+ * @param {Array} [customRules=[]]
+ * @param {string} [defaultType]
+ * @returns {{ payee: string, category: string, cleanDescription: string, type: string, mode: string }}
  */
-function cleanPayeeAndCategory(rawDescription, existingCategory) {
-  if (!rawDescription || typeof rawDescription !== 'string') {
-    return { payee: 'Other Merchant', category: existingCategory || 'Other', cleanDescription: '' };
+function cleanPayeeAndCategory(rawDescription, existingCategory, customRules = [], defaultType = null) {
+  const cleanDescription = normalizeDescription(rawDescription);
+  if (!cleanDescription) {
+    return {
+      payee: 'Other Merchant',
+      category: existingCategory || 'Other',
+      cleanDescription: '',
+      type: defaultType || 'expense',
+      mode: 'Other',
+    };
   }
 
-  const upperStr = rawDescription.toUpperCase();
+  const upper = cleanDescription.toUpperCase();
 
-  // 1. Check against Merchant Mapping rules
-  for (const entry of MERCHANT_MAP) {
-    if (entry.keywords.some(kw => upperStr.includes(kw))) {
+  // 1. Custom User Rules (highest priority)
+  if (Array.isArray(customRules) && customRules.length > 0) {
+    for (const rule of customRules) {
+      if (rule.pattern && upper.includes(rule.pattern.toUpperCase())) {
+        return {
+          payee: rule.display_name,
+          category: rule.category || existingCategory || 'Other',
+          cleanDescription,
+          type: defaultType || (upper.includes('/CR/') ? 'income' : 'expense'),
+          mode: upper.includes('UPI') ? 'UPI' : 'Other',
+        };
+      }
+    }
+  }
+
+  // 2. UPI Lite transactions
+  if (upper.includes('UPILITE') || upper.includes('UPILIT E')) {
+    const isDebit = upper.includes('/DR/') || defaultType === 'expense';
+    return {
+      payee: 'UPI Lite',
+      category: existingCategory && existingCategory !== 'Other' ? existingCategory : 'General',
+      cleanDescription,
+      type: defaultType || (isDebit ? 'expense' : 'income'),
+      mode: 'UPI',
+    };
+  }
+
+  // 3. UPI Refund / Reversals
+  if (upper.includes('UPI/REF/') || upper.includes('UPI/REVERSAL/') || upper.includes('/REFUND')) {
+    let merchant = 'Refund';
+    for (const m of MERCHANT_MAP) {
+      if (m.keywords.some(kw => upper.includes(kw))) {
+        merchant = `${m.payee} (Refund)`;
+        break;
+      }
+    }
+    return {
+      payee: merchant,
+      category: 'Refund',
+      cleanDescription,
+      type: 'income',
+      mode: 'UPI',
+    };
+  }
+
+  // 4. Bank Interest
+  if (upper.includes('INTEREST CREDIT') || upper.includes('INTERES T CREDIT')) {
+    return {
+      payee: 'SBI Interest',
+      category: 'Interest',
+      cleanDescription,
+      type: 'income',
+      mode: 'Other',
+    };
+  }
+
+  // 5. Cash Deposit (Self / CDM)
+  if (upper.includes('CSH DEP') || upper.includes('CASH DEPOSIT')) {
+    return {
+      payee: 'Cash Deposit (Self/CDM)',
+      category: 'Cash',
+      cleanDescription,
+      type: 'income',
+      mode: 'Cash',
+    };
+  }
+
+  // 6. ATM Cash Withdrawal
+  if (upper.includes('ATM WDL') || upper.includes('ATM CASH')) {
+    return {
+      payee: 'ATM Cash Withdrawal',
+      category: 'Cash',
+      cleanDescription,
+      type: 'expense',
+      mode: 'Cash',
+    };
+  }
+
+  // 7. Bank Charges & Card AMC
+  if (upper.includes('CDM CHARGE') || upper.includes('CDM CH ARGE') || upper.includes('ATMCARD AMC')) {
+    const isAmc = upper.includes('AMC');
+    return {
+      payee: isAmc ? 'SBI ATM Card AMC' : 'SBI CDM Charges',
+      category: 'Bank Charges',
+      cleanDescription,
+      type: 'expense',
+      mode: 'Other',
+    };
+  }
+
+  // 8. Social Security / Government Insurance Schemes
+  if (upper.includes('PMJJBY') || upper.includes('PMSBY')) {
+    const isPmjjby = upper.includes('PMJJBY');
+    return {
+      payee: isPmjjby ? 'PMJJBY Life Insurance' : 'PMSBY Accident Insurance',
+      category: 'Insurance',
+      cleanDescription,
+      type: 'expense',
+      mode: 'Other',
+    };
+  }
+
+  // 9. POS Card Purchases
+  if (upper.startsWith('POS ATM PURCH') || upper.includes('POS ')) {
+    for (const m of MERCHANT_MAP) {
+      if (m.keywords.some(kw => upper.includes(kw))) {
+        return {
+          payee: m.payee,
+          category: m.category,
+          cleanDescription,
+          type: 'expense',
+          mode: 'Card',
+        };
+      }
+    }
+    return {
+      payee: 'Card Merchant',
+      category: existingCategory || 'General',
+      cleanDescription,
+      type: 'expense',
+      mode: 'Card',
+    };
+  }
+
+  // 10. Known Merchant Catalog
+  for (const m of MERCHANT_MAP) {
+    if (m.keywords.some(kw => upper.includes(kw))) {
       return {
-        payee: entry.payee,
-        category: entry.category,
-        cleanDescription: rawDescription.trim(),
-        type: entry.type,
+        payee: m.payee,
+        category: m.category,
+        cleanDescription,
+        type: m.type || defaultType || 'expense',
+        mode: upper.includes('UPI') ? 'UPI' : 'Other',
       };
     }
   }
 
-  // 2. Extract UPI payee patterns: e.g., UPI/DR/4291048/SWIGGY_FOOD/PAYTM -> SWIGGY_FOOD
-  const upiMatch = rawDescription.match(/UPI\/(?:DR|CR)\/\d+\/([^/]+)\//i);
+  // 11. Standard UPI extraction: UPI/DR/<ref>/<payee>/<bank>/... or UPI/CR/...
+  const upiMatch = cleanDescription.match(/UPI\/(?:DR|CR)\/\d+\/([^\/]+)\//i);
   if (upiMatch && upiMatch[1]) {
-    let extracted = upiMatch[1].replace(/_/g, ' ').trim();
-    // Capitalize words cleanly
-    extracted = extracted.toLowerCase().replace(/\b\w/g, c => c.toUpperCase());
+    let rawPayee = upiMatch[1].replace(/_/g, ' ').trim();
+    // Title Case
+    rawPayee = rawPayee.toLowerCase().replace(/\b\w/g, c => c.toUpperCase());
+    const isDebit = upper.includes('/DR/') || defaultType === 'expense';
     return {
-      payee: extracted,
-      category: existingCategory && existingCategory !== 'Other' ? existingCategory : 'General Expenses',
-      cleanDescription: rawDescription.trim(),
+      payee: rawPayee,
+      category: existingCategory && existingCategory !== 'Other' ? existingCategory : 'General',
+      cleanDescription,
+      type: defaultType || (isDebit ? 'expense' : 'income'),
+      mode: 'UPI',
     };
   }
 
-  // 3. Fallback cleanup: remove POS/ACH prefixes and extraneous spaces
-  let cleaned = rawDescription
-    .replace(/^(POS|ACH|NEFT|IMPS|UPI)\s*/i, '')
-    .replace(/\/\d+.*$/, '')
-    .trim();
+  // 12. Fallback for UPI without standard pattern
+  if (upper.includes('UPI/')) {
+    const isDebit = upper.includes('/DR/') || defaultType === 'expense';
+    return {
+      payee: 'UPI Transfer',
+      category: existingCategory || 'General',
+      cleanDescription,
+      type: defaultType || (isDebit ? 'expense' : 'income'),
+      mode: 'UPI',
+    };
+  }
 
-  cleaned = cleaned ? cleaned.toLowerCase().replace(/\b\w/g, c => c.toUpperCase()) : 'Other Merchant';
-
+  // 13. General Fallback
   return {
-    payee: cleaned,
+    payee: 'Bank Transaction',
     category: existingCategory || 'Other',
-    cleanDescription: rawDescription.trim(),
+    cleanDescription,
+    type: defaultType || 'expense',
+    mode: 'Other',
   };
 }
 
 module.exports = {
   cleanPayeeAndCategory,
+  normalizeDescription,
+  getDedupKey,
   MERCHANT_MAP,
 };
