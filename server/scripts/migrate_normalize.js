@@ -104,6 +104,15 @@ async function runMigration() {
       const XLSX = require('xlsx');
       const wb = XLSX.readFile(refFile);
       const sheet = wb.Sheets[wb.SheetNames[0]];
+      let maxRow = -1;
+      for (const key of Object.keys(sheet)) {
+        if (key.charCodeAt(0) === 33) continue;
+        const cell = XLSX.utils.decode_cell(key);
+        if (cell.r > maxRow) maxRow = cell.r;
+      }
+      if (maxRow >= 0) {
+        sheet['!ref'] = XLSX.utils.encode_range({ s: { r: 0, c: 0 }, e: { r: maxRow, c: 5 } });
+      }
       const rawRows = XLSX.utils.sheet_to_json(sheet, { header: 1, raw: false });
 
       for (let i = 1; i < rawRows.length; i++) {

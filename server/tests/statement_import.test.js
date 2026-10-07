@@ -84,4 +84,41 @@ describe('Step 2: Statement Import & Reconciliation Tests', () => {
       expect(tx.payee).not.toMatch(/^UPI\//);
     }
   });
+
+  test('Condition 7: Recovers from truncated !ref (e.g. A1:F1517), parsing all 1,691 rows past 13/07/2026 to closing balance 345.93', async () => {
+    const JSZip = require('jszip');
+    // Load workbook zip and deliberately tamper with <dimension ref="..." /> in XML to simulate the bug
+    const zip = await JSZip.loadAsync(fixtureBuffer);
+    const sheetXml = await zip.file('xl/worksheets/sheet1.xml').async('text');
+    const tamperedXml = sheetXml.replace(/<dimension ref="[^"]*"/, '<dimension ref="A1:F1517"');
+    zip.file('xl/worksheets/sheet1.xml', tamperedXml);
+    const tamperedBuffer = await zip.generateAsync({ type: 'nodebuffer' });
+
+    const recoveredResult = await parseStatementFile(tamperedBuffer);
+    expect(recoveredResult.origRef).toBe('A1:F1517');
+    expect(recoveredResult.totalRows).toBe(1691);
+    expect(recoveredResult.transactions).toHaveLength(1691);
+
+    // Verify line 1518 (15/07/2026 VENDOLITE 40.00) is successfully read
+    const vendoliteTx = recoveredResult.transactions.find(t => t.line === 1518);
+    expect(vendoliteTx).toBeDefined();
+    expect(vendoliteTx.date).toBe('2026-07-15');
+    expect(vendoliteTx.amount).toBe(40);
+    expect(vendoliteTx.description).toMatch(/VENDOLIT/i);
+
+    // Verify final closing balance from the last transaction
+    expect(recoveredResult.closingBalance).toBe(345.93);
+    expect(recoveredResult.reconciled).toBe(true);
+  });
+
+  test('Condition 8: Reconciles against expectedRows and fails loudly if parsed rows != expected rows', async () => {
+    // Correct expectedRows should succeed
+    const okResult = await parseStatementFile(fixtureBuffer, null, [], { expectedRows: 1691 });
+    expect(okResult.totalRows).toBe(1691);
+
+    // Mismatched expectedRows should throw loudly with clear error message
+    await expect(
+      parseStatementFile(fixtureBuffer, null, [], { expectedRows: 1516 })
+    ).rejects.toThrow(/Statement reconciliation failed: parsed 1691 transaction rows, but expected 1516 rows/);
+  });
 });
