@@ -2,16 +2,7 @@ import React from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { useTheme } from '../context/ThemeContext';
 
-const CATEGORY_COLORS = {
-  Food: '#2A5C8A',
-  Transport: '#4A7BA8',
-  Shopping: '#8C6D46',
-  Entertainment: '#6B4F7D',
-  Health: '#B5473B',
-  Salary: '#2563EB',
-  Freelance: '#1A3F63',
-  Other: '#6E6E6B',
-};
+import { CATEGORY_COLORS } from '../constants/categories';
 
 const CustomTooltip = ({ active, payload, label }) => {
   if (active && payload && payload.length) {

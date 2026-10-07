@@ -117,8 +117,8 @@ const initSchema = async (client) => {
         date,
         amount,
         type,
-        (LOWER(TRIM(COALESCE(description, '')))),
-        (LOWER(TRIM(COALESCE(payee, ''))))
+        (REGEXP_REPLACE(LOWER(TRIM(COALESCE(description, ''))), '\s+', ' ', 'g')),
+        (REGEXP_REPLACE(LOWER(TRIM(COALESCE(payee, ''))), '\s+', ' ', 'g'))
       );
     `);
 

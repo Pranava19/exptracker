@@ -16,7 +16,7 @@ import {
   Loader2
 } from 'lucide-react';
 
-const CATEGORIES = ['Food', 'Transport', 'Shopping', 'Entertainment', 'Health', 'Salary', 'Freelance', 'Other'];
+import { CATEGORIES } from '../constants/categories';
 const MODES = ['UPI', 'Card', 'Cash', 'Net Banking', 'Other'];
 
 const inputCls = [

@@ -332,7 +332,7 @@ router.post(['/', '/import', '/api/import'], auth, importLimiter, (req, res, nex
       const query = `
         INSERT INTO transactions (user_id, date, amount, description, payee, type, category, mode)
         VALUES ${valueClauses.join(', ')}
-        ON CONFLICT (user_id, date, amount, type, (LOWER(TRIM(COALESCE(description, '')))), (LOWER(TRIM(COALESCE(payee, '')))))
+        ON CONFLICT (user_id, date, amount, type, (REGEXP_REPLACE(LOWER(TRIM(COALESCE(description, ''))), '\s+', ' ', 'g')), (REGEXP_REPLACE(LOWER(TRIM(COALESCE(payee, ''))), '\s+', ' ', 'g')))
         DO NOTHING
         RETURNING id;
       `;

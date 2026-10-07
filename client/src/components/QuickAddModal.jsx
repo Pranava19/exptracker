@@ -3,7 +3,7 @@ import axios from '../api/axios';
 import { detectMerchant } from '../utils/merchantDetector';
 import { X, Sparkles, Loader2, Plus, ArrowDownLeft, ArrowUpRight } from 'lucide-react';
 
-const CATEGORIES = ['Food', 'Transport', 'Shopping', 'Entertainment', 'Health', 'Salary', 'Freelance', 'Other'];
+import { CATEGORIES } from '../constants/categories';
 const MODES = ['UPI', 'Card', 'Cash', 'Net Banking', 'Other'];
 
 const QuickAddModal = ({ isOpen, onClose, onAdded }) => {
