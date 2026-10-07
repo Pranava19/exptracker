@@ -10,7 +10,6 @@ const PAGE_TITLES = {
   '/dashboard': 'Dashboard',
   '/transactions': 'Transactions',
   '/analysis': 'Analysis',
-  '/subscriptions': 'Subscriptions',
   '/import': 'Import statement',
   '/profile': 'Profile',
   '/privacy': 'Privacy Policy',

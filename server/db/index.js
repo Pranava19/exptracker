@@ -48,8 +48,6 @@ const initSchema = async (client) => {
           password VARCHAR(255) NOT NULL,
           reset_token VARCHAR(255),
           reset_token_expires TIMESTAMP WITH TIME ZONE,
-          starting_balance NUMERIC(12, 2) DEFAULT NULL,
-          starting_balance_date TIMESTAMP WITH TIME ZONE DEFAULT NULL,
           created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
       );
 
@@ -63,19 +61,6 @@ const initSchema = async (client) => {
           payee VARCHAR(255),
           date DATE NOT NULL,
           mode VARCHAR(50) DEFAULT 'Other',
-          created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
-      );
-
-      CREATE TABLE IF NOT EXISTS subscriptions (
-          id SERIAL PRIMARY KEY,
-          user_id INT REFERENCES users(id) ON DELETE CASCADE,
-          name VARCHAR(255) NOT NULL,
-          amount NUMERIC(12, 2) NOT NULL,
-          frequency VARCHAR(50) DEFAULT 'monthly',
-          due_date INT DEFAULT 1,
-          category VARCHAR(100) DEFAULT 'Bills & Utilities',
-          payment_mode VARCHAR(50) DEFAULT 'UPI',
-          status VARCHAR(50) DEFAULT 'active',
           created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
       );
 
@@ -93,8 +78,6 @@ const initSchema = async (client) => {
     await client.query(`
       ALTER TABLE users ADD COLUMN IF NOT EXISTS reset_token VARCHAR(255);
       ALTER TABLE users ADD COLUMN IF NOT EXISTS reset_token_expires TIMESTAMP WITH TIME ZONE;
-      ALTER TABLE users ADD COLUMN IF NOT EXISTS starting_balance NUMERIC(12, 2) DEFAULT NULL;
-      ALTER TABLE users ADD COLUMN IF NOT EXISTS starting_balance_date TIMESTAMP WITH TIME ZONE DEFAULT NULL;
     `);
 
     // 3. Create indexes & unique dedup constraint
@@ -102,7 +85,6 @@ const initSchema = async (client) => {
       CREATE INDEX IF NOT EXISTS idx_transactions_user_id ON transactions(user_id);
       CREATE INDEX IF NOT EXISTS idx_transactions_date ON transactions(date);
       CREATE INDEX IF NOT EXISTS idx_transactions_category ON transactions(category);
-      CREATE INDEX IF NOT EXISTS idx_subscriptions_user_id ON subscriptions(user_id);
       CREATE INDEX IF NOT EXISTS idx_users_reset_token ON users(reset_token);
       CREATE INDEX IF NOT EXISTS idx_payee_rules_user_id ON payee_rules(user_id);
 
@@ -124,24 +106,6 @@ const initSchema = async (client) => {
       DROP POLICY IF EXISTS transactions_user_isolation ON transactions;
 
       CREATE POLICY transactions_user_isolation ON transactions
-      FOR ALL
-      TO PUBLIC
-      USING (
-        user_id = (
-          CASE 
-            WHEN current_setting('app.user_id', true) ~ '^[0-9]+$' 
-            THEN current_setting('app.user_id', true)::int 
-            ELSE NULL 
-          END
-        )
-      );
-
-      ALTER TABLE subscriptions ENABLE ROW LEVEL SECURITY;
-      ALTER TABLE subscriptions FORCE ROW LEVEL SECURITY;
-
-      DROP POLICY IF EXISTS subscriptions_user_isolation ON subscriptions;
-
-      CREATE POLICY subscriptions_user_isolation ON subscriptions
       FOR ALL
       TO PUBLIC
       USING (

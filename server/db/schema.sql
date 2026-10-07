@@ -7,8 +7,6 @@ CREATE TABLE IF NOT EXISTS users (
     password VARCHAR(255) NOT NULL,
     reset_token VARCHAR(255),
     reset_token_expires TIMESTAMP WITH TIME ZONE,
-    starting_balance NUMERIC(12, 2) DEFAULT NULL,
-    starting_balance_date TIMESTAMP WITH TIME ZONE DEFAULT NULL,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -39,10 +37,6 @@ CREATE UNIQUE INDEX IF NOT EXISTS idx_transactions_dedup_hash ON transactions (
     (REGEXP_REPLACE(LOWER(TRIM(COALESCE(description, ''))), '\s+', ' ', 'g')),
     (REGEXP_REPLACE(LOWER(TRIM(COALESCE(payee, ''))), '\s+', ' ', 'g'))
 );
-
--- Baseline Balance Adjustment Migration
-ALTER TABLE users ADD COLUMN IF NOT EXISTS starting_balance NUMERIC(12, 2) DEFAULT NULL;
-ALTER TABLE users ADD COLUMN IF NOT EXISTS starting_balance_date TIMESTAMP WITH TIME ZONE DEFAULT NULL;
 
 -- Non-owner role for application isolation
 DO $$

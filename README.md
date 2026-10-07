@@ -56,8 +56,6 @@ CREATE TABLE IF NOT EXISTS users (
     password VARCHAR(255) NOT NULL,
     reset_token VARCHAR(255),
     reset_token_expires TIMESTAMP WITH TIME ZONE,
-    starting_balance NUMERIC(12, 2) DEFAULT NULL,
-    starting_balance_date TIMESTAMP WITH TIME ZONE DEFAULT NULL,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 

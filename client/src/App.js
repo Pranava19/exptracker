@@ -8,7 +8,6 @@ const Login = lazyWithRetry(() => import('./pages/Login'), 'Login');
 const Register = lazyWithRetry(() => import('./pages/Register'), 'Register');
 const DashboardHome = lazyWithRetry(() => import('./pages/DashboardHome'), 'DashboardHome');
 const Transactions = lazyWithRetry(() => import('./pages/Transactions'), 'Transactions');
-const Subscriptions = lazyWithRetry(() => import('./pages/Subscriptions'), 'Subscriptions');
 const Import = lazyWithRetry(() => import('./pages/Import'), 'Import');
 const Profile = lazyWithRetry(() => import('./pages/Profile'), 'Profile');
 const Analysis = lazyWithRetry(() => import('./pages/Analysis'), 'Analysis');
@@ -52,7 +51,6 @@ function App() {
               <Route path="/terms" element={<Terms />} />
               <Route path="/dashboard" element={<PrivateRoute><DashboardHome /></PrivateRoute>} />
               <Route path="/transactions" element={<PrivateRoute><Transactions /></PrivateRoute>} />
-              <Route path="/subscriptions" element={<PrivateRoute><Subscriptions /></PrivateRoute>} />
               <Route path="/analysis" element={<PrivateRoute><Analysis /></PrivateRoute>} />
               <Route path="/import" element={<PrivateRoute><Import /></PrivateRoute>} />
               <Route path="/profile" element={<PrivateRoute><Profile /></PrivateRoute>} />

@@ -68,10 +68,8 @@ const Profile = () => {
         }
 
         const txCount = json.transactions?.length || 0;
-        const subCount = json.subscriptions?.length || 0;
-        const hasBal = json.profile?.starting_balance !== undefined && json.profile?.starting_balance !== null;
 
-        const confirmMsg = `Restore data from backup?\n\n• ${txCount} Transactions\n• ${subCount} Subscriptions\n• ${hasBal ? 'Starting balance: ₹' + json.profile.starting_balance : 'No balance changes'}\n\nExisting non-duplicate records will be preserved.`;
+        const confirmMsg = `Restore data from backup?\n\n• ${txCount} Transactions\n\nExisting non-duplicate records will be preserved.`;
 
         if (!window.confirm(confirmMsg)) {
           if (fileInputRef.current) fileInputRef.current.value = '';
@@ -81,7 +79,7 @@ const Profile = () => {
         setRestoring(true);
         const res = await axios.post('/profile/restore', json);
         showToast(
-          `Restored ${res.data.restoredTransactions} transactions & ${res.data.restoredSubscriptions} subscriptions`
+          `Restored ${res.data.restoredTransactions} transactions`
         );
       } catch (err) {
         console.error(err);
@@ -162,7 +160,7 @@ const Profile = () => {
           </div>
 
           <p className="text-xs text-ink-700 dark:text-ink-300 opacity-85 leading-relaxed">
-            Download an offline JSON snapshot of all your transactions, baseline balances, and subscriptions, or restore from a previous backup file.
+            Download an offline JSON snapshot of all your transactions, or restore from a previous backup file.
           </p>
 
           <div className="space-y-2.5 pt-1">

@@ -6,7 +6,6 @@ import {
   LayoutDashboard,
   ArrowLeftRight,
   BarChart3,
-  CalendarClock,
   FileInput,
   User,
   Sun,
@@ -26,7 +25,6 @@ const NAV_SECTIONS = [
   {
     label: 'Manage',
     items: [
-      { to: '/subscriptions', label: 'Subscriptions', icon: CalendarClock },
       { to: '/import', label: 'Import', icon: FileInput },
     ],
   },
@@ -41,7 +39,6 @@ const NAV_SECTIONS = [
 const MOBILE_NAV_ITEMS = [
   { to: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { to: '/transactions', label: 'History', icon: ArrowLeftRight },
-  { to: '/subscriptions', label: 'Recurring', icon: CalendarClock },
   { to: '/analysis', label: 'Insights', icon: BarChart3 },
   { to: '/import', label: 'Import', icon: FileInput },
 ];
