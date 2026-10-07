@@ -2,6 +2,8 @@ const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
 const cookieParser = require('cookie-parser');
+const path = require('path');
+require('dotenv').config({ path: path.join(__dirname, '.env') });
 require('dotenv').config();
 
 const pool = require('./db/index');
@@ -35,14 +37,12 @@ app.use(helmet());
 app.use(cookieParser());
 app.use(cors({
   origin: (origin, callback) => {
-    // Allow server-to-server or no-origin requests, or dynamically match client origin
     if (!origin) return callback(null, true);
-    const allowed = process.env.CLIENT_URL;
-    if (allowed && allowed !== '*' && allowed !== origin) {
-      // If specific CLIENT_URL matches or multiple origins are permitted
-      return callback(null, origin);
+    const allowed = process.env.CLIENT_URL || 'http://localhost:3000';
+    if (origin === allowed) {
+      return callback(null, true);
     }
-    return callback(null, origin);
+    return callback(new Error('Not allowed by CORS'));
   },
   credentials: true,
 }));

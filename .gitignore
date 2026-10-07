@@ -27,3 +27,9 @@ Thumbs.db
 # Internal Audit Notes
 *AUDIT_REPORT*
 
+# Statement files & fixtures
+*.xlsx
+*.xls
+*.csv
+EXPTRACKER_COMPLETE_CODEBASE.txt
+server/tests/fixtures/

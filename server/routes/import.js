@@ -66,12 +66,12 @@ function parseDate(raw) {
     if (!isNaN(d)) return d.toISOString().slice(0, 10);
   }
 
-  // Handle Excel Serial Number (e.g. 45231)
+  // Handle Excel Serial Number (e.g. 45231) using UTC epoch
   const num = Number(s);
   if (!isNaN(num) && num > 30000 && num < 60000) {
-    const excelEpoch = new Date(1899, 11, 30);
-    const d = new Date(excelEpoch.getTime() + num * 86400000);
-    if (!isNaN(d)) return d.toISOString().slice(0, 10);
+    const excelEpochUtc = Date.UTC(1899, 11, 30);
+    const d = new Date(excelEpochUtc + Math.round(num * 86400000));
+    if (!isNaN(d.getTime())) return d.toISOString().slice(0, 10);
   }
 
   return null;

@@ -111,6 +111,9 @@ describe('Manual Current Balance Adjustment Tests', () => {
             })
             .mockResolvedValueOnce({
               rows: [{ net_since_baseline: '5000.00' }],
+            })
+            .mockResolvedValueOnce({
+              rows: [{ month_income: '12000.00', month_expense: '4000.00' }],
             }),
         };
         return cb(client);
@@ -123,6 +126,9 @@ describe('Manual Current Balance Adjustment Tests', () => {
       expect(res.statusCode).toBe(200);
       expect(res.body.starting_balance).toBe(20000);
       expect(res.body.balance).toBe(25000); // 20000 + 5000
+      expect(res.body.this_month_income).toBe(12000);
+      expect(res.body.this_month_expense).toBe(4000);
+      expect(res.body.this_month_net).toBe(8000);
     });
 
     it('falls back to all-time balance when starting_balance is not set', async () => {
@@ -134,6 +140,9 @@ describe('Manual Current Balance Adjustment Tests', () => {
             })
             .mockResolvedValueOnce({
               rows: [{ total_income: '50000.00', total_expense: '30000.00', all_time_balance: '20000.00' }],
+            })
+            .mockResolvedValueOnce({
+              rows: [{ month_income: '15000.00', month_expense: '5000.00' }],
             }),
         };
         return cb(client);
@@ -146,6 +155,9 @@ describe('Manual Current Balance Adjustment Tests', () => {
       expect(res.statusCode).toBe(200);
       expect(res.body.starting_balance).toBeNull();
       expect(res.body.balance).toBe(20000);
+      expect(res.body.this_month_income).toBe(15000);
+      expect(res.body.this_month_expense).toBe(5000);
+      expect(res.body.this_month_net).toBe(10000);
     });
   });
 });

@@ -1,5 +1,11 @@
-const { Pool } = require('pg');
+const pg = require('pg');
+const { Pool } = pg;
+const path = require('path');
+require('dotenv').config({ path: path.join(__dirname, '../.env') });
 require('dotenv').config();
+
+// Ensure PostgreSQL DATE columns (OID 1082) are returned as plain YYYY-MM-DD strings
+pg.types.setTypeParser(1082, (v) => v);
 
 function getSSLConfig(dbUrl = process.env.DATABASE_URL || '', nodeEnv = process.env.NODE_ENV, customCa = process.env.NEON_CA_CERT) {
   const isNeon = dbUrl.includes('neon.tech') || dbUrl.includes('neon') || dbUrl.includes('sslmode=require') || dbUrl.includes('sslmode=verify-full');
@@ -29,14 +35,6 @@ pool.getSSLConfig = getSSLConfig;
 
 pool.on('error', (err) => {
   console.error('Unexpected error on idle PostgreSQL client:', err.message);
-});
-
-process.on('uncaughtException', (err) => {
-  console.error('Uncaught exception (kept process alive):', err.message);
-});
-
-process.on('unhandledRejection', (reason) => {
-  console.error('Unhandled rejection (kept process alive):', reason);
 });
 
 const initSchema = async (client) => {
@@ -95,17 +93,7 @@ const initSchema = async (client) => {
       ALTER TABLE users ADD COLUMN IF NOT EXISTS starting_balance_date TIMESTAMP WITH TIME ZONE DEFAULT NULL;
     `);
 
-    // 3. Deduplicate pre-existing duplicate rows before applying unique constraint
-    await client.query(`
-      DELETE FROM transactions
-      WHERE id NOT IN (
-        SELECT MIN(id)
-        FROM transactions
-        GROUP BY user_id, date, amount, type, LOWER(TRIM(COALESCE(description, ''))), LOWER(TRIM(COALESCE(payee, '')))
-      );
-    `);
-
-    // 4. Create indexes & unique dedup constraint
+    // 3. Create indexes & unique dedup constraint
     await client.query(`
       CREATE INDEX IF NOT EXISTS idx_transactions_user_id ON transactions(user_id);
       CREATE INDEX IF NOT EXISTS idx_transactions_date ON transactions(date);
@@ -115,7 +103,12 @@ const initSchema = async (client) => {
       CREATE INDEX IF NOT EXISTS idx_users_reset_token ON users(reset_token);
 
       CREATE UNIQUE INDEX IF NOT EXISTS idx_transactions_dedup_hash ON transactions (
-        md5(user_id::text || '|' || date::text || '|' || amount::text || '|' || type || '|' || LOWER(TRIM(COALESCE(description, ''))) || '|' || LOWER(TRIM(COALESCE(payee, ''))))
+        user_id,
+        date,
+        amount,
+        type,
+        (LOWER(TRIM(COALESCE(description, '')))),
+        (LOWER(TRIM(COALESCE(payee, ''))))
       );
     `);
 
@@ -229,7 +222,10 @@ if (process.env.NODE_ENV !== 'test') {
         client.release();
       }
     })
-    .catch((err) => console.error('DB connection/initialization error:', err.message));
+    .catch((err) => {
+      console.error('FATAL DB connection/initialization error:', err.message);
+      process.exit(1);
+    });
 }
 
 module.exports = pool;

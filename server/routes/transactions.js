@@ -10,11 +10,13 @@ const validateTransaction = [
   body('type').isIn(['income', 'expense']).withMessage('Type must be income or expense'),
   body('category').trim().isLength({ min: 1, max: 100 }).withMessage('Category is required'),
   body('date').isISO8601().withMessage('Valid date is required'),
+  body('payee').optional({ nullable: true }).trim(),
 ];
 
 const validatePatch = [
   body('category').optional().trim().isLength({ min: 1, max: 100 }).withMessage('Category must be between 1 and 100 characters'),
   body('mode').optional().isIn(['UPI', 'Card', 'Cash', 'Net Banking', 'Other']).withMessage('Invalid payment mode'),
+  body('payee').optional({ nullable: true }).trim(),
 ];
 
 const { cleanPayeeAndCategory } = require('../utils/payeeCleaner');
@@ -78,7 +80,7 @@ router.get('/summary', auth, transactionLimiter, async (req, res) => {
         [user_id]
       );
 
-      const txRow = txRes.rows[0] || {};
+      const txRow = txRes?.rows?.[0] || {};
       const total_income = parseFloat(txRow.total_income || 0);
       const total_expense = parseFloat(txRow.total_expense || 0);
       let balance = parseFloat(txRow.all_time_balance || 0);
@@ -92,14 +94,37 @@ router.get('/summary', auth, transactionLimiter, async (req, res) => {
              AND date >= $2::date`,
           [user_id, user.starting_balance_date || new Date(0)]
         );
-        const netSinceBaseline = parseFloat(baselineNetRes.rows[0]?.net_since_baseline || 0);
+        const netSinceBaseline = parseFloat(baselineNetRes?.rows?.[0]?.net_since_baseline || 0);
         balance = parseFloat(user.starting_balance) + netSinceBaseline;
       }
+
+      // Current month calculations
+      const now = new Date();
+      const currentYear = now.getFullYear();
+      const currentMonth = now.getMonth() + 1;
+
+      const monthRes = await client.query(
+        `SELECT
+          COALESCE(SUM(CASE WHEN type = 'income' THEN amount ELSE 0 END), 0) AS month_income,
+          COALESCE(SUM(CASE WHEN type = 'expense' THEN amount ELSE 0 END), 0) AS month_expense
+         FROM transactions
+         WHERE user_id = $1
+           AND EXTRACT(YEAR FROM date) = $2
+           AND EXTRACT(MONTH FROM date) = $3`,
+        [user_id, currentYear, currentMonth]
+      );
+      const monthRow = monthRes?.rows?.[0] || {};
+      const this_month_income = parseFloat(monthRow.month_income || 0);
+      const this_month_expense = parseFloat(monthRow.month_expense || 0);
+      const this_month_net = this_month_income - this_month_expense;
 
       return {
         total_income,
         total_expense,
         balance,
+        this_month_income,
+        this_month_expense,
+        this_month_net,
         starting_balance: user.starting_balance !== null && user.starting_balance !== undefined ? parseFloat(user.starting_balance) : null,
         starting_balance_date: user.starting_balance_date || null,
       };
@@ -206,7 +231,7 @@ router.put('/:id', auth, transactionLimiter, validateTransaction, async (req, re
   }
 
   const { id } = req.params;
-  const { type, category, amount, description, date, mode } = req.body;
+  const { type, category, amount, description, date, mode, payee } = req.body;
   const user_id = req.user.id;
   try {
     const updated = await pool.withUserTransaction(user_id, async (client) => {
@@ -214,10 +239,11 @@ router.put('/:id', auth, transactionLimiter, validateTransaction, async (req, re
         'SELECT * FROM transactions WHERE id = $1 AND user_id = $2', [id, user_id]
       );
       if (check.rows.length === 0) return null;
+      const finalPayee = payee !== undefined ? payee : check.rows[0].payee;
       const result = await client.query(
-        `UPDATE transactions SET type=$1, category=$2, amount=$3, description=$4, date=$5, mode=$6
-         WHERE id=$7 AND user_id=$8 RETURNING *`,
-        [type, category, amount, description, date, mode || 'Other', id, user_id]
+        `UPDATE transactions SET type=$1, category=$2, amount=$3, description=$4, date=$5, mode=$6, payee=$7
+         WHERE id=$8 AND user_id=$9 RETURNING *`,
+        [type, category, amount, description, date, mode || 'Other', finalPayee, id, user_id]
       );
       return result.rows[0];
     });
@@ -237,7 +263,7 @@ router.patch('/:id', auth, transactionLimiter, validatePatch, async (req, res) =
   }
 
   const { id } = req.params;
-  const { category, mode } = req.body;
+  const { category, mode, payee } = req.body;
   const user_id = req.user.id;
   try {
     const updated = await pool.withUserTransaction(user_id, async (client) => {
@@ -246,8 +272,14 @@ router.patch('/:id', auth, transactionLimiter, validatePatch, async (req, res) =
       );
       if (check.rows.length === 0) return null;
       const result = await client.query(
-        `UPDATE transactions SET category=$1, mode=$2 WHERE id=$3 AND user_id=$4 RETURNING *`,
-        [category !== undefined ? category : check.rows[0].category, mode !== undefined ? mode : check.rows[0].mode, id, user_id]
+        `UPDATE transactions SET category=$1, mode=$2, payee=$3 WHERE id=$4 AND user_id=$5 RETURNING *`,
+        [
+          category !== undefined ? category : check.rows[0].category,
+          mode !== undefined ? mode : check.rows[0].mode,
+          payee !== undefined ? payee : check.rows[0].payee,
+          id,
+          user_id,
+        ]
       );
       return result.rows[0];
     });
@@ -283,6 +315,9 @@ router.delete('/:id', auth, transactionLimiter, async (req, res) => {
 
 router.post('/import', auth, transactionLimiter, async (req, res) => {
   const { transactions } = req.body;
+  if (!Array.isArray(transactions) || transactions.length === 0) {
+    return res.status(400).json({ message: 'No transactions provided' });
+  }
   const user_id = req.user.id;
   let client;
   try {
