@@ -12,7 +12,7 @@ This directory contains the Node.js / Express backend API for **ExpTracker**.
 - **PostgreSQL (`pg`)**: Relational database connection pool.
 - **JWT & BcryptJS**: Authentication & password hashing.
 - **Multer**: File upload handling.
-- **PDF.js (`pdfjs-dist`) & XLSX / ExcelJS**: Bank statement text & data extraction.
+- **XLSX**: Bank statement Excel data extraction.
 - **OfficeCrypto-Tool**: Decryption of password-protected Excel statements.
 
 ---

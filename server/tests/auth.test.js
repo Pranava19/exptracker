@@ -9,7 +9,6 @@ jest.mock('../db/index', () => ({
 
 // Mock sendEmail utility
 jest.mock('../utils/sendEmail', () => ({
-  sendVerificationEmail: jest.fn().mockResolvedValue({ id: 'mock_msg_123' }),
   sendPasswordResetEmail: jest.fn().mockResolvedValue({ id: 'mock_msg_456' }),
 }));
 

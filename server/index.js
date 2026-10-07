@@ -14,7 +14,7 @@ const importRoute = require('./routes/import');
 const analysisRoutes = require('./routes/analysis');
 const swaggerUi = require('swagger-ui-express');
 const swaggerSpec = require('./config/swagger');
-const { authLimiter, resendLimiter } = require('./middleware/rateLimiter');
+const { authLimiter, passwordResetLimiter } = require('./middleware/rateLimiter');
 
 const app = express();
 
@@ -50,8 +50,7 @@ app.use(express.json());
 
 app.use(['/api/auth/login', '/auth/login'], authLimiter);
 app.use(['/api/auth/register', '/auth/register'], authLimiter);
-app.use(['/api/auth/resend-verification', '/auth/resend-verification'], resendLimiter);
-app.use(['/api/auth/forgot-password', '/auth/forgot-password'], resendLimiter);
+app.use(['/api/auth/forgot-password', '/auth/forgot-password'], passwordResetLimiter);
 
 app.get(['/api/health', '/health'], async (req, res) => {
   try {

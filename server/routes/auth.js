@@ -225,7 +225,7 @@ router.post('/refresh', async (req, res) => {
     const decoded = jwt.verify(refreshToken, refreshSecret);
 
     const result = await pool.query(
-      'SELECT id, name, email, is_verified FROM users WHERE id = $1',
+      'SELECT id, name, email FROM users WHERE id = $1',
       [decoded.id]
     );
 

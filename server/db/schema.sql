@@ -5,9 +5,6 @@ CREATE TABLE IF NOT EXISTS users (
     name VARCHAR(255) NOT NULL,
     email VARCHAR(255) UNIQUE NOT NULL,
     password VARCHAR(255) NOT NULL,
-    is_verified BOOLEAN DEFAULT false,
-    verification_token VARCHAR(255),
-    verification_token_expires TIMESTAMP WITH TIME ZONE,
     reset_token VARCHAR(255),
     reset_token_expires TIMESTAMP WITH TIME ZONE,
     starting_balance NUMERIC(12, 2) DEFAULT NULL,
@@ -31,20 +28,16 @@ CREATE TABLE IF NOT EXISTS transactions (
 CREATE INDEX IF NOT EXISTS idx_transactions_user_id ON transactions(user_id);
 CREATE INDEX IF NOT EXISTS idx_transactions_date ON transactions(date);
 CREATE INDEX IF NOT EXISTS idx_transactions_category ON transactions(category);
-CREATE INDEX IF NOT EXISTS idx_users_verification_token ON users(verification_token);
 CREATE INDEX IF NOT EXISTS idx_users_reset_token ON users(reset_token);
-
--- Deduplicate pre-existing transactions before unique index
-DELETE FROM transactions
-WHERE id NOT IN (
-  SELECT MIN(id)
-  FROM transactions
-  GROUP BY user_id, date, amount, type, LOWER(TRIM(COALESCE(description, ''))), LOWER(TRIM(COALESCE(payee, '')))
-);
 
 -- Unique index to prevent duplicate transaction insertions
 CREATE UNIQUE INDEX IF NOT EXISTS idx_transactions_dedup_hash ON transactions (
-  md5(user_id::text || '|' || date::text || '|' || amount::text || '|' || type || '|' || LOWER(TRIM(COALESCE(description, ''))) || '|' || LOWER(TRIM(COALESCE(payee, ''))))
+    user_id,
+    date,
+    amount,
+    type,
+    (REGEXP_REPLACE(LOWER(TRIM(COALESCE(description, ''))), '\s+', ' ', 'g')),
+    (REGEXP_REPLACE(LOWER(TRIM(COALESCE(payee, ''))), '\s+', ' ', 'g'))
 );
 
 -- Baseline Balance Adjustment Migration

@@ -46,9 +46,6 @@ const initSchema = async (client) => {
           name VARCHAR(255) NOT NULL,
           email VARCHAR(255) UNIQUE NOT NULL,
           password VARCHAR(255) NOT NULL,
-          is_verified BOOLEAN DEFAULT false,
-          verification_token VARCHAR(255),
-          verification_token_expires TIMESTAMP WITH TIME ZONE,
           reset_token VARCHAR(255),
           reset_token_expires TIMESTAMP WITH TIME ZONE,
           starting_balance NUMERIC(12, 2) DEFAULT NULL,
@@ -94,8 +91,6 @@ const initSchema = async (client) => {
 
     // 2. Ensure schema columns exist on existing databases
     await client.query(`
-      ALTER TABLE users ADD COLUMN IF NOT EXISTS verification_token VARCHAR(255);
-      ALTER TABLE users ADD COLUMN IF NOT EXISTS verification_token_expires TIMESTAMP WITH TIME ZONE;
       ALTER TABLE users ADD COLUMN IF NOT EXISTS reset_token VARCHAR(255);
       ALTER TABLE users ADD COLUMN IF NOT EXISTS reset_token_expires TIMESTAMP WITH TIME ZONE;
       ALTER TABLE users ADD COLUMN IF NOT EXISTS starting_balance NUMERIC(12, 2) DEFAULT NULL;
@@ -108,7 +103,6 @@ const initSchema = async (client) => {
       CREATE INDEX IF NOT EXISTS idx_transactions_date ON transactions(date);
       CREATE INDEX IF NOT EXISTS idx_transactions_category ON transactions(category);
       CREATE INDEX IF NOT EXISTS idx_subscriptions_user_id ON subscriptions(user_id);
-      CREATE INDEX IF NOT EXISTS idx_users_verification_token ON users(verification_token);
       CREATE INDEX IF NOT EXISTS idx_users_reset_token ON users(reset_token);
       CREATE INDEX IF NOT EXISTS idx_payee_rules_user_id ON payee_rules(user_id);
 

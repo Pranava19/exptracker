@@ -16,12 +16,11 @@ const upload = multer({
       'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
       'application/vnd.ms-excel',
       'application/octet-stream',
-      'text/csv',
     ];
-    if (allowedMime.includes(file.mimetype) || ['.xlsx', '.xls', '.csv'].includes(ext)) {
+    if (allowedMime.includes(file.mimetype) || ['.xlsx', '.xls'].includes(ext)) {
       cb(null, true);
     } else {
-      cb(new Error('Invalid file type. Only Excel files (.xlsx, .xls) and CSV are allowed.'));
+      cb(new Error('Invalid file type. Only Excel files (.xlsx, .xls) are allowed.'));
     }
   },
 });
@@ -285,8 +284,8 @@ router.post(['/', '/import', '/api/import'], auth, importLimiter, (req, res, nex
     const ext = path.extname(req.file.originalname).toLowerCase();
     const userId = req.user.id;
 
-    if (!['.xlsx', '.xls', '.csv'].includes(ext)) {
-      return res.status(400).json({ message: 'Unsupported file format. Please upload an Excel file (.xlsx, .xls) or .csv' });
+    if (!['.xlsx', '.xls'].includes(ext)) {
+      return res.status(400).json({ message: 'Unsupported file format. Please upload an Excel file (.xlsx or .xls)' });
     }
 
     // Fetch user rules if any

@@ -409,7 +409,7 @@ const Transactions = () => {
     <Layout>
       <SEO
         title="Transactions - Filter, Search & Export Ledger"
-        description="View, filter, edit, and export your personal transactions to CSV. Filter by category, payment mode, date range, or transaction type."
+        description="View, filter, edit, and export your personal transactions to Excel (.xlsx). Filter by category, payment mode, date range, or transaction type."
         path="/transactions"
       />
       {toast && <Toast message={toast.message} type={toast.type} onClose={hideToast} />}
