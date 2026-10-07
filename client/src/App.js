@@ -1,19 +1,20 @@
-import React, { lazy, Suspense } from 'react';
+import React, { Suspense } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { ThemeProvider } from './context/ThemeContext';
+import { lazyWithRetry } from './utils/lazyWithRetry';
 
-const Login = lazy(() => import('./pages/Login'));
-const Register = lazy(() => import('./pages/Register'));
-const DashboardHome = lazy(() => import('./pages/DashboardHome'));
-const Transactions = lazy(() => import('./pages/Transactions'));
-const Subscriptions = lazy(() => import('./pages/Subscriptions'));
-const Import = lazy(() => import('./pages/Import'));
-const Profile = lazy(() => import('./pages/Profile'));
-const Analysis = lazy(() => import('./pages/Analysis'));
-const Privacy = lazy(() => import('./pages/Privacy'));
-const Terms = lazy(() => import('./pages/Terms'));
-const NotFound = lazy(() => import('./pages/NotFound'));
+const Login = lazyWithRetry(() => import('./pages/Login'), 'Login');
+const Register = lazyWithRetry(() => import('./pages/Register'), 'Register');
+const DashboardHome = lazyWithRetry(() => import('./pages/DashboardHome'), 'DashboardHome');
+const Transactions = lazyWithRetry(() => import('./pages/Transactions'), 'Transactions');
+const Subscriptions = lazyWithRetry(() => import('./pages/Subscriptions'), 'Subscriptions');
+const Import = lazyWithRetry(() => import('./pages/Import'), 'Import');
+const Profile = lazyWithRetry(() => import('./pages/Profile'), 'Profile');
+const Analysis = lazyWithRetry(() => import('./pages/Analysis'), 'Analysis');
+const Privacy = lazyWithRetry(() => import('./pages/Privacy'), 'Privacy');
+const Terms = lazyWithRetry(() => import('./pages/Terms'), 'Terms');
+const NotFound = lazyWithRetry(() => import('./pages/NotFound'), 'NotFound');
 
 const LoadingFallback = () => (
   <div className="min-h-screen bg-ink-50 dark:bg-ink-900 flex items-center justify-center">

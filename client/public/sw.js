@@ -1,48 +1,44 @@
-const CACHE_NAME = 'exptracker-v1';
-const STATIC_ASSETS = [
-  '/',
-  '/manifest.json',
-  '/favicon.ico',
-  '/logo192.png',
-  '/logo512.png',
-];
-
-self.addEventListener('install', (event) => {
-  event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => {
-      return cache.addAll(STATIC_ASSETS).catch(() => {
-        // Fallback gracefully if any asset fails
-      });
-    })
-  );
+// Kill-switch service worker to decommission previously installed workers
+self.addEventListener('install', () => {
   self.skipWaiting();
 });
 
 self.addEventListener('activate', (event) => {
   event.waitUntil(
-    caches.keys().then((keys) =>
-      Promise.all(
-        keys.map((key) => {
-          if (key !== CACHE_NAME) {
-            return caches.delete(key);
+    (async () => {
+      // 1. Claim all active clients immediately
+      if (self.clients && self.clients.claim) {
+        await self.clients.claim();
+      }
+
+      // 2. Clear all cache storages
+      if ('caches' in self) {
+        const keys = await caches.keys();
+        await Promise.all(keys.map((key) => caches.delete(key)));
+      }
+
+      // 3. Unregister this service worker
+      if (self.registration) {
+        await self.registration.unregister();
+      }
+
+      // 4. Force reload open window clients so they fetch fresh assets
+      if (self.clients && self.clients.matchAll) {
+        const windowClients = await self.clients.matchAll({
+          type: 'window',
+          includeUncontrolled: true,
+        });
+        for (const client of windowClients) {
+          if (client.url && 'navigate' in client) {
+            client.navigate(client.url);
           }
-        })
-      )
-    )
+        }
+      }
+    })()
   );
-  self.clients.claim();
 });
 
-self.addEventListener('fetch', (event) => {
-  // Let API requests and dynamic data pass through network directly
-  if (event.request.url.includes('/api/')) {
-    return;
-  }
-
-  // Network first with cache fallback for static app assets
-  event.respondWith(
-    fetch(event.request).catch(() => {
-      return caches.match(event.request);
-    })
-  );
+// Do not intercept or cache any fetch requests
+self.addEventListener('fetch', () => {
+  // Pass through to network
 });
