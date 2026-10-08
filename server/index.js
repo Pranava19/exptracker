@@ -48,27 +48,18 @@ app.use(cors({
 }));
 app.use(express.json());
 
+// Public health check registered before auth and rate-limiter middleware
+app.get(['/api/health', '/health'], (req, res) => {
+  res.json({
+    ok: true,
+    commit: process.env.RENDER_GIT_COMMIT,
+    time: new Date().toISOString(),
+  });
+});
+
 app.use(['/api/auth/login', '/auth/login'], authLimiter);
 app.use(['/api/auth/register', '/auth/register'], authLimiter);
 app.use(['/api/auth/forgot-password', '/auth/forgot-password'], passwordResetLimiter);
-
-app.get(['/api/health', '/health'], async (req, res) => {
-  try {
-    await pool.query('SELECT 1');
-    res.json({
-      status: 'ok',
-      database: 'connected',
-      timestamp: new Date().toISOString(),
-    });
-  } catch (err) {
-    logger.error('Health check database query failed: %s', err.message);
-    res.status(503).json({
-      status: 'error',
-      database: 'disconnected',
-      timestamp: new Date().toISOString(),
-    });
-  }
-});
 
 app.use(['/api-docs', '/docs'], swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 

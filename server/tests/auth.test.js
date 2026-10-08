@@ -21,24 +21,30 @@ describe('ExpTracker Authentication & Health API Tests', () => {
   });
 
   describe('GET /api/health', () => {
-    it('returns 200 OK when database is connected', async () => {
-      pool.query.mockResolvedValueOnce({ rows: [{ '?column?': 1 }] });
-
+    it('returns 200 OK with ok: true, commit, and time without requiring auth', async () => {
       const res = await request(app).get('/api/health');
 
       expect(res.statusCode).toEqual(200);
-      expect(res.body.status).toEqual('ok');
-      expect(res.body.database).toEqual('connected');
+      expect(res.body.ok).toEqual(true);
+      expect(res.body).toHaveProperty('time');
+      expect(new Date(res.body.time).getTime()).not.toBeNaN();
     });
 
-    it('returns 503 Service Unavailable when database query fails', async () => {
-      pool.query.mockRejectedValueOnce(new Error('Connection terminated'));
-
-      const res = await request(app).get('/api/health');
-
-      expect(res.statusCode).toEqual(503);
-      expect(res.body.status).toEqual('error');
-      expect(res.body.database).toEqual('disconnected');
+    it('returns commit from process.env.RENDER_GIT_COMMIT when set', async () => {
+      const origCommit = process.env.RENDER_GIT_COMMIT;
+      process.env.RENDER_GIT_COMMIT = 'abc1234def';
+      try {
+        const res = await request(app).get('/api/health');
+        expect(res.statusCode).toEqual(200);
+        expect(res.body.ok).toEqual(true);
+        expect(res.body.commit).toEqual('abc1234def');
+      } finally {
+        if (origCommit !== undefined) {
+          process.env.RENDER_GIT_COMMIT = origCommit;
+        } else {
+          delete process.env.RENDER_GIT_COMMIT;
+        }
+      }
     });
   });
 
