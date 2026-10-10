@@ -1,0 +1,17 @@
+.header-clock-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  line-height: 1rem;
+  font-family: var(--font-mono, 'IBM Plex Mono', monospace);
+  font-weight: 500;
+  color: #334155;
+  user-select: none;
+}
+
+.dark .header-clock-badge,
+html.dark .header-clock-badge {
+  color: #cbd5e1;
+}

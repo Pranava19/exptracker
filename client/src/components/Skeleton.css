@@ -1,0 +1,85 @@
+.skeleton-pulse {
+  animation: skeleton-pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes skeleton-pulse {
+  50% {
+    opacity: 0.5;
+  }
+}
+
+.skeleton-card {
+  padding: 1.25rem;
+}
+
+.skeleton-bar-title {
+  height: 0.625rem;
+  background-color: rgba(203, 213, 225, 0.6);
+  border-radius: 9999px;
+  width: 25%;
+  margin-bottom: 1rem;
+}
+
+.dark .skeleton-bar-title,
+html.dark .skeleton-bar-title {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.skeleton-bar-value {
+  height: 1.5rem;
+  background-color: rgba(203, 213, 225, 0.6);
+  border-radius: 0.5rem;
+  width: 33.333333%;
+}
+
+.dark .skeleton-bar-value,
+html.dark .skeleton-bar-value {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.skeleton-table-row {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.dark .skeleton-table-row,
+html.dark .skeleton-table-row {
+  border-bottom-color: rgba(255, 255, 255, 0.05);
+}
+
+.skeleton-table-cell {
+  padding-top: 0.75rem;
+  padding-bottom: 0.75rem;
+  padding-right: 1rem;
+}
+
+.skeleton-cell-bar {
+  height: 0.625rem;
+  background-color: rgba(203, 213, 225, 0.6);
+  border-radius: 9999px;
+}
+
+.dark .skeleton-cell-bar,
+html.dark .skeleton-cell-bar {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.skeleton-chart-wrapper {
+  display: flex;
+  align-items: flex-end;
+  gap: 0.5rem;
+  height: 10rem;
+  padding-left: 0.25rem;
+  padding-right: 0.25rem;
+}
+
+.skeleton-chart-col {
+  flex: 1 1 0%;
+  background-color: rgba(203, 213, 225, 0.6);
+  border-top-left-radius: 0.375rem;
+  border-top-right-radius: 0.375rem;
+}
+
+.dark .skeleton-chart-col,
+html.dark .skeleton-chart-col {
+  background-color: rgba(255, 255, 255, 0.1);
+}

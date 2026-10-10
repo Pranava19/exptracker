@@ -3,8 +3,7 @@ import axios from '../api/axios';
 import Toast from './Toast';
 import { useToast } from '../hooks/useToast';
 import { FileUp, Loader2, CheckCircle2, Lock } from 'lucide-react';
-
-const inputCls = 'w-full glass-input px-3.5 py-2.5 text-xs text-ink-900 dark:text-ink-50 focus:outline-none transition-colors';
+import './ImportStatement.css';
 
 const ImportStatement = ({ onImportDone }) => {
   const [file, setFile] = useState(null);
@@ -51,53 +50,53 @@ const ImportStatement = ({ onImportDone }) => {
   };
 
   return (
-    <div className="glass-card p-6 rounded-2xl shadow-sm">
+    <div className="glass-card import-stmt-card">
       {toast && <Toast message={toast.message} type={toast.type} onClose={hideToast} />}
       
-      <div className="flex items-center gap-2 mb-4">
-        <FileUp size={18} strokeWidth={1.5} className="text-accent" />
-        <h3 className="text-xs font-mono font-semibold uppercase tracking-wider text-ink-700 dark:text-ink-200">Import Bank Statement</h3>
+      <div className="import-stmt-header">
+        <FileUp size={18} strokeWidth={1.5} className="import-stmt-header-icon" />
+        <h3 className="import-stmt-title">Import Bank Statement</h3>
       </div>
 
-      <div className="space-y-4">
+      <div className="import-stmt-body">
         <div>
-          <label className="text-xs font-medium text-ink-700 dark:text-ink-200 block mb-1.5">Statement File (.xlsx, .xls)</label>
-          <div className="border border-dashed border-ink-300/80 dark:border-white/20 rounded-2xl p-6 text-center glass-card-subtle hover:border-accent transition-all cursor-pointer relative">
+          <label className="import-stmt-label">Statement File (.xlsx, .xls)</label>
+          <div className="glass-card-subtle import-stmt-dropzone">
             <input
               type="file"
               accept=".xlsx,.xls"
               tabIndex={-1}
               onChange={e => setFile(e.target.files[0])}
-              className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+              className="import-stmt-file-input"
             />
-            <FileUp size={24} strokeWidth={1.5} className="mx-auto text-accent opacity-75 mb-2" />
-            <p className="text-xs font-semibold text-ink-900 dark:text-ink-50">
+            <FileUp size={24} strokeWidth={1.5} className="import-stmt-upload-icon" />
+            <p className="import-stmt-filename">
               {file ? file.name : 'Click or drag bank statement file here'}
             </p>
-            <p className="text-[10px] text-ink-600 dark:text-ink-400 mt-1">Supports Excel statements (.xlsx, .xls) (Max 15MB)</p>
+            <p className="import-stmt-hint">Supports Excel statements (.xlsx, .xls) (Max 15MB)</p>
           </div>
         </div>
 
         <div>
-          <div className="flex items-center justify-between mb-1.5">
-            <label className="text-xs font-medium text-ink-700 dark:text-ink-200 flex items-center gap-1">
+          <div className="import-stmt-pw-header">
+            <label className="import-stmt-pw-label">
               <Lock size={12} strokeWidth={1.5} />
               <span>Password Protection</span>
             </label>
-            <span className="text-[10px] text-ink-600 dark:text-ink-400">(Optional)</span>
+            <span className="import-stmt-pw-optional">(Optional)</span>
           </div>
-          <div className="relative">
+          <div className="import-stmt-pw-wrapper">
             <input
               type={showPassword ? 'text' : 'password'}
               value={password}
               onChange={e => setPassword(e.target.value)}
               placeholder="Enter file password if protected"
-              className={inputCls}
+              className="glass-input import-stmt-input"
             />
             <button
               type="button"
               onClick={() => setShowPassword(!showPassword)}
-              className="absolute right-3.5 top-1/2 -translate-y-1/2 text-xs font-mono text-ink-600 dark:text-ink-300 opacity-70 hover:opacity-100 cursor-pointer"
+              className="import-stmt-pw-toggle"
             >
               {showPassword ? 'Hide' : 'Show'}
             </button>
@@ -105,14 +104,14 @@ const ImportStatement = ({ onImportDone }) => {
         </div>
 
         {loading && (
-          <div className="py-2 space-y-1.5">
-            <div className="flex justify-between items-center text-xs font-mono">
-              <span className="text-ink-900 dark:text-ink-50 font-medium">{stepText}</span>
-              <span className="text-accent font-semibold">{progress}%</span>
+          <div className="import-stmt-progress-section">
+            <div className="import-stmt-progress-header">
+              <span className="import-stmt-progress-step">{stepText}</span>
+              <span className="import-stmt-progress-percent">{progress}%</span>
             </div>
-            <div className="h-2 bg-black/5 dark:bg-white/10 rounded-full overflow-hidden">
+            <div className="import-stmt-progress-track">
               <div
-                className="h-full bg-accent transition-all duration-300"
+                className="import-stmt-progress-bar"
                 style={{ width: `${progress}%` }}
               />
             </div>
@@ -122,7 +121,7 @@ const ImportStatement = ({ onImportDone }) => {
         <button
           onClick={handleImport}
           disabled={loading || !file}
-          className="glass-btn-primary w-full py-2.5 text-xs font-semibold disabled:opacity-40 flex items-center justify-center gap-2 cursor-pointer shadow-sm"
+          className="glass-btn-primary import-stmt-submit-btn"
         >
           {loading ? <Loader2 size={16} className="animate-spin" /> : <CheckCircle2 size={16} strokeWidth={1.5} />}
           <span>{loading ? 'Processing Statement...' : 'Import Statement'}</span>

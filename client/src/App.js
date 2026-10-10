@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { ThemeProvider } from './context/ThemeContext';
 import { lazyWithRetry } from './utils/lazyWithRetry';
+import './App.css';
 
 const Login = lazyWithRetry(() => import('./pages/Login'), 'Login');
 const Register = lazyWithRetry(() => import('./pages/Register'), 'Register');
@@ -16,8 +17,8 @@ const Terms = lazyWithRetry(() => import('./pages/Terms'), 'Terms');
 const NotFound = lazyWithRetry(() => import('./pages/NotFound'), 'NotFound');
 
 const LoadingFallback = () => (
-  <div className="min-h-screen bg-ink-50 dark:bg-ink-900 flex items-center justify-center">
-    <div className="w-8 h-8 border-3 border-accent border-t-transparent rounded-full animate-spin" />
+  <div className="app-loading-fallback">
+    <div className="app-loading-spinner" />
   </div>
 );
 

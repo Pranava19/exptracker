@@ -5,6 +5,7 @@ import HeaderClock from './HeaderClock';
 import QuickAddFAB from './QuickAddFAB';
 import { useTheme } from '../context/ThemeContext';
 import { ChevronRight } from 'lucide-react';
+import './Layout.css';
 
 const PAGE_TITLES = {
   '/dashboard': 'Dashboard',
@@ -22,7 +23,7 @@ const Layout = ({ children }) => {
   const title = PAGE_TITLES[pathname] || 'ExpTracker';
 
   return (
-    <div className={`min-h-screen ${dark ? 'dark' : ''} relative overflow-x-hidden`}>
+    <div className={`layout-root ${dark ? 'dark' : ''}`}>
       {/* Ambient background mesh & glowing blobs for glassmorphism refraction */}
       <div className="ambient-glow-wrapper" aria-hidden="true">
         <div className="ambient-blob-1" />
@@ -30,34 +31,34 @@ const Layout = ({ children }) => {
         <div className="ambient-blob-3" />
       </div>
 
-      <div className="relative z-10 min-h-screen text-ink-900 dark:text-ink-50">
+      <div className="layout-main-wrapper">
         <a
           href="#main-content"
-          className="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-50 focus:px-4 focus:py-2 focus:bg-accent focus:text-white focus:rounded-md focus:shadow-md"
+          className="layout-skip-link"
         >
           Skip to main content
         </a>
 
         <Navbar />
 
-        <div className="hidden md:block md:ml-56">
-          <header className="sticky top-0 z-20 flex items-center justify-between px-8 h-14 glass-header">
-            <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 text-xs text-ink-700 dark:text-ink-200">
-              <Link to="/dashboard" className="hover:text-accent transition-colors font-medium">
+        <div className="layout-desktop-content">
+          <header className="layout-desktop-header glass-header">
+            <nav aria-label="Breadcrumb" className="layout-breadcrumb">
+              <Link to="/dashboard" className="layout-breadcrumb-link">
                 Home
               </Link>
-              <ChevronRight size={12} className="opacity-50" />
-              <span className="font-semibold text-ink-900 dark:text-ink-50">{title}</span>
+              <ChevronRight size={12} className="layout-breadcrumb-sep" />
+              <span className="layout-breadcrumb-active">{title}</span>
             </nav>
             <HeaderClock />
           </header>
-          <main id="main-content" className="p-8 max-w-7xl mx-auto">
+          <main id="main-content" className="layout-desktop-main">
             {children}
           </main>
         </div>
 
-        <div className="md:hidden pt-[calc(3rem+env(safe-area-inset-top,0px))] pb-[calc(5rem+env(safe-area-inset-bottom,0px))]">
-          <main id="main-content" className="p-4">
+        <div className="layout-mobile-content">
+          <main id="main-content" className="layout-mobile-main">
             {children}
           </main>
         </div>

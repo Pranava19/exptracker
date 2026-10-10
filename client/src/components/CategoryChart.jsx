@@ -1,16 +1,17 @@
 import React from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { useTheme } from '../context/ThemeContext';
+import './CategoryChart.css';
 
 import { CATEGORY_COLORS } from '../constants/categories';
 
 const CustomTooltip = ({ active, payload, label }) => {
   if (active && payload && payload.length) {
     return (
-      <div className="glass-modal p-3 rounded-xl border border-ink-100 dark:border-white/10 shadow-lg text-xs font-mono text-ink-900 dark:text-ink-50">
-        <p className="font-sans font-semibold mb-1 opacity-80">{label}</p>
+      <div className="glass-modal category-chart-tooltip">
+        <p className="category-chart-tooltip-label">{label}</p>
         {payload.filter(p => p.value > 0).map((entry, index) => (
-          <p key={`item-${index}`} style={{ color: entry.color }} className="font-semibold flex items-center justify-between gap-4">
+          <p key={`item-${index}`} style={{ color: entry.color }} className="category-chart-tooltip-row">
             <span>{entry.name}:</span>
             <span>₹{Number(entry.value).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
           </p>
@@ -52,8 +53,8 @@ const CategoryChart = ({ transactions }) => {
 
   if (data.length === 0) {
     return (
-      <div className="flex items-center justify-center h-40">
-        <p className="text-xs font-mono text-ink-700 dark:text-ink-200 opacity-60">No expense data available</p>
+      <div className="category-chart-empty-container">
+        <p className="category-chart-empty-text">No expense data available</p>
       </div>
     );
   }

@@ -1,5 +1,27 @@
-.App {
-  text-align: center;
+.app-loading-fallback {
+  min-height: 100vh;
+  background-color: #f8fafc;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
+.dark .app-loading-fallback,
+html.dark .app-loading-fallback {
+  background-color: #0f172a;
+}
 
+.app-loading-spinner {
+  width: 2rem;
+  height: 2rem;
+  border: 3px solid var(--color-accent, #2563eb);
+  border-top-color: transparent;
+  border-radius: 9999px;
+  animation: app-spin 1s linear infinite;
+}
+
+@keyframes app-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}

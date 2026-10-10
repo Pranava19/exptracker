@@ -1,5 +1,6 @@
 import React, { useEffect } from 'react';
 import { CheckCircle2, XCircle, Info, X } from 'lucide-react';
+import './Toast.css';
 
 const Toast = ({ message, type = 'success', onClose }) => {
   useEffect(() => {
@@ -8,16 +9,16 @@ const Toast = ({ message, type = 'success', onClose }) => {
   }, [onClose]);
 
   const renderIcon = () => {
-    if (type === 'error') return <XCircle size={16} className="text-negative" />;
-    if (type === 'info') return <Info size={16} className="text-accent" />;
-    return <CheckCircle2 size={16} className="text-accent" />;
+    if (type === 'error') return <XCircle size={16} className="toast-icon-error" />;
+    if (type === 'info') return <Info size={16} className="toast-icon-info" />;
+    return <CheckCircle2 size={16} className="toast-icon-success" />;
   };
 
   return (
-    <div className="fixed top-4 right-4 z-50 flex items-center gap-3 px-4 py-3 glass-toast text-xs font-medium text-ink-900 dark:text-ink-50 min-w-[280px] animate-slide-in">
+    <div className="toast-container glass-toast animate-slide-in">
       {renderIcon()}
-      <span className="flex-1">{message}</span>
-      <button onClick={onClose} className="text-ink-700 dark:text-ink-200 opacity-60 hover:opacity-100 transition-opacity" aria-label="Dismiss">
+      <span className="toast-message">{message}</span>
+      <button onClick={onClose} className="toast-close-btn" aria-label="Dismiss">
         <X size={14} strokeWidth={1.5} />
       </button>
     </div>

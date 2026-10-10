@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from '../api/axios';
 import { detectMerchant } from '../utils/merchantDetector';
 import { X, Sparkles, Loader2, Plus, ArrowDownLeft, ArrowUpRight } from 'lucide-react';
+import './QuickAddModal.css';
 
 import { CATEGORIES } from '../constants/categories';
 const MODES = ['UPI', 'Card', 'Cash', 'Net Banking', 'Other'];
@@ -104,45 +105,43 @@ const QuickAddModal = ({ isOpen, onClose, onAdded }) => {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
+    <div className="quick-add-overlay">
       <div 
-        className="w-full max-w-md glass-card border border-ink-100/60 dark:border-white/15 rounded-2xl shadow-2xl p-6 relative animate-scale-up"
+        className="glass-card quick-add-modal"
         onClick={(e) => e.stopPropagation()}
       >
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 p-1.5 rounded-xl text-ink-600 dark:text-ink-300 hover:text-ink-900 dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/10 transition-colors"
+          className="quick-add-close-btn"
           aria-label="Close modal"
         >
           <X size={18} />
         </button>
 
-        <div className="flex items-center gap-2 mb-5">
-          <div className="w-8 h-8 rounded-xl bg-accent/15 text-accent flex items-center justify-center font-bold">
+        <div className="quick-add-header">
+          <div className="quick-add-icon-badge">
             <Plus size={18} strokeWidth={2.5} />
           </div>
           <div>
-            <h2 className="text-base font-bold text-ink-900 dark:text-ink-50">Quick Add Transaction</h2>
-            <p className="text-[11px] text-ink-600 dark:text-ink-300 opacity-80">Log spending or income instantly</p>
+            <h2 className="quick-add-title">Quick Add Transaction</h2>
+            <p className="quick-add-subtitle">Log spending or income instantly</p>
           </div>
         </div>
 
         {error && (
-          <div className="mb-4 p-2.5 rounded-xl bg-negative/10 border border-negative/20 text-negative text-xs">
+          <div className="quick-add-error">
             {error}
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="quick-add-form">
           {/* Income vs Expense Toggle */}
-          <div className="grid grid-cols-2 gap-2 p-1 rounded-xl bg-ink-100/40 dark:bg-white/5 border border-ink-100/60 dark:border-white/10">
+          <div className="quick-add-type-toggle">
             <button
               type="button"
               onClick={() => { setType('expense'); if (category === 'Salary' || category === 'Freelance') setCategory('Food'); }}
-              className={`flex items-center justify-center gap-1.5 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
-                type === 'expense'
-                  ? 'bg-negative text-white shadow-xs'
-                  : 'text-ink-700 dark:text-ink-300 hover:text-ink-900 dark:hover:text-white'
+              className={`quick-add-type-btn ${
+                type === 'expense' ? 'quick-add-type-btn-expense' : ''
               }`}
             >
               <ArrowDownLeft size={14} />
@@ -151,10 +150,8 @@ const QuickAddModal = ({ isOpen, onClose, onAdded }) => {
             <button
               type="button"
               onClick={() => { setType('income'); if (category === 'Food') setCategory('Salary'); }}
-              className={`flex items-center justify-center gap-1.5 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
-                type === 'income'
-                  ? 'bg-positive text-white shadow-xs'
-                  : 'text-ink-700 dark:text-ink-300 hover:text-ink-900 dark:hover:text-white'
+              className={`quick-add-type-btn ${
+                type === 'income' ? 'quick-add-type-btn-income' : ''
               }`}
             >
               <ArrowUpRight size={14} />
@@ -164,11 +161,11 @@ const QuickAddModal = ({ isOpen, onClose, onAdded }) => {
 
           {/* Amount Input */}
           <div>
-            <label className="block text-[11px] font-semibold text-ink-700 dark:text-ink-300 mb-1">
+            <label className="quick-add-label">
               Amount (₹)
             </label>
-            <div className="relative">
-              <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-lg font-bold text-ink-500 dark:text-ink-400">
+            <div className="quick-add-amount-wrapper">
+              <span className="quick-add-currency-symbol">
                 ₹
               </span>
               <input
@@ -179,18 +176,18 @@ const QuickAddModal = ({ isOpen, onClose, onAdded }) => {
                 onChange={(e) => setAmount(e.target.value)}
                 autoFocus
                 required
-                className="w-full pl-8 pr-4 py-2.5 glass-input text-lg font-bold font-mono text-ink-900 dark:text-ink-50 focus:outline-none"
+                className="glass-input quick-add-amount-input"
               />
             </div>
           </div>
 
           {/* Description & Live Auto-Rename Feature */}
           <div>
-            <div className="flex items-center justify-between mb-1">
-              <label className="text-[11px] font-semibold text-ink-700 dark:text-ink-300">
+            <div className="quick-add-desc-header">
+              <label className="quick-add-label">
                 Description / UPI / Payee
               </label>
-              <span className="text-[10px] text-accent flex items-center gap-1">
+              <span className="quick-add-smart-tag">
                 <Sparkles size={11} /> Smart Auto-Categorize
               </span>
             </div>
@@ -199,40 +196,41 @@ const QuickAddModal = ({ isOpen, onClose, onAdded }) => {
               placeholder="e.g. Swiggy, Uber, Metro, Amazon, UPI/DR/..."
               value={description}
               onChange={handleDescriptionChange}
-              className="w-full px-3 py-2 glass-input text-xs text-ink-900 dark:text-ink-50 focus:outline-none"
+              className="glass-input quick-add-input"
             />
 
             {/* Smart Merchant detection pill */}
             {detectedSuggestion && (
               <div 
                 onClick={handleApplySuggestion}
-                className="mt-1.5 px-2.5 py-1.5 rounded-lg bg-accent/10 border border-accent/25 flex items-center justify-between text-[11px] text-accent font-medium cursor-pointer hover:bg-accent/15 transition-colors"
+                className="quick-add-suggestion-pill"
                 title="Click to apply suggested merchant and category"
               >
-                <div className="flex items-center gap-1.5 truncate">
-                  <Sparkles size={13} className="shrink-0 animate-pulse text-accent" />
-                  <span className="truncate">
-                    Detected: <strong className="font-semibold text-ink-900 dark:text-white">{detectedSuggestion.payee}</strong> ({detectedSuggestion.category})
+                <div className="quick-add-suggestion-content">
+                  <Sparkles size={13} style={{ flexShrink: 0 }} />
+                  <span className="quick-add-suggestion-text">
+                    Detected: <strong className="quick-add-suggestion-bold">{detectedSuggestion.payee}</strong> ({detectedSuggestion.category})
                   </span>
                 </div>
-                <span className="text-[10px] underline font-semibold ml-2 shrink-0">Applied ✓</span>
+                <span className="quick-add-suggestion-applied">Applied ✓</span>
               </div>
             )}
           </div>
 
           {/* Category & Payment Mode */}
-          <div className="grid grid-cols-2 gap-3">
+          <div className="quick-add-grid-two">
             <div>
-              <label className="block text-[11px] font-semibold text-ink-700 dark:text-ink-300 mb-1">
+              <label className="quick-add-label">
                 Category
               </label>
               <select
                 value={category}
                 onChange={(e) => setCategory(e.target.value)}
-                className="w-full px-3 py-2 glass-input text-xs text-ink-900 dark:text-ink-50 focus:outline-none cursor-pointer"
+                className="glass-input quick-add-input"
+                style={{ cursor: 'pointer' }}
               >
                 {CATEGORIES.map((cat) => (
-                  <option key={cat} value={cat} className="bg-white dark:bg-slate-900 text-ink-900 dark:text-ink-50">
+                  <option key={cat} value={cat}>
                     {cat}
                   </option>
                 ))}
@@ -240,16 +238,17 @@ const QuickAddModal = ({ isOpen, onClose, onAdded }) => {
             </div>
 
             <div>
-              <label className="block text-[11px] font-semibold text-ink-700 dark:text-ink-300 mb-1">
+              <label className="quick-add-label">
                 Payment Mode
               </label>
               <select
                 value={mode}
                 onChange={(e) => setMode(e.target.value)}
-                className="w-full px-3 py-2 glass-input text-xs text-ink-900 dark:text-ink-50 focus:outline-none cursor-pointer"
+                className="glass-input quick-add-input"
+                style={{ cursor: 'pointer' }}
               >
                 {MODES.map((m) => (
-                  <option key={m} value={m} className="bg-white dark:bg-slate-900 text-ink-900 dark:text-ink-50">
+                  <option key={m} value={m}>
                     {m}
                   </option>
                 ))}
@@ -259,7 +258,7 @@ const QuickAddModal = ({ isOpen, onClose, onAdded }) => {
 
           {/* Date Picker */}
           <div>
-            <label className="block text-[11px] font-semibold text-ink-700 dark:text-ink-300 mb-1">
+            <label className="quick-add-label">
               Date
             </label>
             <input
@@ -267,16 +266,16 @@ const QuickAddModal = ({ isOpen, onClose, onAdded }) => {
               value={date}
               onChange={(e) => setDate(e.target.value)}
               required
-              className="w-full px-3 py-2 glass-input text-xs text-ink-900 dark:text-ink-50 focus:outline-none"
+              className="glass-input quick-add-input"
             />
           </div>
 
           {/* Submit Button */}
-          <div className="pt-2">
+          <div style={{ paddingTop: '0.5rem' }}>
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-2.5 px-4 rounded-xl bg-accent hover:bg-accent-hover text-white font-semibold text-xs transition-all shadow-md flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+              className="quick-add-submit-btn"
             >
               {loading ? (
                 <>

@@ -1,0 +1,42 @@
+.monthly-chart-tooltip {
+  padding: 0.75rem;
+  border-radius: 0.75rem;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
+  font-size: 0.75rem;
+  font-family: var(--font-mono, 'IBM Plex Mono', monospace);
+  color: #0f172a;
+}
+
+.dark .monthly-chart-tooltip,
+html.dark .monthly-chart-tooltip {
+  border-color: rgba(255, 255, 255, 0.1);
+  color: #f8fafc;
+}
+
+.monthly-chart-tooltip-label {
+  font-family: var(--font-sans, 'Inter', sans-serif);
+  font-weight: 600;
+  margin-bottom: 0.25rem;
+  opacity: 0.8;
+}
+
+.monthly-chart-tooltip-row {
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.monthly-chart-empty {
+  color: #475569;
+  font-size: 0.75rem;
+  font-family: var(--font-mono, 'IBM Plex Mono', monospace);
+  opacity: 0.6;
+}
+
+.dark .monthly-chart-empty,
+html.dark .monthly-chart-empty {
+  color: #cbd5e1;
+}

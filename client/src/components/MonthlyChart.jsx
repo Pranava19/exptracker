@@ -1,14 +1,15 @@
 import React from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { useTheme } from '../context/ThemeContext';
+import './MonthlyChart.css';
 
 const CustomTooltip = ({ active, payload, label }) => {
   if (active && payload && payload.length) {
     return (
-      <div className="glass-modal p-3 rounded-xl border border-ink-100 dark:border-white/10 shadow-lg text-xs font-mono text-ink-900 dark:text-ink-50">
-        <p className="font-sans font-semibold mb-1 opacity-80">{label}</p>
+      <div className="glass-modal monthly-chart-tooltip">
+        <p className="monthly-chart-tooltip-label">{label}</p>
         {payload.map((entry, index) => (
-          <p key={`item-${index}`} style={{ color: entry.color }} className="font-semibold flex items-center justify-between gap-4">
+          <p key={`item-${index}`} style={{ color: entry.color }} className="monthly-chart-tooltip-row">
             <span>{entry.name}:</span>
             <span>₹{Number(entry.value).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
           </p>
@@ -32,7 +33,7 @@ const MonthlyChart = ({ transactions }) => {
 
   const data = Object.values(monthlyData).sort((a, b) => a.month.localeCompare(b.month));
 
-  if (data.length === 0) return <p className="text-ink-700 dark:text-ink-200 text-xs font-mono opacity-60">No transaction data available</p>;
+  if (data.length === 0) return <p className="monthly-chart-empty">No transaction data available</p>;
 
   const gridColor = dark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.06)';
   const tickColor = dark ? '#94a3b8' : '#64748b';

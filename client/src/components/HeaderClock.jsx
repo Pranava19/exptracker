@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import './HeaderClock.css';
 
 const formatClock = () => {
   const formatter = new Intl.DateTimeFormat('en-IN', {
@@ -29,7 +30,7 @@ const HeaderClock = () => {
   }, []);
 
   return (
-    <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-mono font-medium text-ink-700 dark:text-ink-300 glass-card-subtle select-none shadow-xs">
+    <span className="header-clock-badge glass-card-subtle shadow-xs">
       {timeStr}
     </span>
   );

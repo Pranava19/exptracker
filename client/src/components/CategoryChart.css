@@ -1,0 +1,49 @@
+.category-chart-tooltip {
+  padding: 0.75rem;
+  border-radius: 0.75rem;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
+  font-size: 0.75rem;
+  font-family: var(--font-mono, 'IBM Plex Mono', monospace);
+  color: #0f172a;
+}
+
+.dark .category-chart-tooltip,
+html.dark .category-chart-tooltip {
+  border-color: rgba(255, 255, 255, 0.1);
+  color: #f8fafc;
+}
+
+.category-chart-tooltip-label {
+  font-family: var(--font-sans, 'Inter', sans-serif);
+  font-weight: 600;
+  margin-bottom: 0.25rem;
+  opacity: 0.8;
+}
+
+.category-chart-tooltip-row {
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.category-chart-empty-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 10rem;
+}
+
+.category-chart-empty-text {
+  font-size: 0.75rem;
+  font-family: var(--font-mono, 'IBM Plex Mono', monospace);
+  color: #475569;
+  opacity: 0.6;
+}
+
+.dark .category-chart-empty-text,
+html.dark .category-chart-empty-text {
+  color: #cbd5e1;
+}

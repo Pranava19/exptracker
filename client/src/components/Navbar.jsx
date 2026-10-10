@@ -12,6 +12,7 @@ import {
   Moon,
   LogOut
 } from 'lucide-react';
+import './Navbar.css';
 
 const NAV_SECTIONS = [
   {
@@ -55,15 +56,15 @@ const Navbar = () => {
 
   return (
     <>
-      <aside className="hidden md:flex flex-col fixed top-0 left-0 h-screen z-30 w-56 glass-nav">
-        <div className="flex items-center justify-between px-5 py-4 border-b border-ink-100/60 dark:border-white/10">
-          <Link to="/dashboard" className="text-ink-900 dark:text-ink-50 font-bold text-lg tracking-tight hover:opacity-85 transition-opacity">
-            <span>Exp<span className="text-accent font-semibold">Tracker</span></span>
+      <aside className="navbar-sidebar glass-nav">
+        <div className="navbar-brand-header">
+          <Link to="/dashboard" className="navbar-brand-link">
+            <span>Exp<span className="navbar-brand-accent">Tracker</span></span>
           </Link>
-          <div className="flex items-center gap-1">
+          <div>
             <button
               onClick={toggle}
-              className="text-ink-700 dark:text-ink-200 hover:text-ink-900 dark:hover:text-white transition-colors p-2 rounded-xl hover:bg-black/5 dark:hover:bg-white/10 cursor-pointer"
+              className="navbar-theme-btn"
               aria-label="Toggle dark mode"
             >
               {dark ? <Sun size={17} strokeWidth={1.75} /> : <Moon size={17} strokeWidth={1.75} />}
@@ -71,10 +72,10 @@ const Navbar = () => {
           </div>
         </div>
 
-        <div className="flex-1 overflow-y-auto py-4 px-3 space-y-4">
+        <div className="navbar-menu-scroll">
           {NAV_SECTIONS.map(({ label, items }) => (
             <div key={label}>
-              <p className="px-2 pb-1.5 text-[10px] font-mono font-semibold uppercase tracking-wider text-ink-600 dark:text-ink-300 opacity-60 cursor-default">
+              <p className="navbar-section-label">
                 {label}
               </p>
               {items.map(({ to, label: itemLabel, icon: Icon }) => (
@@ -82,14 +83,10 @@ const Navbar = () => {
                   key={to}
                   to={to}
                   className={({ isActive }) =>
-                    `flex items-center gap-3 px-3 py-2 rounded-xl mb-1 text-sm font-medium transition-all ${
-                      isActive
-                        ? 'bg-accent/15 dark:bg-accent/25 text-accent font-semibold shadow-xs'
-                        : 'text-ink-700 dark:text-ink-300 hover:text-ink-900 dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/10'
-                    }`
+                    `navbar-link ${isActive ? 'navbar-link-active' : ''}`
                   }
                 >
-                  <Icon size={18} strokeWidth={1.75} className="flex-shrink-0" />
+                  <Icon size={18} strokeWidth={1.75} className="navbar-link-icon" />
                   <span>{itemLabel}</span>
                 </NavLink>
               ))}
@@ -97,19 +94,19 @@ const Navbar = () => {
           ))}
         </div>
 
-        <div className="p-3 border-t border-ink-100/60 dark:border-white/10 space-y-2">
-          <div className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl glass-card-subtle">
-            <div className="w-7 h-7 rounded-full bg-accent text-white font-mono text-xs font-semibold flex items-center justify-center select-none shadow-xs">
+        <div className="navbar-footer">
+          <div className="navbar-user-card glass-card-subtle">
+            <div className="navbar-avatar">
               {user?.name?.charAt(0).toUpperCase() || 'U'}
             </div>
-            <div className="min-w-0 flex-1">
-              <p className="text-xs font-semibold truncate text-ink-900 dark:text-ink-50">{user?.name || 'User'}</p>
-              <p className="text-[10px] text-ink-600 dark:text-ink-300 truncate opacity-75">{user?.email}</p>
+            <div className="navbar-user-info">
+              <p className="navbar-user-name">{user?.name || 'User'}</p>
+              <p className="navbar-user-email">{user?.email}</p>
             </div>
           </div>
           <button
             onClick={handleLogout}
-            className="flex items-center gap-2.5 w-full px-3 py-2 rounded-xl text-xs font-medium text-negative hover:bg-negative/10 transition-colors cursor-pointer"
+            className="navbar-logout-btn"
           >
             <LogOut size={16} strokeWidth={1.75} />
             <span>Sign out</span>
@@ -117,22 +114,22 @@ const Navbar = () => {
         </div>
       </aside>
 
-      <div className="md:hidden fixed top-0 left-0 right-0 z-30 glass-mobile-bar border-b border-ink-100/60 dark:border-white/10 pt-[env(safe-area-inset-top,0px)]">
-        <div className="flex items-center justify-between px-4 h-12">
-          <Link to="/dashboard" className="font-bold text-base text-ink-900 dark:text-ink-50">
-            <span>Exp<span className="text-accent font-semibold">Tracker</span></span>
+      <div className="navbar-mobile-header glass-mobile-bar">
+        <div className="navbar-mobile-header-inner">
+          <Link to="/dashboard" className="navbar-brand-link">
+            <span>Exp<span className="navbar-brand-accent">Tracker</span></span>
           </Link>
-          <div className="flex items-center gap-2">
+          <div className="navbar-mobile-header-actions">
             <button
               onClick={toggle}
-              className="text-ink-700 dark:text-ink-200 p-1.5 rounded-xl hover:bg-black/5 dark:hover:bg-white/10 cursor-pointer"
+              className="navbar-theme-btn"
               aria-label="Toggle dark mode"
             >
               {dark ? <Sun size={18} strokeWidth={1.75} /> : <Moon size={18} strokeWidth={1.75} />}
             </button>
             <NavLink
               to="/profile"
-              className="w-7 h-7 rounded-full bg-accent text-white font-mono text-xs font-bold flex items-center justify-center select-none shadow-xs"
+              className="navbar-avatar"
             >
               {user?.name?.charAt(0).toUpperCase() || 'U'}
             </NavLink>
@@ -140,22 +137,18 @@ const Navbar = () => {
         </div>
       </div>
 
-      <div className="md:hidden fixed bottom-0 left-0 right-0 z-30 glass-mobile-bar border-t border-ink-100/60 dark:border-white/10 pb-[env(safe-area-inset-bottom,0px)]">
-        <div className="flex items-center justify-around px-2 py-1">
+      <div className="navbar-mobile-bottom-bar glass-mobile-bar">
+        <div className="navbar-mobile-nav-items">
           {MOBILE_NAV_ITEMS.map(({ to, label: l, icon: Icon }) => (
             <NavLink
               key={to}
               to={to}
               className={({ isActive }) =>
-                `flex flex-col items-center flex-1 py-1.5 gap-1 rounded-xl transition-all ${
-                  isActive
-                    ? 'text-accent font-semibold bg-accent/15 dark:bg-accent/25'
-                    : 'text-ink-700 dark:text-ink-300 opacity-70 hover:opacity-100'
-                }`
+                `navbar-mobile-tab ${isActive ? 'navbar-mobile-tab-active' : ''}`
               }
             >
               <Icon size={18} strokeWidth={1.75} />
-              <span className="text-[10px] font-medium tracking-tight">{l}</span>
+              <span className="navbar-mobile-tab-label">{l}</span>
             </NavLink>
           ))}
         </div>
