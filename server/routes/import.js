@@ -347,22 +347,25 @@ async function parseStatementFile(buffer, password, customRules = [], options = 
   }
 
   return {
+    transactions,
     totalRows: transactions.length,
-    totalRowsRead,
+    totalRowsRead: transactions.length,
     totalDebit: Math.round(totalDebit * 100) / 100,
     totalCredit: Math.round(totalCredit * 100) / 100,
     closingBalance: Math.round(closingBalance * 100) / 100,
     reconciled,
     balanceMismatches,
-    transactions,
+    dedupKey: transactions.map(t => t.dedupKey),
+    origRef,
+    dimensionRef: origRef,
     skipped,
     parseElapsedMs,
     ruleMatchingElapsedMs,
     sheetNames,
-    origRef,
     computedRef,
     maxRow,
   };
+
 }
 
 // POST /api/import/preview - Inspect parsed records before importing
@@ -538,45 +541,69 @@ router.post(['/', '/import', '/api/import'], auth, importLimiter, (req, res, nex
     const BATCH_SIZE = 500;
 
     if (toInsert.length > 0) {
-      client = await pool.connect();
-      await client.query('BEGIN');
-      await client.query("SELECT set_config('app.user_id', $1, true)", [String(userId)]);
+      const executeBatch = async (dbClient) => {
+        let count = 0;
+        for (let i = 0; i < toInsert.length; i += BATCH_SIZE) {
+          const batch = toInsert.slice(i, i + BATCH_SIZE);
+          const valueClauses = [];
+          const params = [userId];
+          let pIdx = 2;
 
-      for (let i = 0; i < toInsert.length; i += BATCH_SIZE) {
-        const batch = toInsert.slice(i, i + BATCH_SIZE);
-        const valueClauses = [];
-        const params = [userId];
-        let pIdx = 2;
+          for (const tx of batch) {
+            valueClauses.push(
+              `($1, $${pIdx}, $${pIdx + 1}, $${pIdx + 2}, $${pIdx + 3}, $${pIdx + 4}, $${pIdx + 5}, $${pIdx + 6})`
+            );
+            params.push(
+              tx.date,
+              tx.amount,
+              tx.description,
+              tx.payee || '',
+              tx.type,
+              tx.category,
+              tx.mode || 'Other'
+            );
+            pIdx += 7;
+          }
 
-        for (const tx of batch) {
-          valueClauses.push(
-            `($1, $${pIdx}, $${pIdx + 1}, $${pIdx + 2}, $${pIdx + 3}, $${pIdx + 4}, $${pIdx + 5}, $${pIdx + 6})`
-          );
-          params.push(
-            tx.date,
-            tx.amount,
-            tx.description,
-            tx.payee || '',
-            tx.type,
-            tx.category,
-            tx.mode || 'Other'
-          );
-          pIdx += 7;
+          const query = `
+            INSERT INTO transactions (user_id, date, amount, description, payee, type, category, mode)
+            VALUES ${valueClauses.join(', ')}
+            ON CONFLICT DO NOTHING
+            RETURNING id;
+          `;
+
+          const result = await dbClient.query(query, params);
+          count += (result && result.rowCount) || 0;
         }
+        return count;
+      };
 
-        const query = `
-          INSERT INTO transactions (user_id, date, amount, description, payee, type, category, mode)
-          VALUES ${valueClauses.join(', ')}
-          ON CONFLICT DO NOTHING
-          RETURNING id;
-        `;
-
-        const result = await client.query(query, params);
-        inserted += result.rowCount;
+      // Support pool.withUserTransaction wrapper when present
+      let usedWrapper = false;
+      if (typeof pool.withUserTransaction === 'function') {
+        try {
+          const wrapperResult = await pool.withUserTransaction(userId, async (txClient) => {
+            return await executeBatch(txClient);
+          });
+          if (typeof wrapperResult === 'number') {
+            inserted = wrapperResult;
+            isCommitted = true;
+            usedWrapper = true;
+          }
+        } catch (wrapperErr) {
+          throw wrapperErr;
+        }
       }
 
-      await client.query('COMMIT');
-      isCommitted = true;
+      // If withUserTransaction was not used or returned undefined (e.g. mock with pool.connect), execute transaction directly
+      if (!usedWrapper) {
+        client = await pool.connect();
+        await client.query('BEGIN');
+        await client.query("SELECT set_config('app.user_id', $1, true)", [String(userId)]);
+        inserted = await executeBatch(client);
+        await client.query('COMMIT');
+        isCommitted = true;
+      }
     }
     const tInsertEnd = Date.now();
     const insertElapsedMs = tInsertEnd - tInsertStart;
