@@ -31,7 +31,8 @@ Thumbs.db
 *.xlsx
 *.xls
 *.csv
+!server/tests/fixtures/
+!server/tests/fixtures/**
 EXPTRACKER_COMPLETE_CODEBASE.txt
-server/tests/fixtures/
 scratch/
 backups/

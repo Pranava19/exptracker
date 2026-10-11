@@ -31,6 +31,7 @@ jobs:
         working-directory: ./server
         env:
           JWT_SECRET: ci_test_jwt_secret
+          JWT_REFRESH_SECRET: ci_test_jwt_refresh_secret
           NODE_ENV: test
         run: npm test --if-present
 
