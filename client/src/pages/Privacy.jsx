@@ -2,6 +2,7 @@ import React from 'react';
 import Layout from '../components/Layout';
 import SEO from '../components/SEO';
 import { Shield, Lock, Eye, Database } from 'lucide-react';
+import './Privacy.css';
 
 const Privacy = () => {
   return (
@@ -11,16 +12,16 @@ const Privacy = () => {
         description="Learn how ExpTracker collects, encrypts, and protects your personal expense records and financial data."
         path="/privacy"
       />
-      <div className="max-w-3xl mx-auto py-4 space-y-6 text-ink-800 dark:text-ink-200">
+      <div className="privacy-container">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-ink-900 dark:text-ink-50">Privacy Policy</h1>
-          <p className="text-xs text-ink-500 dark:text-ink-400 mt-1">Last updated: September 2026</p>
+          <h1 className="privacy-title">Privacy Policy</h1>
+          <p className="privacy-updated">Last updated: September 2026</p>
         </div>
 
-        <div className="glass-card p-6 sm:p-8 space-y-6 text-sm leading-relaxed">
-          <section className="space-y-2">
-            <h2 className="text-base font-bold text-ink-900 dark:text-ink-50 flex items-center gap-2">
-              <Shield size={18} className="text-accent" />
+        <div className="glass-card privacy-card">
+          <section className="privacy-section">
+            <h2 className="privacy-section-title">
+              <Shield size={18} className="privacy-icon" />
               1. Our Financial Privacy Commitment
             </h2>
             <p>
@@ -28,9 +29,9 @@ const Privacy = () => {
             </p>
           </section>
 
-          <section className="space-y-2">
-            <h2 className="text-base font-bold text-ink-900 dark:text-ink-50 flex items-center gap-2">
-              <Database size={18} className="text-accent" />
+          <section className="privacy-section">
+            <h2 className="privacy-section-title">
+              <Database size={18} className="privacy-icon" />
               2. Data We Collect
             </h2>
             <p>
@@ -38,9 +39,9 @@ const Privacy = () => {
             </p>
           </section>
 
-          <section className="space-y-2">
-            <h2 className="text-base font-bold text-ink-900 dark:text-ink-50 flex items-center gap-2">
-              <Lock size={18} className="text-accent" />
+          <section className="privacy-section">
+            <h2 className="privacy-section-title">
+              <Lock size={18} className="privacy-icon" />
               3. Encryption & Storage
             </h2>
             <p>
@@ -48,9 +49,9 @@ const Privacy = () => {
             </p>
           </section>
 
-          <section className="space-y-2">
-            <h2 className="text-base font-bold text-ink-900 dark:text-ink-50 flex items-center gap-2">
-              <Eye size={18} className="text-accent" />
+          <section className="privacy-section">
+            <h2 className="privacy-section-title">
+              <Eye size={18} className="privacy-icon" />
               4. Analytics & Telemetry
             </h2>
             <p>

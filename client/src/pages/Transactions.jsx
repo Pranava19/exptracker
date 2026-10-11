@@ -15,17 +15,10 @@ import {
   Inbox,
   Loader2
 } from 'lucide-react';
+import './Transactions.css';
 
 import { CATEGORIES } from '../constants/categories';
 const MODES = ['UPI', 'Card', 'Cash', 'Net Banking', 'Other'];
-
-const inputCls = [
-  'w-full glass-input px-3 py-2 text-xs transition-colors',
-  'text-ink-900 dark:text-ink-50',
-  'placeholder-ink-500 dark:placeholder-ink-400',
-  'focus:outline-none',
-  'dark:[color-scheme:dark]',
-].join(' ');
 
 const groupByDate = (txs) => {
   const groups = {};
@@ -58,55 +51,55 @@ const extractPayee = (desc) => {
 const TransactionCard = ({ tx, onEdit, onDelete, onInlineUpdate }) => {
   const payee = tx.payee || extractPayee(tx.description);
   return (
-    <div className="glass-card p-4 space-y-3 rounded-xl shadow-xs">
-      <div className="flex items-start justify-between gap-3">
-        <div className="min-w-0 flex-1">
-          <p className="text-sm font-semibold text-ink-900 dark:text-ink-50 truncate" title={payee !== '-' ? payee : (tx.description || tx.category)}>
+    <div className="glass-card tx-card">
+      <div className="tx-card-header">
+        <div className="tx-card-header-left">
+          <p className="tx-card-payee" title={payee !== '-' ? payee : (tx.description || tx.category)}>
             {payee !== '-' ? payee : (tx.description || tx.category)}
           </p>
           {tx.description && (
-            <p className="text-xs text-ink-700 dark:text-ink-300 opacity-70 mt-0.5 line-clamp-2 break-words">
+            <p className="tx-card-desc">
               {tx.description}
             </p>
           )}
         </div>
-        <div className="text-right shrink-0">
-          <p className={`font-mono text-sm sm:text-base font-bold ${tx.type === 'income' ? 'text-positive' : 'text-negative'}`}>
+        <div className="tx-card-header-right">
+          <p className={`tx-card-amount ${tx.type === 'income' ? 'tx-amount-income' : 'tx-amount-expense'}`}>
             {tx.type === 'income' ? '+' : '−'}₹{Number(tx.amount).toLocaleString('en-IN', { minimumFractionDigits: 2 })}
           </p>
-          <span className="text-[10px] font-mono text-ink-600 dark:text-ink-400 opacity-70">
+          <span className="tx-card-date">
             {tx.date.slice(0, 10)}
           </span>
         </div>
       </div>
 
-      <div className="flex flex-wrap items-center gap-2 pt-2 border-t border-ink-100/60 dark:border-white/10 text-xs">
-        <span className={`text-[10px] font-mono font-semibold px-2 py-0.5 rounded-full ${tx.type === 'income' ? 'bg-positive/10 text-positive border border-positive/20' : 'bg-negative/10 text-negative border border-negative/20'}`}>
+      <div className="tx-card-meta">
+        <span className={`tx-type-pill ${tx.type === 'income' ? 'tx-type-pill-income' : 'tx-type-pill-expense'}`}>
           {tx.type}
         </span>
         
         <select
           value={tx.category}
           onChange={e => onInlineUpdate(tx.id, 'category', e.target.value)}
-          className="text-[11px] font-sans glass-input rounded-lg px-2 py-1 text-ink-900 dark:text-ink-50 focus:outline-none cursor-pointer"
+          className="glass-input tx-inline-select"
         >
-          {CATEGORIES.map(c => <option key={c} value={c} className="bg-white dark:bg-slate-900">{c}</option>)}
+          {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
         </select>
 
         <select
           value={tx.mode || 'Other'}
           onChange={e => onInlineUpdate(tx.id, 'mode', e.target.value)}
-          className="text-[11px] font-sans glass-input rounded-lg px-2 py-1 text-ink-900 dark:text-ink-50 focus:outline-none cursor-pointer"
+          className="glass-input tx-inline-select"
         >
-          {MODES.map(m => <option key={m} value={m} className="bg-white dark:bg-slate-900">{m}</option>)}
+          {MODES.map(m => <option key={m} value={m}>{m}</option>)}
         </select>
 
-        <div className="ml-auto flex items-center gap-2">
-          <button onClick={() => onEdit(tx)} className="p-1 text-xs font-medium text-accent hover:underline flex items-center gap-1 cursor-pointer">
+        <div className="tx-card-actions">
+          <button onClick={() => onEdit(tx)} className="tx-btn-edit">
             <Edit2 size={13} strokeWidth={1.5} />
             <span>Edit</span>
           </button>
-          <button onClick={() => onDelete(tx.id)} className="p-1 text-xs font-medium text-negative hover:underline flex items-center gap-1 cursor-pointer">
+          <button onClick={() => onDelete(tx.id)} className="tx-btn-delete">
             <Trash2 size={13} strokeWidth={1.5} />
             <span>Delete</span>
           </button>
@@ -119,42 +112,42 @@ const TransactionCard = ({ tx, onEdit, onDelete, onInlineUpdate }) => {
 const TxRow = ({ tx, onEdit, onDelete, onInlineUpdate }) => {
   const payee = tx.payee || extractPayee(tx.description);
   return (
-    <tr className="border-b border-ink-100/60 dark:border-white/5 hover:bg-black/[0.02] dark:hover:bg-white/[0.04] transition-colors group">
-      <td className="py-3 pl-5 pr-4 text-xs font-mono text-ink-700 dark:text-ink-300 opacity-75 whitespace-nowrap">{tx.date.slice(0, 10)}</td>
-      <td className="py-3 pr-4 text-xs text-ink-900 dark:text-ink-50 max-w-[260px]">
-        <span className="block truncate" title={tx.description}>{tx.description || '-'}</span>
+    <tr className="tx-table-row">
+      <td className="tx-cell-date">{tx.date.slice(0, 10)}</td>
+      <td className="tx-cell-desc">
+        <span title={tx.description}>{tx.description || '-'}</span>
       </td>
-      <td className="py-3 pr-4 text-xs font-medium text-ink-900 dark:text-ink-50 max-w-[120px] truncate">{payee}</td>
-      <td className="py-3 pr-4">
+      <td className="tx-cell-payee">{payee}</td>
+      <td className="tx-cell">
         <select
           value={tx.category}
           onChange={e => onInlineUpdate(tx.id, 'category', e.target.value)}
-          className="text-xs font-sans glass-input rounded-lg px-2 py-1 text-ink-900 dark:text-ink-50 focus:outline-none cursor-pointer"
+          className="glass-input tx-table-select"
         >
-          {CATEGORIES.map(c => <option key={c} value={c} className="bg-white dark:bg-slate-900">{c}</option>)}
+          {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
         </select>
       </td>
-      <td className="py-3 pr-4">
+      <td className="tx-cell">
         <select
           value={tx.mode || 'Other'}
           onChange={e => onInlineUpdate(tx.id, 'mode', e.target.value)}
-          className="text-xs font-sans glass-input rounded-lg px-2 py-1 text-ink-900 dark:text-ink-50 focus:outline-none cursor-pointer"
+          className="glass-input tx-table-select"
         >
-          {MODES.map(m => <option key={m} value={m} className="bg-white dark:bg-slate-900">{m}</option>)}
+          {MODES.map(m => <option key={m} value={m}>{m}</option>)}
         </select>
       </td>
-      <td className="py-3 pr-4">
-        <span className={`text-[10px] font-mono font-semibold px-2 py-0.5 rounded-full ${tx.type === 'income' ? 'bg-positive/10 text-positive border border-positive/20' : 'bg-negative/10 text-negative border border-negative/20'}`}>
+      <td className="tx-cell">
+        <span className={`tx-type-pill ${tx.type === 'income' ? 'tx-type-pill-income' : 'tx-type-pill-expense'}`}>
           {tx.type}
         </span>
       </td>
-      <td className={`py-3 pr-4 font-mono text-xs font-bold text-right ${tx.type === 'income' ? 'text-positive' : 'text-negative'}`}>
+      <td className={`tx-cell-amount ${tx.type === 'income' ? 'tx-amount-income' : 'tx-amount-expense'}`}>
         {tx.type === 'income' ? '+' : '−'}₹{Number(tx.amount).toLocaleString('en-IN', { minimumFractionDigits: 2 })}
       </td>
-      <td className="py-3 pl-2 pr-5">
-        <div className="flex gap-3 opacity-0 group-hover:opacity-100 transition-opacity justify-end">
-          <button onClick={() => onEdit(tx)} className="text-xs font-medium text-accent hover:underline cursor-pointer">Edit</button>
-          <button onClick={() => onDelete(tx.id)} className="text-xs font-medium text-negative hover:underline cursor-pointer">Delete</button>
+      <td className="tx-cell-actions">
+        <div className="tx-row-actions">
+          <button onClick={() => onEdit(tx)} className="tx-row-action-btn tx-row-edit">Edit</button>
+          <button onClick={() => onDelete(tx.id)} className="tx-row-action-btn tx-row-delete">Delete</button>
         </div>
       </td>
     </tr>
@@ -401,8 +394,8 @@ const Transactions = () => {
   const yearExpense = yearTxs.filter(tx => tx.type === 'expense').reduce((s, tx) => s + Number(tx.amount), 0);
   const yearSavings = yearIncome - yearExpense;
 
-  const thCls = 'pb-3 pr-4 text-left text-[10px] font-mono font-semibold text-ink-700 dark:text-ink-200 uppercase tracking-wider cursor-pointer select-none hover:text-ink-900 dark:hover:text-white transition-colors';
-  const thNoCls = 'pb-3 pr-4 text-left text-[10px] font-mono font-semibold text-ink-700 dark:text-ink-200 uppercase tracking-wider opacity-75';
+  const thCls = 'tx-th tx-th-clickable';
+  const thNoCls = 'tx-th';
   const rowProps = { onEdit: handleEdit, onDelete: handleDelete, onInlineUpdate: handleInlineUpdate };
 
   return (
@@ -414,54 +407,54 @@ const Transactions = () => {
       />
       {toast && <Toast message={toast.message} type={toast.type} onClose={hideToast} />}
 
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-6">
-        <div className="glass-card p-4 rounded-xl">
-          <p className="text-[10px] font-mono font-semibold uppercase tracking-wider text-ink-700 dark:text-ink-300 opacity-60 mb-1">{currentYear} Income</p>
-          <p className="font-mono text-base font-semibold text-positive">
+      <div className="tx-summary-grid">
+        <div className="glass-card tx-summary-card">
+          <p className="tx-summary-label">{currentYear} Income</p>
+          <p className="tx-summary-val tx-summary-val-positive">
             ₹{yearIncome.toLocaleString('en-IN', { maximumFractionDigits: 0 })}
           </p>
         </div>
-        <div className="glass-card p-4 rounded-xl">
-          <p className="text-[10px] font-mono font-semibold uppercase tracking-wider text-ink-700 dark:text-ink-300 opacity-60 mb-1">{currentYear} Expense</p>
-          <p className="font-mono text-base font-semibold text-negative">
+        <div className="glass-card tx-summary-card">
+          <p className="tx-summary-label">{currentYear} Expense</p>
+          <p className="tx-summary-val tx-summary-val-negative">
             ₹{yearExpense.toLocaleString('en-IN', { maximumFractionDigits: 0 })}
           </p>
         </div>
-        <div className="glass-card p-4 rounded-xl">
-          <p className="text-[10px] font-mono font-semibold uppercase tracking-wider text-ink-700 dark:text-ink-300 opacity-60 mb-1">Net Savings</p>
-          <p className={`font-mono text-base font-semibold ${yearSavings >= 0 ? 'text-accent' : 'text-negative'}`}>
+        <div className="glass-card tx-summary-card">
+          <p className="tx-summary-label">Net Savings</p>
+          <p className={`tx-summary-val ${yearSavings >= 0 ? 'tx-summary-val-accent' : 'tx-summary-val-negative'}`}>
             ₹{Math.abs(yearSavings).toLocaleString('en-IN', { maximumFractionDigits: 0 })}
           </p>
         </div>
       </div>
 
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-5">
-        <h1 className="text-base font-semibold text-ink-900 dark:text-ink-50 tracking-tight flex items-center gap-2">
+      <div className="tx-header">
+        <h1 className="tx-header-title">
           All Transactions
-          <span className="text-xs font-mono font-normal text-ink-700 dark:text-ink-300 opacity-60">({sorted.length})</span>
+          <span className="tx-header-count">({sorted.length})</span>
         </h1>
-        <div className="flex items-center gap-2">
+        <div className="tx-header-actions">
           <button
             onClick={handleExport}
             disabled={exporting}
-            className="glass-btn flex-1 sm:flex-none justify-center flex items-center gap-1.5 px-3.5 py-2 sm:py-1.5 text-xs font-semibold cursor-pointer disabled:opacity-50"
+            className="glass-btn tx-export-btn"
             title="Export all transactions from start date till today as an Excel (.xlsx) spreadsheet"
           >
             {exporting ? (
               <>
-                <Loader2 size={14} className="animate-spin" />
+                <Loader2 size={14} className="tx-spinner" />
                 <span>Exporting...</span>
               </>
             ) : (
               <>
-                <FileSpreadsheet size={14} strokeWidth={1.5} className="text-emerald-500" />
+                <FileSpreadsheet size={14} strokeWidth={1.5} className="tx-excel-icon" />
                 <span>Export Excel</span>
               </>
             )}
           </button>
           <button
             onClick={() => { setShowForm(f => !f); if (editId) cancelEdit(); }}
-            className="glass-btn-primary fixed sm:static bottom-[calc(5rem+env(safe-area-inset-bottom,0px))] sm:bottom-auto right-4 sm:right-auto z-40 sm:z-auto shadow-lg sm:shadow-sm rounded-full sm:rounded-xl px-4 sm:px-3.5 py-3 sm:py-1.5 flex items-center justify-center gap-1.5 text-xs font-semibold cursor-pointer"
+            className="glass-btn-primary tx-add-btn"
           >
             <Plus size={15} strokeWidth={2} />
             <span>Add transaction</span>
@@ -470,44 +463,44 @@ const Transactions = () => {
       </div>
 
       {showForm && (
-        <div className="glass-card p-4 sm:p-5 mb-6 rounded-2xl shadow-sm">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xs font-mono font-semibold uppercase tracking-wider text-ink-900 dark:text-ink-50">
+        <div className="glass-card tx-form-card">
+          <div className="tx-form-header">
+            <h2 className="tx-form-title">
               {editId ? 'Edit transaction' : 'New transaction'}
             </h2>
-            <button onClick={cancelEdit} className="text-ink-700 dark:text-ink-200 hover:text-ink-900 cursor-pointer">
+            <button onClick={cancelEdit} className="tx-form-close-btn">
               <X size={16} strokeWidth={1.5} />
             </button>
           </div>
           <form onSubmit={handleSubmit}>
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
-              <select name="type" value={form.type} onChange={handleChange} className={inputCls}>
-                <option value="expense" className="bg-white dark:bg-slate-900">Expense</option>
-                <option value="income" className="bg-white dark:bg-slate-900">Income</option>
+            <div className="tx-form-grid">
+              <select name="type" value={form.type} onChange={handleChange} className="glass-input tx-input">
+                <option value="expense">Expense</option>
+                <option value="income">Income</option>
               </select>
-              <select name="mode" value={form.mode} onChange={handleChange} className={inputCls}>
-                {MODES.map(m => <option key={m} value={m} className="bg-white dark:bg-slate-900">{m}</option>)}
+              <select name="mode" value={form.mode} onChange={handleChange} className="glass-input tx-input">
+                {MODES.map(m => <option key={m} value={m}>{m}</option>)}
               </select>
-              <select name="category" value={form.category} onChange={handleChange} className={inputCls}>
-                {CATEGORIES.map(c => <option key={c} value={c} className="bg-white dark:bg-slate-900">{c}</option>)}
+              <select name="category" value={form.category} onChange={handleChange} className="glass-input tx-input">
+                {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
               </select>
-              <input type="number" name="amount" placeholder="Amount" value={form.amount} onChange={handleChange} required className={inputCls} />
-              <input type="text" name="description" placeholder="Description" value={form.description} onChange={handleChange} className={inputCls} />
-              <input type="date" name="date" value={form.date} onChange={handleChange} required className={inputCls} />
+              <input type="number" name="amount" placeholder="Amount" value={form.amount} onChange={handleChange} required className="glass-input tx-input" />
+              <input type="text" name="description" placeholder="Description" value={form.description} onChange={handleChange} className="glass-input tx-input" />
+              <input type="date" name="date" value={form.date} onChange={handleChange} required className="glass-input tx-input" />
             </div>
-            <div className="flex gap-2 mt-4">
+            <div className="tx-form-actions">
               <button
                 type="submit"
                 disabled={submitting}
-                className="glass-btn-primary flex-1 sm:flex-none justify-center flex items-center gap-2 px-5 py-2 text-xs font-semibold disabled:opacity-50 cursor-pointer"
+                className="glass-btn-primary tx-form-submit-btn"
               >
-                {submitting && <Loader2 size={14} className="animate-spin" />}
+                {submitting && <Loader2 size={14} className="tx-spinner" />}
                 <span>{editId ? 'Update' : 'Add'}</span>
               </button>
               <button
                 type="button"
                 onClick={cancelEdit}
-                className="glass-btn flex-1 sm:flex-none justify-center px-4 py-2 text-xs font-medium cursor-pointer"
+                className="glass-btn tx-form-cancel-btn"
               >
                 Cancel
               </button>
@@ -516,28 +509,28 @@ const Transactions = () => {
         </div>
       )}
 
-      <div className="glass-card p-4 mb-6 rounded-xl">
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-3">
-          <select value={filter.type} onChange={e => setFilter({ ...filter, type: e.target.value })} className={inputCls}>
-            <option value="" className="bg-white dark:bg-slate-900 text-ink-900 dark:text-ink-50">All types</option>
-            <option value="income" className="bg-white dark:bg-slate-900 text-ink-900 dark:text-ink-50">Income</option>
-            <option value="expense" className="bg-white dark:bg-slate-900 text-ink-900 dark:text-ink-50">Expense</option>
+      <div className="glass-card tx-filter-card">
+        <div className="tx-filter-grid">
+          <select value={filter.type} onChange={e => setFilter({ ...filter, type: e.target.value })} className="glass-input tx-input">
+            <option value="">All types</option>
+            <option value="income">Income</option>
+            <option value="expense">Expense</option>
           </select>
-          <select value={filter.category} onChange={e => setFilter({ ...filter, category: e.target.value })} className={inputCls}>
-            <option value="" className="bg-white dark:bg-slate-900 text-ink-900 dark:text-ink-50">All categories</option>
-            {CATEGORIES.map(c => <option key={c} value={c} className="bg-white dark:bg-slate-900 text-ink-900 dark:text-ink-50">{c}</option>)}
+          <select value={filter.category} onChange={e => setFilter({ ...filter, category: e.target.value })} className="glass-input tx-input">
+            <option value="">All categories</option>
+            {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
           </select>
-          <div className="flex flex-col">
-            <label className="text-[10px] font-mono text-ink-700 dark:text-ink-300 mb-1 select-none">From</label>
-            <input type="date" value={filter.start_date} onChange={e => setFilter({ ...filter, start_date: e.target.value })} className={inputCls} />
+          <div className="tx-filter-date-group">
+            <label className="tx-filter-date-label">From</label>
+            <input type="date" value={filter.start_date} onChange={e => setFilter({ ...filter, start_date: e.target.value })} className="glass-input tx-input" />
           </div>
-          <div className="flex flex-col">
-            <label className="text-[10px] font-mono text-ink-700 dark:text-ink-300 mb-1 select-none">To</label>
-            <input type="date" value={filter.end_date} onChange={e => setFilter({ ...filter, end_date: e.target.value })} className={inputCls} />
+          <div className="tx-filter-date-group">
+            <label className="tx-filter-date-label">To</label>
+            <input type="date" value={filter.end_date} onChange={e => setFilter({ ...filter, end_date: e.target.value })} className="glass-input tx-input" />
           </div>
           <button
             onClick={() => setFilter({ type: '', category: '', start_date: '', end_date: '' })}
-            className="glass-btn sm:col-span-2 md:col-span-1 self-end flex items-center justify-center gap-1.5 px-3 py-2 text-xs font-medium cursor-pointer w-full"
+            className="glass-btn tx-filter-clear-btn"
           >
             <X size={12} strokeWidth={1.5} />
             <span>Clear</span>
@@ -545,32 +538,32 @@ const Transactions = () => {
         </div>
       </div>
 
-      <div className="glass-card rounded-2xl overflow-hidden">
-        <div className="md:hidden p-4 space-y-3">
+      <div className="glass-card tx-list-card">
+        <div className="tx-mobile-list">
           {loading ? (
-            <div className="space-y-3">
+            <div className="tx-mobile-skeleton-list">
               {[...Array(4)].map((_, i) => (
-                <div key={i} className="animate-pulse flex justify-between p-3.5 glass-card-subtle rounded-xl">
-                  <div className="space-y-1.5">
-                    <div className="h-3 bg-black/5 dark:bg-white/10 rounded w-32" />
-                    <div className="h-2 bg-black/5 dark:bg-white/10 rounded w-20" />
+                <div key={i} className="glass-card-subtle tx-mobile-skeleton-card tx-skeleton-pulse">
+                  <div className="tx-skeleton-lines">
+                    <div className="tx-skeleton-line tx-skeleton-line-title" />
+                    <div className="tx-skeleton-line tx-skeleton-line-sub" />
                   </div>
-                  <div className="h-3 bg-black/5 dark:bg-white/10 rounded w-14" />
+                  <div className="tx-skeleton-line tx-skeleton-line-badge" />
                 </div>
               ))}
             </div>
           ) : sorted.length === 0 ? (
-            <div className="py-12 text-center text-ink-700 dark:text-ink-200">
-              <Inbox size={32} strokeWidth={1.5} className="mx-auto mb-2 opacity-50" />
-              <p className="text-xs font-mono opacity-70">No transactions found</p>
+            <div className="tx-empty-state">
+              <Inbox size={32} strokeWidth={1.5} className="tx-empty-icon" />
+              <p className="tx-empty-text">No transactions found</p>
             </div>
           ) : sort.field === 'date' ? (
             Object.entries(grouped)
               .sort(([a], [b]) => sort.order === 'desc' ? b.localeCompare(a) : a.localeCompare(b))
               .map(([date, txs]) => (
-                <div key={date} className="space-y-2">
-                  <div className="pt-2 pb-1 border-b border-ink-100/60 dark:border-white/10">
-                    <p className="text-[10px] font-mono font-semibold uppercase tracking-wider text-ink-600 dark:text-ink-300 opacity-75">
+                <div key={date} className="tx-mobile-date-group">
+                  <div className="tx-mobile-date-header">
+                    <p className="tx-mobile-date-text">
                       {formatGroupLabel(date)}
                     </p>
                   </div>
@@ -583,18 +576,18 @@ const Transactions = () => {
         </div>
 
         {/* Desktop View: Table */}
-        <div className="hidden md:block overflow-x-auto">
+        <div className="tx-desktop-table-wrapper">
           {loading ? (
-            <table className="w-full">
+            <table className="tx-table">
               <thead>
-                <tr className="border-b border-ink-100/60 dark:border-white/10">
+                <tr className="tx-table-head-row">
                   <th className={thCls}>Date</th>
                   <th className={thNoCls}>Description</th>
                   <th className={thNoCls}>Payee</th>
                   <th className={thNoCls}>Category</th>
                   <th className={thNoCls}>Mode</th>
                   <th className={thNoCls}>Type</th>
-                  <th className={`${thNoCls} text-right`}>Amount</th>
+                  <th className={`${thNoCls} tx-th-right`}>Amount</th>
                   <th className={thNoCls}></th>
                 </tr>
               </thead>
@@ -603,21 +596,21 @@ const Transactions = () => {
               </tbody>
             </table>
           ) : sorted.length === 0 ? (
-            <div className="py-16 text-center text-ink-700 dark:text-ink-200">
-              <Inbox size={36} strokeWidth={1.5} className="mx-auto mb-2 opacity-50" />
-              <p className="text-xs font-mono opacity-70">No transactions found</p>
+            <div className="tx-empty-state">
+              <Inbox size={36} strokeWidth={1.5} className="tx-empty-icon" />
+              <p className="tx-empty-text">No transactions found</p>
             </div>
           ) : (
-            <table className="w-full">
+            <table className="tx-table">
               <thead>
-                <tr className="border-b border-ink-100/60 dark:border-white/10">
-                  <th className={thCls} onClick={() => toggleSort('date')}>Date <ArrowUpDown size={11} className="inline ml-1 opacity-60" /></th>
+                <tr className="tx-table-head-row">
+                  <th className={thCls} onClick={() => toggleSort('date')}>Date <ArrowUpDown size={11} className="tx-sort-icon" /></th>
                   <th className={thNoCls} style={{ minWidth: 180 }}>Description</th>
                   <th className={thNoCls} style={{ minWidth: 100 }}>Payee</th>
                   <th className={thNoCls}>Category</th>
                   <th className={thNoCls}>Mode</th>
-                  <th className={thCls} onClick={() => toggleSort('type')}>Type <ArrowUpDown size={11} className="inline ml-1 opacity-60" /></th>
-                  <th className={`${thCls} text-right`} onClick={() => toggleSort('amount')}>Amount <ArrowUpDown size={11} className="inline ml-1 opacity-60" /></th>
+                  <th className={thCls} onClick={() => toggleSort('type')}>Type <ArrowUpDown size={11} className="tx-sort-icon" /></th>
+                  <th className={`${thCls} tx-th-right`} onClick={() => toggleSort('amount')}>Amount <ArrowUpDown size={11} className="tx-sort-icon" /></th>
                   <th className={thNoCls}></th>
                 </tr>
               </thead>
@@ -628,9 +621,9 @@ const Transactions = () => {
                       .map(([date, txs]) => (
                         <React.Fragment key={date}>
                           <tr>
-                            <td colSpan={8} className="px-0 py-0">
-                              <div className="px-5 py-2 glass-card-subtle border-y border-ink-100/60 dark:border-white/10">
-                                <p className="text-[10px] font-mono font-semibold uppercase tracking-wider text-ink-600 dark:text-ink-300 opacity-75">
+                            <td colSpan={8} className="tx-table-date-cell">
+                              <div className="glass-card-subtle tx-table-date-badge">
+                                <p className="tx-table-date-text">
                                   {formatGroupLabel(date)}
                                 </p>
                               </div>

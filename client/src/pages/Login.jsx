@@ -4,6 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import axios from '../api/axios';
 import SEO from '../components/SEO';
 import { Lock, Mail, Loader2, Eye, EyeOff } from 'lucide-react';
+import './Login.css';
 
 const Login = () => {
   const { login } = useAuth();
@@ -29,7 +30,7 @@ const Login = () => {
   };
 
   return (
-    <div className="min-h-screen relative overflow-hidden flex items-center justify-center p-4">
+    <div className="login-page-wrapper">
       {/* Ambient background mesh & glowing blobs */}
       <div className="ambient-glow-wrapper" aria-hidden="true">
         <div className="ambient-blob-1" />
@@ -42,27 +43,27 @@ const Login = () => {
         description="Sign in to your ExpTracker account to access your personal expense dashboard, transactions ledger, bank statement parser, and reports."
         path="/login"
       />
-      <main className="w-full max-w-sm relative z-10">
-        <div className="text-center mb-8">
-          <Link to="/dashboard" className="inline-flex items-center">
-            <h1 className="font-bold text-2xl tracking-tight text-ink-900 dark:text-ink-50">
-              Exp<span className="text-accent">Tracker</span>
+      <main className="login-main-container">
+        <div className="login-brand-header">
+          <Link to="/dashboard" className="login-brand-link">
+            <h1 className="login-brand-logo">
+              Exp<span className="login-brand-accent">Tracker</span>
             </h1>
           </Link>
-          <p className="text-xs text-ink-600 dark:text-ink-300 mt-1">Sign in to manage your finances</p>
+          <p className="login-subtitle">Sign in to manage your finances</p>
         </div>
 
-        <div className="glass-card p-6 sm:p-7 rounded-2xl shadow-lg">
+        <div className="glass-card login-card">
           {error && (
-            <div className="mb-4 p-3 rounded-xl bg-negative/10 border border-negative/20 text-negative text-xs">
+            <div className="login-error">
               {error}
             </div>
           )}
 
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={handleSubmit} className="login-form">
             <div>
-              <label className="text-xs font-medium text-ink-900 dark:text-ink-50 block mb-1.5 flex items-center gap-1.5">
-                <Mail size={14} strokeWidth={1.5} className="text-ink-600 dark:text-ink-300" />
+              <label className="login-label">
+                <Mail size={14} strokeWidth={1.5} className="login-label-icon" />
                 <span>Email Address</span>
               </label>
               <input
@@ -70,28 +71,28 @@ const Login = () => {
                 value={form.email}
                 onChange={e => setForm({ ...form, email: e.target.value })}
                 required
-                className="w-full glass-input px-3.5 py-2.5 text-xs text-ink-900 dark:text-ink-50 focus:outline-none"
+                className="glass-input login-input"
                 placeholder="you@example.com"
               />
             </div>
             <div>
-              <label className="text-xs font-medium text-ink-900 dark:text-ink-50 block mb-1.5 flex items-center gap-1.5">
-                <Lock size={14} strokeWidth={1.5} className="text-ink-600 dark:text-ink-300" />
+              <label className="login-label">
+                <Lock size={14} strokeWidth={1.5} className="login-label-icon" />
                 <span>Password</span>
               </label>
-              <div className="relative">
+              <div className="login-password-wrapper">
                 <input
                   type={showPassword ? 'text' : 'password'}
                   value={form.password}
                   onChange={e => setForm({ ...form, password: e.target.value })}
                   required
-                  className="w-full glass-input px-3.5 py-2.5 text-xs text-ink-900 dark:text-ink-50 focus:outline-none pr-10"
+                  className="glass-input login-input login-input-password"
                   placeholder="••••••••"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3.5 top-1/2 -translate-y-1/2 text-ink-600 dark:text-ink-300 opacity-70 hover:opacity-100 p-0.5 cursor-pointer"
+                  className="login-password-toggle"
                   aria-label="Toggle password visibility"
                 >
                   {showPassword ? <EyeOff size={14} /> : <Eye size={14} />}
@@ -101,15 +102,15 @@ const Login = () => {
             <button
               type="submit"
               disabled={loading}
-              className="glass-btn-primary w-full py-2.5 text-xs font-semibold disabled:opacity-50 flex items-center justify-center gap-2 mt-2 shadow-sm cursor-pointer"
+              className="glass-btn-primary login-submit-btn"
             >
               {loading ? <Loader2 size={16} className="animate-spin" /> : null}
               <span>{loading ? 'Signing in...' : 'Sign in'}</span>
             </button>
           </form>
-          <p className="text-xs text-center mt-5 text-ink-600 dark:text-ink-300">
+          <p className="login-footer-text">
             Don't have an account?{' '}
-            <Link to="/register" className="text-accent font-semibold hover:underline">Create one</Link>
+            <Link to="/register" className="login-footer-link">Create one</Link>
           </p>
         </div>
       </main>

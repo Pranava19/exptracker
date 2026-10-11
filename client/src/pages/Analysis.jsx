@@ -10,6 +10,7 @@ import {
   TrendingUp, TrendingDown, Wallet, ArrowUpRight,
   Calendar, Filter, RotateCcw, Sparkles, Activity
 } from 'lucide-react';
+import './Analysis.css';
 
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
@@ -19,12 +20,12 @@ const fmtDecimal = (n) => '₹' + Number(n || 0).toLocaleString('en-IN', { minim
 const CustomTooltip = ({ active, payload, label }) => {
   if (!active || !payload?.length) return null;
   return (
-    <div className="glass-modal text-white p-3.5 shadow-xl font-mono text-xs max-w-xs space-y-1.5 bg-slate-900/90 border-white/15">
-      <p className="font-sans font-semibold text-slate-200 text-xs border-b border-white/10 pb-1">{label}</p>
+    <div className="glass-modal analysis-tooltip">
+      <p className="analysis-tooltip-label">{label}</p>
       {payload.map((p, i) => (
-        <div key={i} className="flex items-center justify-between gap-4 font-medium" style={{ color: p.color || p.fill }}>
-          <span className="opacity-90">{p.name}:</span>
-          <span className="font-semibold">{fmtDecimal(p.value)}</span>
+        <div key={i} className="analysis-tooltip-row" style={{ color: p.color || p.fill }}>
+          <span style={{ opacity: 0.9 }}>{p.name}:</span>
+          <span style={{ fontWeight: 600 }}>{fmtDecimal(p.value)}</span>
         </div>
       ))}
     </div>
@@ -32,21 +33,21 @@ const CustomTooltip = ({ active, payload, label }) => {
 };
 
 const SectionHeader = ({ title, subtitle, icon: Icon }) => (
-  <div className="flex items-center gap-2.5 mb-4">
+  <div className="analysis-section-header">
     {Icon && (
-      <div className="p-2 rounded-xl bg-accent/15 text-accent dark:bg-accent/25">
+      <div className="analysis-section-icon">
         <Icon size={18} strokeWidth={2} />
       </div>
     )}
     <div>
-      <h2 className="text-base font-bold text-ink-900 dark:text-ink-50">{title}</h2>
-      {subtitle && <p className="text-xs text-ink-600 dark:text-ink-300 mt-0.5">{subtitle}</p>}
+      <h2 className="analysis-section-title">{title}</h2>
+      {subtitle && <p className="analysis-section-subtitle">{subtitle}</p>}
     </div>
   </div>
 );
 
 const Card = ({ children, className = '' }) => (
-  <div className={`glass-card rounded-2xl p-5 shadow-sm transition-all min-w-0 ${className}`}>
+  <div className={`glass-card analysis-card ${className}`}>
     {children}
   </div>
 );
@@ -189,24 +190,24 @@ const Analysis = () => {
       />
 
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+      <div className="analysis-header">
         <div>
-          <div className="flex items-center gap-2">
-            <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-ink-900 dark:text-ink-50">
+          <div className="analysis-header-title-row">
+            <h1 className="analysis-page-title">
               Financial Analysis
             </h1>
-            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-accent/10 text-accent glass-pill border-accent/20">
+            <span className="analysis-pill-badge">
               <Sparkles size={12} /> Insights
             </span>
           </div>
-          <p className="text-xs text-ink-600 dark:text-ink-300 mt-1">
+          <p className="analysis-header-desc">
             Simple breakdown of your income, expenses, cash flow trends, and highest spending.
           </p>
         </div>
 
         <button
           onClick={handleResetFilters}
-          className="glass-btn self-start sm:self-auto flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold cursor-pointer min-h-[44px]"
+          className="glass-btn analysis-reset-btn"
         >
           <RotateCcw size={14} />
           <span>Reset Filters</span>
@@ -214,22 +215,22 @@ const Analysis = () => {
       </div>
 
       {/* Easy Filter Controls */}
-      <Card className="mb-6">
-        <div className="flex items-center gap-2 text-xs font-bold text-ink-900 dark:text-ink-50 mb-3">
-          <Filter size={16} className="text-accent" />
+      <Card className="analysis-filter-card">
+        <div className="analysis-filter-heading">
+          <Filter size={16} className="analysis-filter-icon" />
           <span>Quick Filters</span>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 text-xs">
+        <div className="analysis-filter-grid">
           <div>
-            <label className="text-[11px] font-semibold text-ink-600 dark:text-ink-300 block mb-1">Year</label>
+            <label className="analysis-filter-label">Year</label>
             <select
               value={year}
               onChange={e => setYear(Number(e.target.value))}
-              className="w-full glass-input px-3 py-2 text-xs min-h-[44px] cursor-pointer"
+              className="glass-input analysis-filter-select"
             >
               {availableYears.map(y => (
-                <option key={y} value={y} className="bg-white dark:bg-slate-900 text-ink-900 dark:text-ink-50">
+                <option key={y} value={y}>
                   {y}
                 </option>
               ))}
@@ -237,15 +238,15 @@ const Analysis = () => {
           </div>
 
           <div>
-            <label className="text-[11px] font-semibold text-ink-600 dark:text-ink-300 block mb-1">Month</label>
+            <label className="analysis-filter-label">Month</label>
             <select
               value={month}
               onChange={e => setMonth(e.target.value ? Number(e.target.value) : '')}
-              className="w-full glass-input px-3 py-2 text-xs min-h-[44px] cursor-pointer"
+              className="glass-input analysis-filter-select"
             >
-              <option value="" className="bg-white dark:bg-slate-900 text-ink-900 dark:text-ink-50">All Months</option>
+              <option value="">All Months</option>
               {MONTHS.map((m, idx) => (
-                <option key={m} value={idx + 1} className="bg-white dark:bg-slate-900 text-ink-900 dark:text-ink-50">
+                <option key={m} value={idx + 1}>
                   {m}
                 </option>
               ))}
@@ -253,33 +254,33 @@ const Analysis = () => {
           </div>
 
           <div>
-            <label className="text-[11px] font-semibold text-ink-600 dark:text-ink-300 block mb-1">From Date</label>
+            <label className="analysis-filter-label">From Date</label>
             <input
               type="date"
               value={fromDate}
               onChange={e => setFromDate(e.target.value)}
-              className="w-full glass-input px-3 py-2 text-xs min-h-[44px] cursor-pointer dark:[color-scheme:dark]"
+              className="glass-input analysis-filter-date"
             />
           </div>
 
           <div>
-            <label className="text-[11px] font-semibold text-ink-600 dark:text-ink-300 block mb-1">To Date</label>
+            <label className="analysis-filter-label">To Date</label>
             <input
               type="date"
               value={toDate}
               onChange={e => setToDate(e.target.value)}
-              className="w-full glass-input px-3 py-2 text-xs min-h-[44px] cursor-pointer dark:[color-scheme:dark]"
+              className="glass-input analysis-filter-date"
             />
           </div>
 
           <div>
-            <label className="text-[11px] font-semibold text-ink-600 dark:text-ink-300 block mb-1">Transaction Type</label>
-            <div className="flex glass-card-subtle p-1 rounded-xl border border-ink-100/60 dark:border-white/10 min-h-[44px] items-center">
+            <label className="analysis-filter-label">Transaction Type</label>
+            <div className="glass-card-subtle analysis-type-toggle">
               {['all', 'income', 'expense'].map(t => (
                 <button
                   key={t}
                   onClick={() => setType(t)}
-                  className={`flex-1 py-1.5 text-xs font-semibold capitalize rounded-lg transition-all cursor-pointer ${type === t ? 'glass-btn-primary' : 'text-ink-700 dark:text-ink-300 hover:text-ink-900 dark:hover:text-white'}`}
+                  className={`analysis-type-btn ${type === t ? 'glass-btn-primary analysis-type-btn-active' : ''}`}
                 >
                   {t}
                 </button>
@@ -290,75 +291,75 @@ const Analysis = () => {
       </Card>
 
       {/* KPI Cards: Clean 4-Column Layout */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+      <div className="analysis-kpi-grid">
         {/* Total Income */}
-        <Card className="border-l-4 border-l-positive">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-xs font-bold uppercase tracking-wider text-ink-600 dark:text-ink-300">Total Income</span>
-            <div className="p-2 rounded-xl bg-positive/10 text-positive">
+        <Card className="analysis-kpi-card analysis-kpi-positive">
+          <div className="analysis-kpi-header">
+            <span className="analysis-kpi-label">Total Income</span>
+            <div className="analysis-kpi-icon-positive">
               <TrendingUp size={18} strokeWidth={2} />
             </div>
           </div>
-          <p className="text-2xl font-bold font-mono text-positive tracking-tight">
+          <p className="analysis-kpi-val analysis-kpi-val-positive">
             {fmt(summaryCards.total_income)}
           </p>
-          <p className="text-[11px] text-ink-500 dark:text-ink-400 mt-1">Total credited funds in range</p>
+          <p className="analysis-kpi-sub">Total credited funds in range</p>
         </Card>
 
         {/* Total Expenses */}
-        <Card className="border-l-4 border-l-negative">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-xs font-bold uppercase tracking-wider text-ink-600 dark:text-ink-300">Total Expenses</span>
-            <div className="p-2 rounded-xl bg-negative/10 text-negative">
+        <Card className="analysis-kpi-card analysis-kpi-negative">
+          <div className="analysis-kpi-header">
+            <span className="analysis-kpi-label">Total Expenses</span>
+            <div className="analysis-kpi-icon-negative">
               <TrendingDown size={18} strokeWidth={2} />
             </div>
           </div>
-          <p className="text-2xl font-bold font-mono text-negative tracking-tight">
+          <p className="analysis-kpi-val analysis-kpi-val-negative">
             {fmt(summaryCards.total_expenses)}
           </p>
-          <p className="text-[11px] text-ink-500 dark:text-ink-400 mt-1">Total debited spend in range</p>
+          <p className="analysis-kpi-sub">Total debited spend in range</p>
         </Card>
 
         {/* Net Cash Flow / Balance */}
-        <Card className="border-l-4 border-l-accent">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-xs font-bold uppercase tracking-wider text-ink-600 dark:text-ink-300">Net Cash Flow</span>
-            <div className="p-2 rounded-xl bg-accent/10 text-accent">
+        <Card className="analysis-kpi-card analysis-kpi-accent">
+          <div className="analysis-kpi-header">
+            <span className="analysis-kpi-label">Net Cash Flow</span>
+            <div className="analysis-kpi-icon-accent">
               <Wallet size={18} strokeWidth={2} />
             </div>
           </div>
-          <p className={`text-2xl font-bold font-mono tracking-tight ${summaryCards.current_balance >= 0 ? 'text-accent' : 'text-negative'}`}>
+          <p className={`analysis-kpi-val ${summaryCards.current_balance >= 0 ? 'analysis-kpi-val-accent' : 'analysis-kpi-val-negative'}`}>
             {fmt(summaryCards.current_balance)}
           </p>
-          <p className="text-[11px] text-ink-500 dark:text-ink-400 mt-1">Income minus total expenses</p>
+          <p className="analysis-kpi-sub">Income minus total expenses</p>
         </Card>
 
         {/* Highest Single Expense */}
-        <Card className="border-l-4 border-l-purple-500">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-xs font-bold uppercase tracking-wider text-ink-600 dark:text-ink-300">Highest Single Spend</span>
-            <div className="p-2 rounded-xl bg-purple-500/10 text-purple-600 dark:text-purple-400">
+        <Card className="analysis-kpi-card analysis-kpi-purple">
+          <div className="analysis-kpi-header">
+            <span className="analysis-kpi-label">Highest Single Spend</span>
+            <div className="analysis-kpi-icon-purple">
               <ArrowUpRight size={18} strokeWidth={2} />
             </div>
           </div>
-          <p className="text-2xl font-bold font-mono text-purple-600 dark:text-purple-400 tracking-tight">
+          <p className="analysis-kpi-val analysis-kpi-val-purple">
             {fmt(summaryCards.highest_expense)}
           </p>
-          <p className="text-[11px] text-ink-500 dark:text-ink-400 mt-1">
+          <p className="analysis-kpi-sub">
             {summaryCards.avg_daily_expense > 0 ? `Avg ${fmt(summaryCards.avg_daily_expense)} / active day` : 'Single largest transaction'}
           </p>
         </Card>
       </div>
 
       {loading ? (
-        <div className="glass-card flex flex-col items-center justify-center py-24 text-ink-600 dark:text-ink-300 rounded-2xl">
-          <span className="w-8 h-8 border-3 border-accent border-t-transparent rounded-full animate-spin mb-3" />
-          <span className="text-sm font-semibold">Loading cash flow analysis...</span>
+        <div className="glass-card analysis-loading-state">
+          <span className="analysis-spinner" />
+          <span className="analysis-loading-text">Loading cash flow analysis...</span>
         </div>
       ) : (
         <>
           {/* Main Charts Row */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+          <div className="analysis-charts-row">
             <Card>
               <SectionHeader
                 title="Monthly Income vs Expenses"
@@ -366,7 +367,7 @@ const Analysis = () => {
                 icon={Activity}
               />
               {!hasMonthlyBarData ? (
-                <div className="py-20 text-center text-xs font-mono text-ink-500 dark:text-ink-400">
+                <div className="analysis-no-data">
                   No monthly data recorded for {year}
                 </div>
               ) : (
@@ -390,7 +391,7 @@ const Analysis = () => {
                 icon={TrendingUp}
               />
               {!hasNetCashFlowData ? (
-                <div className="py-20 text-center text-xs font-mono text-ink-500 dark:text-ink-400">
+                <div className="analysis-no-data">
                   No cash flow trajectory data for {year}
                 </div>
               ) : (
@@ -424,7 +425,7 @@ const Analysis = () => {
           </div>
 
           {/* Secondary Detail Row */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className="analysis-charts-row">
             <Card>
               <SectionHeader
                 title="Daily Expense Timeline"
@@ -432,7 +433,7 @@ const Analysis = () => {
                 icon={Calendar}
               />
               {dailyExpenseData.length === 0 ? (
-                <div className="py-20 text-center text-xs font-mono text-ink-500 dark:text-ink-400">
+                <div className="analysis-no-data">
                   No daily expense entries for {MONTHS[(month || currentMonth) - 1]} {year}
                 </div>
               ) : (
@@ -464,7 +465,7 @@ const Analysis = () => {
                 icon={ArrowUpRight}
               />
               {topTransactionsData.length === 0 ? (
-                <div className="py-20 text-center text-xs font-mono text-ink-500 dark:text-ink-400">
+                <div className="analysis-no-data">
                   No expense transactions recorded
                 </div>
               ) : (
@@ -484,10 +485,10 @@ const Analysis = () => {
                         if (!active || !payload?.length) return null;
                         const data = payload[0].payload;
                         return (
-                          <div className="bg-ink-900 text-white border border-ink-700 rounded-xl p-3 shadow-xl font-mono text-xs max-w-xs whitespace-normal break-words">
-                            <p className="font-sans font-semibold text-ink-200 mb-1">{data.fullDescription}</p>
-                            <p className="text-[10px] text-ink-400 mb-1.5">{data.date}</p>
-                            <p className="font-bold text-negative">{fmtDecimal(data.amount)}</p>
+                          <div className="analysis-top-tx-tooltip">
+                            <p className="analysis-top-tx-desc">{data.fullDescription}</p>
+                            <p className="analysis-top-tx-date">{data.date}</p>
+                            <p className="analysis-top-tx-amount">{fmtDecimal(data.amount)}</p>
                           </div>
                         );
                       }}

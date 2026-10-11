@@ -1,0 +1,80 @@
+.privacy-container {
+  max-width: 48rem;
+  margin-left: auto;
+  margin-right: auto;
+  padding-top: 1rem;
+  padding-bottom: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  color: #1e293b;
+}
+
+.dark .privacy-container,
+html.dark .privacy-container {
+  color: #cbd5e1;
+}
+
+.privacy-title {
+  font-size: 1.5rem;
+  line-height: 2rem;
+  font-weight: 700;
+  letter-spacing: -0.025em;
+  color: #0f172a;
+}
+
+.dark .privacy-title,
+html.dark .privacy-title {
+  color: #f8fafc;
+}
+
+.privacy-updated {
+  font-size: 0.75rem;
+  color: #64748b;
+  margin-top: 0.25rem;
+}
+
+.dark .privacy-updated,
+html.dark .privacy-updated {
+  color: #64748b;
+}
+
+.privacy-card {
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  font-size: 0.875rem;
+  line-height: 1.625;
+}
+
+@media (min-width: 640px) {
+  .privacy-card {
+    padding: 2rem;
+  }
+}
+
+.privacy-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.privacy-section-title {
+  font-size: 1rem;
+  line-height: 1.5rem;
+  font-weight: 700;
+  color: #0f172a;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.dark .privacy-section-title,
+html.dark .privacy-section-title {
+  color: #f8fafc;
+}
+
+.privacy-icon {
+  color: var(--color-accent, #2563eb);
+}

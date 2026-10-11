@@ -4,6 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import axios from '../api/axios';
 import SEO from '../components/SEO';
 import { User, Mail, Lock, Loader2, Eye, EyeOff } from 'lucide-react';
+import './Register.css';
 
 const Register = () => {
   const { login } = useAuth();
@@ -32,7 +33,7 @@ const Register = () => {
   };
 
   return (
-    <div className="min-h-screen relative overflow-hidden flex items-center justify-center p-4">
+    <div className="register-page-wrapper">
       {/* Ambient background mesh & glowing blobs */}
       <div className="ambient-glow-wrapper" aria-hidden="true">
         <div className="ambient-blob-1" />
@@ -45,26 +46,26 @@ const Register = () => {
         description="Create a free ExpTracker account today. Track your money, organize expenses, parse bank statements, and gain financial clarity."
         path="/register"
       />
-      <main className="w-full max-w-sm relative z-10">
-        <div className="text-center mb-8">
-          <Link to="/login" className="inline-flex items-center">
-            <h1 className="font-bold text-2xl tracking-tight text-ink-900 dark:text-ink-50">
-              Exp<span className="text-accent">Tracker</span>
+      <main className="register-main-container">
+        <div className="register-brand-header">
+          <Link to="/login" className="register-brand-link">
+            <h1 className="register-brand-logo">
+              Exp<span className="register-brand-accent">Tracker</span>
             </h1>
           </Link>
-          <p className="text-xs text-ink-600 dark:text-ink-300 mt-1">Create your personal account</p>
+          <p className="register-subtitle">Create your personal account</p>
         </div>
 
-        <div className="glass-card p-6 sm:p-7 rounded-2xl shadow-lg">
+        <div className="glass-card register-card">
           {error && (
-            <div className="mb-4 p-3 rounded-xl bg-negative/10 border border-negative/20 text-negative text-xs">
+            <div className="register-error">
               {error}
             </div>
           )}
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={handleSubmit} className="register-form">
             <div>
-              <label className="text-xs font-medium text-ink-900 dark:text-ink-50 block mb-1.5 flex items-center gap-1.5">
-                <User size={14} strokeWidth={1.5} className="text-ink-600 dark:text-ink-300" />
+              <label className="register-label">
+                <User size={14} strokeWidth={1.5} className="register-label-icon" />
                 <span>Full Name</span>
               </label>
               <input
@@ -72,13 +73,13 @@ const Register = () => {
                 value={form.name}
                 onChange={e => setForm({ ...form, name: e.target.value })}
                 required
-                className="w-full glass-input px-3.5 py-2.5 text-xs text-ink-900 dark:text-ink-50 focus:outline-none"
+                className="glass-input register-input"
                 placeholder="Your full name"
               />
             </div>
             <div>
-              <label className="text-xs font-medium text-ink-900 dark:text-ink-50 block mb-1.5 flex items-center gap-1.5">
-                <Mail size={14} strokeWidth={1.5} className="text-ink-600 dark:text-ink-300" />
+              <label className="register-label">
+                <Mail size={14} strokeWidth={1.5} className="register-label-icon" />
                 <span>Email Address</span>
               </label>
               <input
@@ -86,28 +87,28 @@ const Register = () => {
                 value={form.email}
                 onChange={e => setForm({ ...form, email: e.target.value })}
                 required
-                className="w-full glass-input px-3.5 py-2.5 text-xs text-ink-900 dark:text-ink-50 focus:outline-none"
+                className="glass-input register-input"
                 placeholder="you@example.com"
               />
             </div>
             <div>
-              <label className="text-xs font-medium text-ink-900 dark:text-ink-50 block mb-1.5 flex items-center gap-1.5">
-                <Lock size={14} strokeWidth={1.5} className="text-ink-600 dark:text-ink-300" />
+              <label className="register-label">
+                <Lock size={14} strokeWidth={1.5} className="register-label-icon" />
                 <span>Password</span>
               </label>
-              <div className="relative">
+              <div className="register-password-wrapper">
                 <input
                   type={showPassword ? 'text' : 'password'}
                   value={form.password}
                   onChange={e => setForm({ ...form, password: e.target.value })}
                   required
-                  className="w-full glass-input px-3.5 py-2.5 text-xs text-ink-900 dark:text-ink-50 focus:outline-none pr-10"
+                  className="glass-input register-input register-input-password"
                   placeholder="••••••••"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3.5 top-1/2 -translate-y-1/2 text-ink-600 dark:text-ink-300 opacity-70 hover:opacity-100 p-0.5 cursor-pointer"
+                  className="register-password-toggle"
                   aria-label="Toggle password visibility"
                 >
                   {showPassword ? <EyeOff size={14} /> : <Eye size={14} />}
@@ -117,15 +118,15 @@ const Register = () => {
             <button
               type="submit"
               disabled={loading}
-              className="glass-btn-primary w-full py-2.5 text-xs font-semibold disabled:opacity-50 flex items-center justify-center gap-2 mt-2 shadow-sm cursor-pointer"
+              className="glass-btn-primary register-submit-btn"
             >
               {loading ? <Loader2 size={16} className="animate-spin" /> : null}
               <span>{loading ? 'Creating account...' : 'Create account'}</span>
             </button>
           </form>
-          <p className="text-xs text-center mt-5 text-ink-600 dark:text-ink-300">
+          <p className="register-footer-text">
             Already have an account?{' '}
-            <Link to="/login" className="text-accent font-semibold hover:underline">Sign in</Link>
+            <Link to="/login" className="register-footer-link">Sign in</Link>
           </p>
         </div>
       </main>

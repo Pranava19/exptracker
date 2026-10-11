@@ -2,6 +2,7 @@ import React from 'react';
 import Layout from '../components/Layout';
 import SEO from '../components/SEO';
 import { FileText, AlertTriangle, UserCheck, Scale } from 'lucide-react';
+import './Terms.css';
 
 const Terms = () => {
   return (
@@ -11,16 +12,16 @@ const Terms = () => {
         description="Read the terms and conditions for using ExpTracker personal finance and expense tracking web application."
         path="/terms"
       />
-      <div className="max-w-3xl mx-auto py-4 space-y-6 text-ink-800 dark:text-ink-200">
+      <div className="terms-container">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-ink-900 dark:text-ink-50">Terms of Service</h1>
-          <p className="text-xs text-ink-500 dark:text-ink-400 mt-1">Last updated: September 2026</p>
+          <h1 className="terms-title">Terms of Service</h1>
+          <p className="terms-updated">Last updated: September 2026</p>
         </div>
 
-        <div className="glass-card p-6 sm:p-8 space-y-6 text-sm leading-relaxed">
-          <section className="space-y-2">
-            <h2 className="text-base font-bold text-ink-900 dark:text-ink-50 flex items-center gap-2">
-              <FileText size={18} className="text-accent" />
+        <div className="glass-card terms-card">
+          <section className="terms-section">
+            <h2 className="terms-section-title">
+              <FileText size={18} className="terms-icon" />
               1. Acceptance of Terms
             </h2>
             <p>
@@ -28,19 +29,19 @@ const Terms = () => {
             </p>
           </section>
 
-          <section className="space-y-2">
-            <h2 className="text-base font-bold text-ink-900 dark:text-ink-50 flex items-center gap-2">
-              <AlertTriangle size={18} className="text-amber-500" />
+          <section className="terms-section">
+            <h2 className="terms-section-title">
+              <AlertTriangle size={18} className="terms-icon-warn" />
               2. Financial Advice Disclaimer
             </h2>
-            <div className="p-4 rounded-xl bg-amber-500/10 border border-amber-500/20 backdrop-blur-sm text-amber-900 dark:text-amber-200 text-xs leading-relaxed font-medium">
+            <div className="terms-disclaimer-box">
               ExpTracker is an informational, self-directed financial management and budgeting tool. ExpTracker does not provide certified financial, investment, legal, accounting, or tax advice. All calculations, categorizations, and summaries are generated for organizational convenience only. Consult a certified financial planner or tax professional before making significant financial decisions.
             </div>
           </section>
 
-          <section className="space-y-2">
-            <h2 className="text-base font-bold text-ink-900 dark:text-ink-50 flex items-center gap-2">
-              <UserCheck size={18} className="text-accent" />
+          <section className="terms-section">
+            <h2 className="terms-section-title">
+              <UserCheck size={18} className="terms-icon" />
               3. User Accounts & Responsibilities
             </h2>
             <p>
@@ -48,9 +49,9 @@ const Terms = () => {
             </p>
           </section>
 
-          <section className="space-y-2">
-            <h2 className="text-base font-bold text-ink-900 dark:text-ink-50 flex items-center gap-2">
-              <Scale size={18} className="text-accent" />
+          <section className="terms-section">
+            <h2 className="terms-section-title">
+              <Scale size={18} className="terms-icon" />
               4. Limitation of Liability
             </h2>
             <p>

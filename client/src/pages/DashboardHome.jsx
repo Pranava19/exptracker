@@ -18,6 +18,7 @@ import {
   ChevronRight,
   Sparkles
 } from 'lucide-react';
+import './DashboardHome.css';
 
 const groupByDate = (txs) => {
   const groups = {};
@@ -125,177 +126,177 @@ const DashboardHome = () => {
       {toast && <Toast message={toast.message} type={toast.type} onClose={hideToast} />}
 
       {/* Human Dynamic Greeting Banner */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-6">
+      <div className="dashboard-greeting-header">
         <div>
-          <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-ink-900 dark:text-ink-50">
+          <h1 className="dashboard-greeting-title">
             {getGreeting()}, {firstName}
           </h1>
-          <p className="text-xs text-ink-600 dark:text-ink-300 mt-1">
+          <p className="dashboard-greeting-desc">
             Here's your real-time financial snapshot for {now.toLocaleString('default', { month: 'long', year: 'numeric' })}.
           </p>
         </div>
-        <div className="hidden sm:flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-full bg-accent/10 text-accent glass-pill border-accent/20 select-none shadow-xs">
+        <div className="dashboard-sync-pill">
           <Sparkles size={14} /> Account Synchronized
         </div>
       </div>
 
       {/* Balance & Income/Expense Highlight Row */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-        <div className="glass-card md:col-span-2 p-6 sm:p-8 rounded-2xl flex flex-col justify-between relative overflow-hidden text-ink-900 dark:text-ink-50 border border-ink-200/80 dark:border-white/10 shadow-lg">
+      <div className="dashboard-hero-grid">
+        <div className="glass-card dashboard-balance-hero">
           {/* Subtle atmospheric light inside hero card */}
-          <div className="absolute top-0 right-0 w-80 h-80 bg-accent/10 dark:bg-accent/15 rounded-full filter blur-3xl pointer-events-none" />
+          <div className="dashboard-hero-glow" />
 
-          <div className="relative z-10 flex items-center justify-between mb-4">
-            <div className="flex items-center gap-2.5">
-              <div className="p-2 rounded-xl bg-accent/10 dark:bg-accent/20 text-accent dark:text-accent-light border border-accent/20 dark:border-accent/30">
+          <div className="dashboard-balance-header">
+            <div className="dashboard-balance-title-row">
+              <div className="dashboard-balance-icon">
                 <Wallet size={20} strokeWidth={2} />
               </div>
-              <span className="text-xs font-bold uppercase tracking-wider text-ink-700 dark:text-ink-200 select-none">
+              <span className="dashboard-balance-label">
                 Available Balance
               </span>
             </div>
-            <div className="flex items-center gap-2">
-              <span className="text-[11px] font-semibold px-2.5 py-1 rounded-full bg-emerald-500/15 text-emerald-700 dark:bg-emerald-500/25 dark:text-emerald-300 border border-emerald-500/30 select-none">
+            <div className="dashboard-balance-badge-row">
+              <span className="dashboard-live-badge">
                 Live Balance
               </span>
             </div>
           </div>
 
-          <div className="relative z-10 my-4">
+          <div className="dashboard-balance-amount-wrapper">
             {loading ? (
-              <div className="h-12 w-64 bg-ink-200/60 dark:bg-ink-800 animate-pulse rounded-xl" />
+              <div className="dashboard-balance-skeleton" />
             ) : (
-              <p className="font-mono text-4xl sm:text-5xl font-extrabold tracking-tight text-ink-900 dark:text-ink-50">
+              <p className="dashboard-balance-amount">
                 {fmt(summary.balance)}
               </p>
             )}
-            <p className="text-xs text-ink-600 dark:text-ink-300 mt-2 font-medium">Total liquid funds across your linked records</p>
+            <p className="dashboard-balance-sub">Total liquid funds across your linked records</p>
           </div>
         </div>
 
-        <div className="flex flex-col gap-4">
-          <div className="glass-card flex-1 p-5 rounded-2xl flex flex-col justify-between">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-xs font-bold uppercase tracking-wider text-ink-600 dark:text-ink-300 select-none">
+        <div className="dashboard-mini-metrics">
+          <div className="glass-card dashboard-mini-metric-card">
+            <div className="dashboard-mini-metric-header">
+              <span className="dashboard-mini-metric-label">
                 Money In
               </span>
-              <div className="p-2 rounded-xl bg-positive/10 text-positive">
+              <div className="dashboard-metric-icon-positive">
                 <TrendingUp size={18} strokeWidth={2} />
               </div>
             </div>
-            <p className="font-mono text-2xl font-bold text-positive">
+            <p className="dashboard-metric-val-positive">
               {loading ? '...' : fmt(summary.total_income)}
             </p>
-            <p className="text-[11px] text-ink-500 dark:text-ink-400 mt-1">Total received this month</p>
+            <p className="dashboard-mini-metric-sub">Total received this month</p>
           </div>
 
-          <div className="glass-card flex-1 p-5 rounded-2xl flex flex-col justify-between">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-xs font-bold uppercase tracking-wider text-ink-600 dark:text-ink-300 select-none">
+          <div className="glass-card dashboard-mini-metric-card">
+            <div className="dashboard-mini-metric-header">
+              <span className="dashboard-mini-metric-label">
                 Money Out
               </span>
-              <div className="p-2 rounded-xl bg-negative/10 text-negative">
+              <div className="dashboard-metric-icon-negative">
                 <TrendingDown size={18} strokeWidth={2} />
               </div>
             </div>
-            <p className="font-mono text-2xl font-bold text-negative">
+            <p className="dashboard-metric-val-negative">
               {loading ? '...' : fmt(summary.total_expense)}
             </p>
-            <p className="text-[11px] text-ink-500 dark:text-ink-400 mt-1">Total spent this month</p>
+            <p className="dashboard-mini-metric-sub">Total spent this month</p>
           </div>
         </div>
       </div>
 
       {!loading && (
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
-          <div className="glass-card p-5 rounded-2xl flex items-center justify-between">
+        <div className="dashboard-stats-grid">
+          <div className="glass-card dashboard-stat-card">
             <div>
-              <span className="text-xs font-bold uppercase tracking-wider text-ink-600 dark:text-ink-300 select-none">Daily Pace</span>
-              <p className="font-mono text-xl font-bold text-ink-900 dark:text-ink-50 mt-1">{fmtShort(dailyAvg)}</p>
-              <p className="text-[11px] text-ink-500 dark:text-ink-400 mt-0.5">Average spend per active day</p>
+              <span className="dashboard-stat-label">Daily Pace</span>
+              <p className="dashboard-stat-val">{fmtShort(dailyAvg)}</p>
+              <p className="dashboard-stat-sub">Average spend per active day</p>
             </div>
-            <div className="p-3 rounded-xl bg-accent/10 text-accent">
+            <div className="dashboard-stat-icon-accent">
               <Calendar size={22} strokeWidth={2} />
             </div>
           </div>
 
-          <div className="glass-card p-5 rounded-2xl flex items-center justify-between">
-            <div className="min-w-0 flex-1 mr-3">
-              <span className="text-xs font-bold uppercase tracking-wider text-ink-600 dark:text-ink-300 select-none">Biggest Splurge</span>
+          <div className="glass-card dashboard-stat-card">
+            <div className="dashboard-splurge-content">
+              <span className="dashboard-stat-label">Biggest Splurge</span>
               {biggestTx ? (
                 <>
-                  <p className="font-mono text-xl font-bold text-negative mt-1">{fmt(biggestTx.amount)}</p>
-                  <p className="text-[11px] font-semibold text-ink-700 dark:text-ink-200 truncate mt-0.5">
+                  <p className="dashboard-splurge-amount">{fmt(biggestTx.amount)}</p>
+                  <p className="dashboard-splurge-desc">
                     {(biggestTx.payee || biggestTx.description || '').slice(0, 30)} · {biggestTx.date.slice(0, 10)}
                   </p>
                 </>
               ) : (
-                <p className="text-xs text-ink-500 dark:text-ink-400 mt-2">No expenses logged yet this month</p>
+                <p className="dashboard-splurge-empty">No expenses logged yet this month</p>
               )}
             </div>
-            <div className="p-3 rounded-xl bg-negative/10 text-negative flex-shrink-0">
+            <div className="dashboard-stat-icon-negative">
               <ArrowUpRight size={22} strokeWidth={2} />
             </div>
           </div>
         </div>
       )}
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="dashboard-main-grid">
         {/* Latest Activity Feed */}
-        <div className="lg:col-span-2 space-y-6">
-          <div className="glass-card rounded-2xl overflow-hidden">
-            <div className="flex items-center justify-between px-6 py-4 border-b border-ink-100/60 dark:border-white/10">
+        <div className="dashboard-feed-column">
+          <div className="glass-card dashboard-feed-card">
+            <div className="dashboard-feed-header">
               <div>
-                <h2 className="text-sm font-bold text-ink-900 dark:text-ink-50">Latest Activity</h2>
-                <p className="text-[11px] text-ink-500 dark:text-ink-400">Your recent debit and credit entries</p>
+                <h2 className="dashboard-feed-title">Latest Activity</h2>
+                <p className="dashboard-feed-subtitle">Your recent debit and credit entries</p>
               </div>
-              <Link to="/transactions" className="text-xs font-semibold text-accent hover:text-accent-dark flex items-center gap-1 cursor-pointer">
+              <Link to="/transactions" className="dashboard-view-all-link">
                 <span>View All Activity</span>
                 <ChevronRight size={14} strokeWidth={2} />
               </Link>
             </div>
 
             {loading ? (
-              <div className="p-6 space-y-4">
+              <div className="dashboard-feed-skeleton-list">
                 {[...Array(4)].map((_, i) => (
-                  <div key={i} className="animate-pulse flex justify-between">
-                    <div className="space-y-1.5">
-                      <div className="h-3.5 bg-ink-100 dark:bg-ink-800 rounded-lg w-40" />
-                      <div className="h-2.5 bg-ink-100 dark:bg-ink-800 rounded-lg w-24" />
+                  <div key={i} className="dashboard-feed-skeleton-item">
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.375rem' }}>
+                      <div className="skeleton-line" style={{ width: '10rem', height: '0.875rem' }} />
+                      <div className="skeleton-line" style={{ width: '6rem', height: '0.625rem' }} />
                     </div>
-                    <div className="h-4 bg-ink-100 dark:bg-ink-800 rounded-lg w-20" />
+                    <div className="skeleton-line" style={{ width: '5rem', height: '1rem' }} />
                   </div>
                 ))}
               </div>
             ) : Object.keys(grouped).length === 0 ? (
-              <div className="p-12 text-center">
-                <p className="text-xs font-semibold text-ink-600 dark:text-ink-300">All clear! No spend or income logged yet.</p>
-                <Link to="/transactions" className="text-xs text-accent font-bold mt-2 inline-block">Add your first transaction</Link>
+              <div className="dashboard-empty-feed">
+                <p className="dashboard-empty-title">All clear! No spend or income logged yet.</p>
+                <Link to="/transactions" className="dashboard-empty-action">Add your first transaction</Link>
               </div>
             ) : (
               Object.entries(grouped)
                 .sort(([a], [b]) => b.localeCompare(a))
                 .map(([date, txs]) => (
                   <div key={date}>
-                    <div className="px-6 py-2.5 glass-card-subtle border-y border-ink-100/60 dark:border-white/10">
-                      <p className="text-[11px] font-bold uppercase tracking-wider text-ink-600 dark:text-ink-300">
+                    <div className="glass-card-subtle dashboard-feed-date-badge">
+                      <p className="dashboard-feed-date-text">
                         {formatGroupLabel(date)}
                       </p>
                     </div>
                     {txs.map(tx => (
                       <div
                         key={tx.id}
-                        className="flex items-center justify-between px-6 py-3.5 border-b border-ink-100/50 dark:border-white/5 last:border-0 hover:bg-black/[0.02] dark:hover:bg-white/[0.04] transition-colors"
+                        className="dashboard-feed-row"
                       >
-                        <div className="min-w-0 flex-1 mr-4">
-                          <p className="text-sm font-semibold text-ink-900 dark:text-ink-50 truncate">{tx.payee || tx.description || tx.category}</p>
-                          <p className="text-xs text-ink-500 dark:text-ink-400 mt-0.5">{tx.category} · {tx.mode || 'Other'}</p>
+                        <div className="dashboard-feed-row-left">
+                          <p className="dashboard-feed-row-title">{tx.payee || tx.description || tx.category}</p>
+                          <p className="dashboard-feed-row-meta">{tx.category} · {tx.mode || 'Other'}</p>
                         </div>
-                        <div className="flex items-center gap-3">
-                          <span className={`text-[10px] font-bold px-2.5 py-1 rounded-full ${tx.type === 'income' ? 'bg-positive/10 text-positive border border-positive/20' : 'bg-negative/10 text-negative border border-negative/20'}`}>
+                        <div className="dashboard-feed-row-right">
+                          <span className={`dashboard-type-pill ${tx.type === 'income' ? 'dashboard-type-pill-income' : 'dashboard-type-pill-expense'}`}>
                             {tx.type === 'income' ? 'Income' : 'Expense'}
                           </span>
-                          <p className={`font-mono text-sm font-bold ${tx.type === 'income' ? 'text-positive' : 'text-negative'}`}>
+                          <p className={tx.type === 'income' ? 'dashboard-feed-amount-income' : 'dashboard-feed-amount-expense'}>
                             {tx.type === 'income' ? '+' : '−'}₹{Number(tx.amount).toLocaleString('en-IN', { minimumFractionDigits: 2 })}
                           </p>
                         </div>
@@ -308,27 +309,27 @@ const DashboardHome = () => {
 
           {/* Top Payees Card */}
           {!loading && top5Payees.length > 0 && (
-            <div className="glass-card rounded-2xl p-6">
-              <div className="flex items-center justify-between pb-3 border-b border-ink-100/60 dark:border-white/10 mb-4">
+            <div className="glass-card dashboard-payees-card">
+              <div className="dashboard-payees-header">
                 <div>
-                  <h3 className="text-sm font-bold text-ink-900 dark:text-ink-50">Where Your Money Goes</h3>
-                  <p className="text-[11px] text-ink-500 dark:text-ink-400">Top merchants by total spend</p>
+                  <h3 className="dashboard-payees-title">Where Your Money Goes</h3>
+                  <p className="dashboard-payees-sub">Top merchants by total spend</p>
                 </div>
-                <span className="text-xs font-semibold text-ink-500 dark:text-ink-400">All Time</span>
+                <span className="dashboard-payees-time">All Time</span>
               </div>
-              <div className="space-y-4">
+              <div className="dashboard-payees-list">
                 {top5Payees.map(([name, amount], i) => (
                   <div key={name}>
-                    <div className="flex items-center justify-between mb-1.5">
-                      <div className="flex items-center gap-2.5 min-w-0 flex-1 mr-3">
-                        <span className="font-mono text-xs font-bold text-ink-400 w-4">{i + 1}</span>
-                        <p className="text-xs font-semibold text-ink-900 dark:text-ink-50 truncate">{name}</p>
+                    <div className="dashboard-payee-info-row">
+                      <div className="dashboard-payee-name-wrap">
+                        <span className="dashboard-payee-rank">{i + 1}</span>
+                        <p className="dashboard-payee-name">{name}</p>
                       </div>
-                      <p className="font-mono text-xs font-bold text-negative">{fmtShort(amount)}</p>
+                      <p className="dashboard-payee-amount">{fmtShort(amount)}</p>
                     </div>
-                    <div className="ml-6 h-2 rounded-full bg-ink-100 dark:bg-ink-800 overflow-hidden">
+                    <div className="dashboard-payee-bar-track">
                       <div
-                        className="h-full rounded-full bg-accent transition-all duration-300"
+                        className="dashboard-payee-bar-fill"
                         style={{ width: `${(amount / maxPayeeAmount) * 100}%` }}
                       />
                     </div>
@@ -340,19 +341,19 @@ const DashboardHome = () => {
         </div>
 
         {/* Charts Column */}
-        <div className="space-y-6">
-          <div className="glass-card rounded-2xl overflow-hidden p-5">
-            <div className="pb-3 border-b border-ink-100/60 dark:border-white/10 mb-3">
-              <h3 className="text-sm font-bold text-ink-900 dark:text-ink-50">Monthly Cash Flow</h3>
-              <p className="text-[11px] text-ink-500 dark:text-ink-400">Income vs Expenses trend</p>
+        <div className="dashboard-charts-column">
+          <div className="glass-card dashboard-chart-card">
+            <div className="dashboard-chart-header">
+              <h3 className="dashboard-feed-title">Monthly Cash Flow</h3>
+              <p className="dashboard-feed-subtitle">Income vs Expenses trend</p>
             </div>
             {loading ? <SkeletonChart /> : <MonthlyChart transactions={transactions} />}
           </div>
 
-          <div className="glass-card rounded-2xl overflow-hidden p-5">
-            <div className="pb-3 border-b border-ink-100/60 dark:border-white/10 mb-3">
-              <h3 className="text-sm font-bold text-ink-900 dark:text-ink-50">Spending by Category</h3>
-              <p className="text-[11px] text-ink-500 dark:text-ink-400">Category breakdown</p>
+          <div className="glass-card dashboard-chart-card">
+            <div className="dashboard-chart-header">
+              <h3 className="dashboard-feed-title">Spending by Category</h3>
+              <p className="dashboard-feed-subtitle">Category breakdown</p>
             </div>
             {loading ? <SkeletonChart /> : <CategoryChart transactions={transactions} />}
           </div>
